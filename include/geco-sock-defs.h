@@ -1,15 +1,22 @@
 /*
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * Copyright (c) 2016
+ * Geco Gaming Company
+ *
+ * Permission to use, copy, modify, distribute and sell this software
+ * and its documentation for GECO purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation. Geco Gaming makes no
+ * representations about the suitability of this software for GECO
+ * purpose.  It is provided "as is" without express or implied warranty.
  *
  */
 
-#ifndef SOCKET_DEFINES_H_
-#define SOCKET_DEFINES_H_
+#ifndef __INCLUDE_GECO_SOCK_DEFS_H
+#define __INCLUDE_GECO_SOCK_DEFS_H
 
 /// Internal
-#if   defined(WINDOWS_STORE_RT)
+#if defined(WINDOWS_STORE_RT)
 
 #include "WinRTSocketAdapter.h"
 #define accept__ WinRTAccept
@@ -33,15 +40,15 @@
 
 #else
 
-#if defined(_WIN32)
+#   if defined(_WIN32)
 #define closesocket__ closesocket
 #define select__ select
-#elif defined(__native_client__)
+#   elif defined(__native_client__)
 #define select__ select
-#else
+#   else
 #define closesocket__ close
 #define select__ select
-#endif
+#   endif
 
 #define accept__ accept
 #define connect__ connect
@@ -53,7 +60,6 @@
 ///将字符串形式的IP地址转换为按网络字节顺序的整型值
 /// convert the string ip addr to intege in network order
 #define inet_addr__ inet_addr
-
 #define ioctlsocket__ ioctlsocket
 #define listen__ listen
 #define recv__ recv
@@ -63,7 +69,6 @@
 #define setsockopt__ setsockopt
 #define shutdown__ shutdown
 #define WSASendTo__ WSASendTo
-
 #endif
 
-#endif
+#endif //end

@@ -1,11 +1,19 @@
 /*
- *  SocketIncludes.h, WindowsIncludes.h
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
- *  of patent rights can be found in the PATENTS file in the same directory.
+ * Copyright (c) 2016
+ * Geco Gaming Company
+ *
+ * Permission to use, copy, modify, distribute and sell this software
+ * and its documentation for GECO purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation. Geco Gaming makes no
+ * representations about the suitability of this software for GECO
+ * purpose.  It is provided "as is" without express or implied warranty.
+ *
  */
-#ifndef OS_Includes_H_
-#define OS_Includes_H_
+
+#ifndef __INCLUDE_GECO_SOCK_INCLUDE_H
+#define __INCLUDE_GECO_SOCK_INCLUDE_H
 
 // All this crap just to include type SOCKET
 
@@ -15,7 +23,7 @@
 #define _PP_Instance_ int
 #endif
 
-#if   defined(WINDOWS_STORE_RT)
+#ifdef WINDOWS_STORE_RT
 #include <windows.h>
 #include "WinRTSockAddr.h"
 typedef Windows::Networking::Sockets::DatagramSocket^ __UDPSOCKET__;
@@ -27,7 +35,6 @@ typedef unsigned int socklen_t;
 // using Windows.Networking;
 // using Windows.Networking.Sockets;
 // See http://msdn.microsoft.com/en-us/library/windows/apps/windows.networking.sockets.datagramsocketcontrol
-
 #elif defined(_WIN32)
 // IP_DONTFRAGMENT is different between winsock 1 and winsock 2.  Therefore, Winsock2.h must be linked againt Ws2_32.lib
 // winsock.h must be linked against WSock32.lib.  If these two are mixed up the flag won't work correctly
@@ -38,24 +45,22 @@ typedef unsigned int socklen_t;
 typedef SOCKET __UDPSOCKET__;
 typedef SOCKET __TCPSOCKET__;
 typedef int socklen_t;
-
 #else
-
 // For CFSocket
 // https://developer.apple.com/library/mac/#documentation/CoreFOundation/Reference/CFSocketRef/Reference/reference.html
 // Reason: http://sourceforge.net/p/open-dis/discussion/683284/thread/0929d6a0
-#if defined(__APPLE__)
+#   if defined(__APPLE__)
 #import <CoreFoundation/CoreFoundation.h>
-#endif
+#   endif
 
-#if !defined(ANDROID)
+#   if !defined(ANDROID)
 #include <ifaddrs.h>
-#endif
+#   endif
 
-#if (defined(__GNUC__)  || defined(__GCCXML__))
+#   if (defined(__GNUC__)  || defined(__GCCXML__))
 #include <netdb.h>
 #include <errno.h>
-#endif
+#   endif
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -68,7 +73,7 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <pthread.h>
 
-#ifdef __native_client__
+#   ifdef __native_client__
 #include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
@@ -95,21 +100,23 @@ typedef int socklen_t;
 #include "ppapi/cpp/private/net_address_private.h"
 typedef PP_Resource __UDPSOCKET__;
 typedef PP_Resource __TCPSOCKET__;
-#else
+#   else
 //#include "RakMemoryOverride.h"
 /// Unix/Linux uses ints for sockets
 typedef int __UDPSOCKET__;
 typedef int __TCPSOCKET__;
-#endif
+#   endif
 #endif
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET (-1)
 #endif
+
 #ifndef SOCKET_ERROR
 #define SOCKET_ERROR (-1)
 #endif
+
 #define SAFE_CLOSE_SOCK(rns2Socket) \
 if( rns2Socket != INVALID_SOCKET ) { closesocket__(rns2Socket); rns2Socket = (JISSocket) INVALID_SOCKET; }
 
-#endif
+#endif // end

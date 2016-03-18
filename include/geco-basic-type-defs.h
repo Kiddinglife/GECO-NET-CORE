@@ -25,7 +25,7 @@ typedef int32_t Int32;
 typedef uint32_t UInt32;
 typedef int64_t Int64;
 typedef uint64_t UInt64;
-# else
+#else
 typedef char Int8;
 typedef unsigned char UInt8;
 typedef short Int16;
@@ -35,9 +35,10 @@ typedef unsigned __int32 UInt32;
 #   if defined(_MSC_VER) && _MSC_VER < 1300
 typedef unsigned __int64 UInt64;
 typedef signed __int64 Int64;
-#   else
+#  else
 typedef long long Int64;
 typedef unsigned long long int UInt64;
-#   endif
-# endif
+#  endif
 #endif
+
+#endif//end
