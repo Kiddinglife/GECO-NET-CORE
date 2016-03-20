@@ -51,7 +51,7 @@
 *   It would be nice to CC: <Cokus@math.washington.edu> when you write.
 */
 
-#include "../include/geco-random-seed-creator.h"
+#include "geco-random-seed-creator.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

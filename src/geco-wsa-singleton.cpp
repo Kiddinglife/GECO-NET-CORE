@@ -12,7 +12,7 @@
 //*
 //*/
 //
-//#include "../include/geco-wsa-singleton.h"
+//#include "geco-wsa-singleton.h"
 //
 //#include <stdio.h>
 //#ifdef _WIN32
@@ -50,7 +50,7 @@
 //
 //#endif
 //}
-//void GECO_EXPORT WSAStartupSingleton::Deref(void)
+//void WSAStartupSingleton::Deref(void)
 //{
 //#if defined(_WIN32) && !defined(WINDOWS_STORE_RT)
 //    if (refCount == 0)

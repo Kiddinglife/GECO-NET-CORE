@@ -15,7 +15,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gmock", "..\..\thirdparty\g
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "..\..\thirdparty\googletest\msvc\gtest.vcxproj", "{C8F6C172-56F2-4E76-B5FA-C3B423B31BE7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geco-net-dynamic-library", "dynamic-library\dynamic-library.vcxproj", "{65559532-5B6A-4790-AC91-609304689B59}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geco-net-dynamic-library", "geco-net-dynamic-library\geco-net-dynamic-library.vcxproj", "{65559532-5B6A-4790-AC91-609304689B59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,7 +85,8 @@ Global
 		{65559532-5B6A-4790-AC91-609304689B59}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{65559532-5B6A-4790-AC91-609304689B59}.Release|Win32.ActiveCfg = Release|Win32
 		{65559532-5B6A-4790-AC91-609304689B59}.Release|Win32.Build.0 = Release|Win32
-		{65559532-5B6A-4790-AC91-609304689B59}.Release|x64.ActiveCfg = Release|Win32
+		{65559532-5B6A-4790-AC91-609304689B59}.Release|x64.ActiveCfg = Release|x64
+		{65559532-5B6A-4790-AC91-609304689B59}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
