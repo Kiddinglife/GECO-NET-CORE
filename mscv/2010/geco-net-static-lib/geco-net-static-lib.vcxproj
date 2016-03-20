@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\CompileFeatures.h" />
+    <ClInclude Include="..\..\..\include\CompileFeaturesOverride.h" />
+    <ClInclude Include="..\..\..\include\geco-allocator-default.h" />
     <ClInclude Include="..\..\..\include\geco-namesapces.h" />
     <ClInclude Include="..\..\..\include\geco-net-config.h" />
     <ClInclude Include="..\..\..\include\geco-basic-type.h" />
@@ -32,6 +35,7 @@
     <ClInclude Include="..\..\..\include\geco-wsa-singleton.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\geco-alloc.cpp" />
     <ClCompile Include="..\..\..\src\geco-random-seed-creator.cpp" />
     <ClCompile Include="..\..\..\src\geco-wsa-singleton.cpp" />
   </ItemGroup>

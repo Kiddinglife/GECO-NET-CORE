@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\CompileFeatures.h" />
+    <ClInclude Include="..\..\..\include\CompileFeaturesOverride.h" />
+    <ClInclude Include="..\..\..\include\geco-alloc.h" />
     <ClInclude Include="..\..\..\include\geco-basic-type.h" />
     <ClInclude Include="..\..\..\include\geco-export.h" />
     <ClInclude Include="..\..\..\include\geco-msg-ids.h" />
@@ -30,10 +33,13 @@
     <ClInclude Include="..\..\..\include\geco-sock-includes.h" />
     <ClInclude Include="..\..\..\include\geco-wins-includes.h" />
     <ClInclude Include="..\..\..\include\geco-wsa-singleton.h" />
+    <ClInclude Include="..\..\..\include\geco-memory-stream.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\include\geco-alloc.cpp" />
     <ClCompile Include="..\..\..\src\geco-random-seed-creator.cpp" />
     <ClCompile Include="..\..\..\src\geco-wsa-singleton.cpp" />
+    <ClCompile Include="..\..\..\src\geco-memory-stream.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{65559532-5B6A-4790-AC91-609304689B59}</ProjectGuid>
