@@ -13,13 +13,23 @@
 */
 
 #include "geco-memory-stream.h"
+using namespace geco::ultils;
 
 GECO_NET_BEGIN_NSPACE
 
 static const BitSize JACKIESTREAM_STACK_ALLOC_BITS_SIZE =
 BYTES_TO_BITS(GECO_STREAM_STACK_ALLOC_SIZE);
 
-GECO_STATIC_FACTORY_DEFI(MemeoryStream, MemeoryStream);
+MemeoryStream* MemeoryStream::GetInstance(void)
+{
+    return geco::ultils::OP_NEW<MemeoryStream>(TRACE_FILE_AND_LINE_);
+}
+
+void MemeoryStream::DestroyInstance(MemeoryStream* i)
+{
+    geco::ultils::OP_DELETE(i, TRACE_FILE_AND_LINE_);
+}
+
 
 MemeoryStream::MemeoryStream() :
 mBitsAllocSize(JACKIESTREAM_STACK_ALLOC_BITS_SIZE),
@@ -42,15 +52,15 @@ mReadOnly(false)
         data = mStacBuffer;
         mBitsAllocSize = JACKIESTREAM_STACK_ALLOC_BITS_SIZE;
         mNeedFree = false;
-        DCHECK_NOTNULL(data);
+        assert(data);
         //memset(data, 0, GECO_STREAM_STACK_ALLOC_SIZE); // NO NEED TO SET ALL ZEROS
     }
     else
     {
-        data = (UInt8*)jackieMalloc_Ex(initialBytesAllocate, TRACE_FILE_AND_LINE_);
+        data = (UInt8*)geco::ultils::jackieMalloc_Ex(initialBytesAllocate, TRACE_FILE_AND_LINE_);
         mBitsAllocSize = BYTES_TO_BITS(initialBytesAllocate);
         mNeedFree = true;
-        DCHECK_NOTNULL(data);
+        assert(data);
         //memset(data, 0, initialBytesAllocate); // NO NEED TO SET ALL ZEROS
     }
 }
@@ -70,14 +80,14 @@ mReadOnly(!copy)
                 data = mStacBuffer;
                 mNeedFree = false;
                 mBitsAllocSize = JACKIESTREAM_STACK_ALLOC_BITS_SIZE;
-                DCHECK_NOTNULL(data);
+                assert(data);
                 //memset(data, 0, GECO_STREAM_STACK_ALLOC_SIZE); // NO NEED TO SET ALL ZEROS
             }
             else
             {
                 data = (UInt8*)jackieMalloc_Ex(len, TRACE_FILE_AND_LINE_);
                 mNeedFree = true;
-                DCHECK_NOTNULL(data);
+                assert(data);
                 //memset(data, 0, len); // NO NEED TO SET ALL ZEROS
             }
             memcpy(data, src, len);
@@ -143,7 +153,7 @@ void MemeoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool is
                 return;
             }
         }
-        DCHECK(currByte == 0);
+        assert(currByte == 0);
     }
     else
     {
@@ -172,7 +182,7 @@ void MemeoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool is
 
 
     // If this assert is hit the stream wasn't long enough to read from
-    DCHECK(GetPayLoadBits() >= 1);
+    assert(GetPayLoadBits() >= 1);
 
     /// the upper(left aligned) half of the last byte(now currByte == 0) is a 0000
     /// (positive) or 1111 (nagative) write a bit 1 and the remaining 4 bits. 
@@ -198,7 +208,7 @@ void MemeoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
     // If this assert hits then we need to specify mReadOnly as false 
     // It needs to reallocate to hold all the data and can't do it unless we allocated to begin with
     // Often hits if you call Write or Serialize on a read-only bitstream
-    DCHECK(mReadOnly == false);
+    assert(mReadOnly == false);
 
     //if (newBitsAllocCount > 0 && ((mBitsAllocSize - 1) >> 3) < // official
     //	((newBitsAllocCount - 1) >> 3)) 
@@ -234,7 +244,7 @@ void MemeoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
             mNeedFree = true;
         }
 
-        DCHECK(data != 0);
+        assert(data != 0);
     }
 
     if (newBitsAllocCount > mBitsAllocSize)
@@ -257,8 +267,8 @@ void MemeoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight /*=
     /// start write first 3 bits 101 after shifting to right by , 00000 101 
     /// write result                                                                      00010 101
 
-    DCHECK(bits2Read > 0);
-    DCHECK(GetPayLoadBits() >= bits2Read);
+    assert(bits2Read > 0);
+    assert(GetPayLoadBits() >= bits2Read);
     //if (bits2Read <= 0 || bits2Read > GetPayLoadBits()) return;
 
     /// get offset that overlaps one byte boudary, &7 is same to %8, but faster
@@ -338,7 +348,7 @@ void MemeoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight /*=
 
 void MemeoryStream::ReadFloatRange(float &outFloat, float floatMin, float floatMax)
 {
-    DCHECK(floatMax > floatMin);
+    assert(floatMax > floatMin);
 
     UInt16 percentile;
     //Read(percentile);
@@ -351,8 +361,8 @@ void MemeoryStream::ReadFloatRange(float &outFloat, float floatMin, float floatM
 
 void MemeoryStream::ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read)
 {
-    DCHECK(bytes2Read > 0);
-    DCHECK(GetPayLoadBits() >= BYTES_TO_BITS(bytes2Read));
+    assert(bytes2Read > 0);
+    assert(GetPayLoadBits() >= BYTES_TO_BITS(bytes2Read));
     /// if (bytes2Read <= 0) return;
 
     /// Byte align
@@ -400,8 +410,8 @@ void MemeoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool rightAl
     /// start write first 3 bits 101 after shifting to right by , 00000 101 
     /// write result                                                                      00010 101
 
-    DCHECK(mReadOnly == false);
-    DCHECK(bits2Write > 0);
+    assert(mReadOnly == false);
+    assert(bits2Write > 0);
 
     //if( mReadOnly ) return false;
     //if( bits2Write == 0 ) return false;
@@ -453,7 +463,7 @@ void MemeoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool rightAl
             /// 2. bits2Write > ( 8 - startWritePosBits ) means the rest space in 
             /// @data[mWritePosBits >> 3] cannot hold all remaining bits in @dataByte
             /// we have to write these reamining bits to the next byte 
-            DCHECK(startWritePosBits > 0);
+            assert(startWritePosBits > 0);
             if (bits2Write > (8 - startWritePosBits))
             {
                 /// write remaining bits into the  byte next to @data[mWritePosBits >> 3]
@@ -476,9 +486,9 @@ void MemeoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool rightAl
 }
 void MemeoryStream::Write(MemeoryStream *jackieBits, BitSize bits2Write)
 {
-    DCHECK(mReadOnly == false);
-    DCHECK(bits2Write > 0);
-    DCHECK(bits2Write <= jackieBits->GetPayLoadBits());
+    assert(mReadOnly == false);
+    assert(bits2Write > 0);
+    assert(bits2Write <= jackieBits->GetPayLoadBits());
 
     ///?
     /// test new  implementation 20 seconds
@@ -522,7 +532,7 @@ void MemeoryStream::Write(MemeoryStream *jackieBits, BitSize bits2Write)
         bits2Write -= newBits2Read;
     }
     // call WriteBits() for efficient  because it writes one byte from src at one time much faster
-    DCHECK((jackieBits->mReadingPosBits & 7) == 0);
+    assert((jackieBits->mReadingPosBits & 7) == 0);
     WriteBits(&jackieBits->data[jackieBits->mReadingPosBits >> 3], bits2Write, false);
     jackieBits->mReadingPosBits += bits2Write;
     ///?
@@ -579,9 +589,9 @@ void MemeoryStream::Write(MemeoryStream *jackieBits, BitSize bits2Write)
 
 void MemeoryStream::WriteFloatRange(float src, float floatMin, float floatMax)
 {
-    DCHECK_GT(floatMax, floatMin);
-    DCHECK_LE(src, floatMax + .001);
-    DCHECK_GE(src, floatMin - .001);
+    assert(floatMax > floatMin);
+    assert(src < floatMax + .001);
+    assert(src >= floatMin - .001);
 
     float percentile = 65535.0f * ((src - floatMin) / (floatMax - floatMin));
     if (percentile < 0.0f) percentile = 0.0;
@@ -627,7 +637,7 @@ void MemeoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const 
             }
         }
         /// make sure we are now on the lowest byte (index 0)
-        DCHECK(currByte == 0);
+        assert(currByte == 0);
     }
     else
     {
@@ -643,13 +653,13 @@ void MemeoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const 
             /// then it would have the same value shifted
             if (src[currByte] == byteMatch)
             {
-                JINFO << "write match " << byteMatch;
+                GECO_PRINTFS("write match%d\n", byteMatch);
                 Write(truee);
                 currByte++;
             }
             else /// the first byte is not matched
             {
-                JINFO << "write not match " << byteMatch;
+                GECO_PRINTFS("write not match%d\n", byteMatch);
                 Write(falsee);
                 // Write the remainder of the data after writing bit false
                 WriteBits(src + currByte, bits2Write - (currByte << 3), true);
@@ -657,7 +667,7 @@ void MemeoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const 
             }
         }
         /// make sure we are now on the lowest byte (index highest)
-        DCHECK(currByte == ((bits2Write >> 3) - 1));
+        assert(currByte == ((bits2Write >> 3) - 1));
     }
 
     /// last byte
@@ -712,7 +722,7 @@ void MemeoryStream::PadZero2LengthOf(UInt32 bytes)
     }
 }
 
-void MemeoryStream::PrintBit(char* out, BitSize mWritePosBits, UInt8* mBuffer)
+void MemeoryStream::Bitify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
 {
     printf_s("%s[%dbits %dbytes]:\n", "BitsDumpResult",
         mWritePosBits, BITS_TO_BYTES(mWritePosBits));
@@ -747,13 +757,13 @@ void MemeoryStream::PrintBit(char* out, BitSize mWritePosBits, UInt8* mBuffer)
     out[strIndex++] = '\n';
     out[strIndex++] = 0;
 }
-void MemeoryStream::PrintBit(void)
+void MemeoryStream::Bitify(void)
 {
     char out[4096 * 8];
-    PrintBit(out, mWritingPosBits, data);
+    Bitify(out, mWritingPosBits, data);
     printf_s("%s\n", out);
 }
-void MemeoryStream::PrintHex(char* out, BitSize mWritePosBits, UInt8* mBuffer)
+void MemeoryStream::Hexlify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
 {
     printf_s("%s[%d bytes]:\n", "HexDumpResult", BITS_TO_BYTES(mWritePosBits));
     if (mWritePosBits <= 0)
@@ -767,10 +777,10 @@ void MemeoryStream::PrintHex(char* out, BitSize mWritePosBits, UInt8* mBuffer)
     }
 
 }
-void MemeoryStream::PrintHex(void)
+void MemeoryStream::Hexlify(void)
 {
     char out[4096];
-    PrintHex(out, mWritingPosBits, data);
+    Hexlify(out, mWritingPosBits, data);
     printf_s("%s\n", out);
 }
 

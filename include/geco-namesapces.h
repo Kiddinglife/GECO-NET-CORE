@@ -17,22 +17,19 @@
 #ifndef __INCLUDE_GECO_NAMESAPCES_H
 #define __INCLUDE_GECO_NAMESAPCES_H
 
-#define GECO   geco
-#define ULTILS  ultils
-#define NET      net
-#define GECO_BEGIN_NAMESPACE namespace GECO {
+#define GECO_BEGIN_NAMESPACE namespace geco {
 #define GECO_END_NAMESPACE }
 
-#define NET_BEGIN_NAMESPACE namespace NET {
+#define NET_BEGIN_NAMESPACE namespace net {
 #define NET_END_NAMESPACE }
 
-#define ULTILS__BEGIN_NSPACE namespace ULTILS {
+#define ULTILS__BEGIN_NSPACE namespace ultils {
 #define ULTILS__END_NSPACE }
 
-#define GECO_ULTILS_BEGIN_NSPACE namespace GECO { namespace ULTILS {
-#define GECO_ULTILS_END_NSPACE }}
+#define GECO_ULTILS_BEGIN_NSPACE  namespace geco { namespace ultils {
+#define GECO_ULTILS_END_NSPACE } }
 
-#define GECO_NET_BEGIN_NSPACE namespace GECO { namespace NET {
-#define GECO_NET_END_NSPACE }}
+#define GECO_NET_BEGIN_NSPACE namespace geco { namespace net {
+#define GECO_NET_END_NSPACE } }
 
 #endif

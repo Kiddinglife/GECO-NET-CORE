@@ -1,4 +1,4 @@
-﻿
+
 #ifndef __INCLUDE_MEMORY_STREAM_H
 #define __INCLUDE_MEMORY_STREAM_H
 
@@ -15,10 +15,11 @@
 
 #include "geco-export.h"
 #include "geco-namesapces.h"
-#include "geco-alloc.h"
+#include "geco-malloc-interface.h"
 #include "geco-sock-includes.h"
 #include "geco-net-config.h"
 #include "geco-basic-type.h"
+#include "geco-net-type.h"
 //#include "JackieString.h"
 
 // MSWin uses _copysign, others use copysign...
@@ -28,63 +29,63 @@
 
 #define UnSignedInteger true
 #define SignedInteger false
-GECO_NET_BEGIN_NSPACE
 
-class JackieAddress;
 class UInt24;
-class JackieGUID;
 class JackieString;
 
-typedef UInt32 BitSize;
-typedef UInt32 ByteSize;
+GECO_NET_BEGIN_NSPACE
 
-/// This class allows you to write and read native types as a string of bits.  
-/// the value of @mWritePosBits always reprsents 
-/// the position where a bit is going to be written(not been written yet)
-/// the value of @mReadPosBits always reprsents 
-/// the position where a bit is going to be read(not been read yet)
-/// both of them will start to cout at index of 0, 
-/// so mWritePosBits = 2 means the first 2 bits has been written, the third bit is
-/// being written (not been written yet)
-/// so mReadPosBits = 2 means the first 2 bits has been read, the third bit is
-/// being read (not been read yet)
-/// |<-------data[0]------->|     |<---------data[0]------->|           
-///+++++++++++++++++++++++++++++++++++
-/// | 0 |  1 | 2 | 3 |  4 | 5 |  6 | 7 | 8 |  9 |10 |11 |12 |13 |14 | 15 |   bit index
-///+++++++++++++++++++++++++++++++++++
-/// | 0 |  0 | 0 | 1 |  0 | 0 |  0 | 0 | 1 |  0 |  0 |  0 |  0  |  0 |  0 |   0 |  bit in memory
-///+++++++++++++++++++++++++++++++++++
-///              ^                                                       ^
-/// for example, @mWritePosBits = 12, @mReadPosBits = 2,
-/// base on draw above, all the unwritten bits are 0000 (index 12,13,14,15), 
-/// all the unread bits are 10 bits (0100001000, index 2,3,4,5,6,7,8,9,10,11),
-/// we can calculate:
-/// @the index of the byte that @mReadPosBits points to is 
-/// 0 = @mReadPosBits >> 3 = 2/8 = index 0, data[0]
-/// @the index of the byte that @mWritePosBits points to is 
-/// 1 = @mWritePosBits >> 3 = 12/8 = index 1, data[1]
-/// @the offset for mReadPosBits to the byte boundary = mReadPosBits mod 8
-/// =  mReadPosBits & 7 = 2 &7 = 2 bits (00, index 0,1) 
-/// @the offset for mWritePosBits to the byte boundary  = mWritePosBits mod 8 
-/// =  mWritePosBits & 7 = 12 &7 = 4 bits (1000, index 8,9,10,11) 
-/// @BITS_TO_BYTES(mWritePosBits[bit at index 12 is exclusive ]) 
-/// = (12+7) >> 3 = 19/8 = 2( also is the number of written bytes)
-/// BITS_TO_BYTES(8[bit at index 8 is exclusive ])  = 
-/// (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
+//! This class allows you to write and read native types as a string of bits.  
+//! the value of @mWritePosBits always reprsents 
+//! the position where a bit is going to be written(not been written yet)
+//! the value of @mReadPosBits always reprsents 
+//! the position where a bit is going to be read(not been read yet)
+//! both of them will start to cout at index of 0, 
+//! so mWritePosBits = 2 means the first 2 bits has been written, the third bit is
+//! being written (not been written yet)
+//! so mReadPosBits = 2 means the first 2 bits has been read, the third bit is
+//! being read (not been read yet)
+//! |<-------data[0]------->|     |<---------data[0]------->|           
+//!+++++++++++++++++++++++++++++++++++
+//! | 0 |  1 | 2 | 3 |  4 | 5 |  6 | 7 | 8 |  9 |10 |11 |12 |13 |14 | 15 |   bit index
+//!+++++++++++++++++++++++++++++++++++
+//! | 0 |  0 | 0 | 1 |  0 | 0 |  0 | 0 | 1 |  0 |  0 |  0 |  0  |  0 |  0 |   0 |  bit in memory
+//!+++++++++++++++++++++++++++++++++++
+//!              ^                                                       ^
+//! for example, @mWritePosBits = 12, @mReadPosBits = 2,
+//! base on draw above, all the unwritten bits are 0000 (index 12,13,14,15), 
+//! all the unread bits are 10 bits (0100001000, index 2,3,4,5,6,7,8,9,10,11),
+//! we can calculate:
+//! @the index of the byte that @mReadPosBits points to is 
+//! 0 = @mReadPosBits >> 3 = 2/8 = index 0, data[0]
+//! @the index of the byte that @mWritePosBits points to is 
+//! 1 = @mWritePosBits >> 3 = 12/8 = index 1, data[1]
+//! @the offset for mReadPosBits to the byte boundary = mReadPosBits mod 8
+//! =  mReadPosBits & 7 = 2 &7 = 2 bits (00, index 0,1) 
+//! @the offset for mWritePosBits to the byte boundary  = mWritePosBits mod 8 
+//! =  mWritePosBits & 7 = 12 &7 = 4 bits (1000, index 8,9,10,11) 
+//! @BITS_TO_BYTES(mWritePosBits[bit at index 12 is exclusive ]) 
+//! = (12+7) >> 3 = 19/8 = 2( also is the number of written bytes)
+//! BITS_TO_BYTES(8[bit at index 8 is exclusive ])  = 
+//! (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
 class GECO_EXPORT MemeoryStream
 {
+    public:
+    typedef UInt32 BitSize;
+    typedef UInt32 ByteSize;
+
     private:
     BitSize mBitsAllocSize;
     BitSize mWritingPosBits;
     BitSize mReadingPosBits;
     UInt8 *data;
 
-    /// true if @data is pointint to heap-memory pointer, 
-    /// false if it is stack-memory  pointer
+    //! true if @data is pointint to heap-memory pointer, 
+    //! false if it is stack-memory  pointer
     bool mNeedFree;
 
-    /// true if writting not allowed in which case all write functions will not work
-    /// false if writting is allowed 
+    //! true if writting not allowed in which case all write functions will not work
+    //! false if writting is allowed 
     bool mReadOnly;
     UInt8 mStacBuffer[GECO_STREAM_STACK_ALLOC_SIZE];
 
@@ -99,39 +100,40 @@ class GECO_EXPORT MemeoryStream
     }
 
     public:
-    GECO_STATIC_FACTORY_DECL(MemeoryStream);
+    static MemeoryStream* GetInstance(void);
+    static void DestroyInstance(MemeoryStream *i);
 
-    /// @Param [in] [ BitSize initialBytesAllocate]:
-    /// the number of bytes to pre-allocate.
-    /// @Remarks:
-    /// Create the JackieBits, with some number of bytes to immediately
-    /// allocate. There is no benefit to calling this, unless you know exactly
-    /// how many bytes you need and it is greater than 256.
-    /// @Author mengdi[Jackie]
+    //! @Param [in] [ BitSize initialBytesAllocate]:
+    //! the number of bytes to pre-allocate.
+    //! @Remarks:
+    //! Create the JackieBits, with some number of bytes to immediately
+    //! allocate. There is no benefit to calling this, unless you know exactly
+    //! how many bytes you need and it is greater than 256.
+    //! @Author mengdi[Jackie]
     MemeoryStream(const BitSize initialBytesAllocate);
 
-    /// @brief  Initialize by setting the @data to a predefined pointer.
-    /// @access  public  
-    /// @param [in] [UInt8 * src]  
-    /// @param [in] [const  ByteSize len]  unit of byte
-    /// @param [in] [bool copy]  
-    /// true to make an deep copy of the @src . 
-    /// false to just save a pointer to the @src.
-    /// @remarks
-    /// 99% of the time you will use this function to read Packet:;data, 
-    /// in which case you should write something as follows:
-    /// JACKIE_INET::JackieStream js(packet->data, packet->length, false);
-    /// @author mengdi[Jackie]
+    //! @brief  Initialize by setting the @data to a predefined pointer.
+    //! @access  public  
+    //! @param [in] [UInt8 * src]  
+    //! @param [in] [const  ByteSize len]  unit of byte
+    //! @param [in] [bool copy]  
+    //! true to make an deep copy of the @src . 
+    //! false to just save a pointer to the @src.
+    //! @remarks
+    //! 99% of the time you will use this function to read Packet:;data, 
+    //! in which case you should write something as follows:
+    //! JACKIE_INET::JackieStream js(packet->data, packet->length, false);
+    //! @author mengdi[Jackie]
     MemeoryStream(UInt8* src, const ByteSize len, bool copy = false);
 
-    /// DEFAULT CTOR
+    //! DEFAULT CTOR
     MemeoryStream();
 
-    /// realloc and free are more efficient than delete and new  
-    /// because it will not call ctor and dtor
+    //! realloc and free are more efficient than delete and new  
+    //! because it will not call ctor and dtor
     ~MemeoryStream();
 
-    /// Getters and Setters
+    //! Getters and Setters
     BitSize WritePosBits() const { return mWritingPosBits; }
     BitSize WritePosByte() const { return BITS_TO_BYTES(mWritingPosBits); }
     BitSize ReadPosBits() const { return mReadingPosBits; }
@@ -142,78 +144,78 @@ class GECO_EXPORT MemeoryStream
     void ReadPosBits(BitSize val) { mReadingPosBits = val; }
     void BitsAllocSize(BitSize val) { mBitsAllocSize = val; }
 
-    /// @Brief  Resets for reuse.
-    /// @Access  public  
-    /// @Notice
-    /// Do NOT reallocate memory because JackieStream is used
-    /// to serialize/deserialize a buffer. Reallocation is a dangerous 
-    /// operation (may result in leaks).
-    /// @author mengdi[Jackie]
+    //! @Brief  Resets for reuse.
+    //! @Access  public  
+    //! @Notice
+    //! Do NOT reallocate memory because JackieStream is used
+    //! to serialize/deserialize a buffer. Reallocation is a dangerous 
+    //! operation (may result in leaks).
+    //! @author mengdi[Jackie]
     inline void Reset(void) { mWritingPosBits = mReadingPosBits = 0; }
 
-    ///@brief Sets the read pointer back to the beginning of your data.
-    /// @access public
-    /// @author mengdi[Jackie]
+    //!@brief Sets the read pointer back to the beginning of your data.
+    //! @access public
+    //! @author mengdi[Jackie]
     inline void ResetReadPosBits(void)
     {
         mReadingPosBits = 0;
     }
 
-    /// @brief Sets the write pointer back to the beginning of your data.
-    /// @access public
-    /// @author mengdi[Jackie]
+    //! @brief Sets the write pointer back to the beginning of your data.
+    //! @access public
+    //! @author mengdi[Jackie]
     inline void ResetWritePosBits(void)
     {
         mWritingPosBits = 0;
     }
 
-    /// @brief this is good to call when you are done with the stream to make
-    /// sure you didn't leave any data left over void
-    /// should hit if reads didn't match writes
-    /// @access public
-    /// @author mengdi[Jackie]
+    //! @brief this is good to call when you are done with the stream to make
+    //! sure you didn't leave any data left over void
+    //! should hit if reads didn't match writes
+    //! @access public
+    //! @author mengdi[Jackie]
     inline void AssertStreamEmpty(void)
     {
-        CHECK(mReadingPosBits == mWritingPosBits);
+        assert(mReadingPosBits == mWritingPosBits);
     }
 
-    ///@brief payload are actually the unread bits
-    /// @access public 
+    //!@brief payload are actually the unread bits
+    //! @access public 
     inline BitSize GetPayLoadBits(void) const
     {
         return mWritingPosBits - mReadingPosBits;
     }
 
-    ///@brief the number of bytes needed to  hold all the written bits 
-    /// @access public 
-    ///@notice
-    /// particial byte is also accounted and the bit at index @param 
-    /// mWritePosBits is exclusive). 
-    /// if mWritingPosBits =12, will need 2 bytes to hold 12 written bits (6 bits wasted)
-    /// if mWritingPosBits = 8, will need 1 byte to hold 8 written bits (0 bits wasted)
-    /// @author mengdi[Jackie]
+    //!@brief the number of bytes needed to  hold all the written bits 
+    //! @access public 
+    //!@notice
+    //! particial byte is also accounted and the bit at index @param 
+    //! mWritePosBits is exclusive). 
+    //! if mWritingPosBits =12, will need 2 bytes to hold 12 written bits (6 bits wasted)
+    //! if mWritingPosBits = 8, will need 1 byte to hold 8 written bits (0 bits wasted)
+    //! @author mengdi[Jackie]
     inline ByteSize GetWrittenBytesCount(void) const
     {
         return BITS_TO_BYTES(mWritingPosBits);
     }
 
-    /// @brief get the number of written bits
-    /// will return same value to that of WritePosBits()
-    /// @access public
-    /// @author mengdi[Jackie]
+    //! @brief get the number of written bits
+    //! will return same value to that of WritePosBits()
+    //! @access public
+    //! @author mengdi[Jackie]
     inline BitSize GetWrittenBitsCount(void) const { return mWritingPosBits; }
 
-    /// @method SerializeFloat16
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// writeBitstream true to write from your data to this bitstream. 
-    /// False to read from this bitstream and write to your data
-    /// @param [in] float & inOutFloat  The float to write
-    /// @param [in] float floatMin Predetermined minimum value of f
-    /// @param [in] float floatMax Predetermined maximum value of f
-    /// @brief Serialize a float into 2 bytes, spanning the range 
-    /// between @param floatMin and @param floatMax
+    //! @method SerializeFloat16
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! writeBitstream true to write from your data to this bitstream. 
+    //! False to read from this bitstream and write to your data
+    //! @param [in] float & inOutFloat  The float to write
+    //! @param [in] float floatMin Predetermined minimum value of f
+    //! @param [in] float floatMax Predetermined maximum value of f
+    //! @brief Serialize a float into 2 bytes, spanning the range 
+    //! between @param floatMin and @param floatMax
     inline void SerializeFloatRange16Bits(bool writeBitstream, float &inOutFloat,
         float floatMin, float floatMax)
     {
@@ -231,17 +233,17 @@ class GECO_EXPORT MemeoryStream
     //		Read(inOutFloat, floatMin, floatMax);
     //}
 
-    /// @method Serialize
-    /// @access public 
-    /// @brief  
-    /// bidirectional serialize/deserialize an array or casted stream or raw data.  
-    /// This does NOT do endian swapping.
-    /// @param[in] writeBitstream 
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param[in] inOutByteArray a byte buffer
-    /// @param[in] numberOfBytes the size of @a input in bytes
-    /// @return void
+    //! @method Serialize
+    //! @access public 
+    //! @brief  
+    //! bidirectional serialize/deserialize an array or casted stream or raw data.  
+    //! This does NOT do endian swapping.
+    //! @param[in] writeBitstream 
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param[in] inOutByteArray a byte buffer
+    //! @param[in] numberOfBytes the size of @a input in bytes
+    //! @return void
     inline void Serialize(bool writeBitstream, Int8* inOutByteArray,
         const UInt32 numberOfBytes)
     {
@@ -251,16 +253,16 @@ class GECO_EXPORT MemeoryStream
             Read(inOutByteArray, numberOfBytes);
     }
 
-    /// @method Serialize
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.
-    /// false to read from this bitstream and write to your data
-    /// @param [in] templateType & inOutTemplateVar The value to write
-    /// @brief bidirectional serialize/deserialize any integral type to/from a bitstream.
-    /// undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
-    /// for float and double,  use SerializeMini()
+    //! @method Serialize
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.
+    //! false to read from this bitstream and write to your data
+    //! @param [in] templateType & inOutTemplateVar The value to write
+    //! @brief bidirectional serialize/deserialize any integral type to/from a bitstream.
+    //! undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    //! for float and double,  use SerializeMini()
     template <class templateType>
     inline void Serialize(bool writeBitstream,
         templateType &inOutTemplateVar)
@@ -271,19 +273,19 @@ class GECO_EXPORT MemeoryStream
             Read(inOutTemplateVar);
     }
 
-    /// @method SerializeChangedValue
-    /// @access public 
-    /// @param[in] writeBitstream 
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param[in] inOutCurrentValue The current value to write
-    /// @param[in] lastValue The last value to compare against.  
-    /// only used if @a writeBitstream is true.
-    /// @return void
-    /// @brief Bidirectional serialize/deserialize any integral type to/from a bitstream. 
-    /// @notice 
-    /// If the current value is different from the last value
-    /// the current value will be written. Otherwise, a single bit will be written
+    //! @method SerializeChangedValue
+    //! @access public 
+    //! @param[in] writeBitstream 
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param[in] inOutCurrentValue The current value to write
+    //! @param[in] lastValue The last value to compare against.  
+    //! only used if @a writeBitstream is true.
+    //! @return void
+    //! @brief Bidirectional serialize/deserialize any integral type to/from a bitstream. 
+    //! @notice 
+    //! If the current value is different from the last value
+    //! the current value will be written. Otherwise, a single bit will be written
     template <class IntegralType>
     inline void SerializeChangedValue(bool writeBitstream, IntegralType &inOutCurrentValue, const IntegralType &lastValue)
     {
@@ -293,14 +295,14 @@ class GECO_EXPORT MemeoryStream
             ReadChangedValue(inOutCurrentValue);
     }
 
-    /// @method SerializeChangedValue
-    /// @access public 
-    /// @param[in] inOutCurrentValue The current value to write
-    /// @return void
-    /// @brief  when you don't know what the last value is, or there is no last value.
-    /// @param[in] writeBitstream
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
+    //! @method SerializeChangedValue
+    //! @access public 
+    //! @param[in] inOutCurrentValue The current value to write
+    //! @return void
+    //! @brief  when you don't know what the last value is, or there is no last value.
+    //! @param[in] writeBitstream
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
     template <class IntegralType>
     inline void SerializeChangedValue(bool writeBitstream, IntegralType &Value)
     {
@@ -311,21 +313,21 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method SerializeMini
-    /// @access public 
-    /// @returns void
-    /// @template BasicType all integral types plus all floating types
-    /// @param [in] bool writeBitstream
-    /// @param [in] templateType & inOutTemplateVar
-    /// @brief  
-    /// bidirectional serialize/deserialize any basic type to/from a bitstream.
-    /// undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
-    /// @notice in case of floating type, 
-    /// for floating-point part, this is lossy, using 2 bytes for a float and 4 for a double.
-    /// the range must be between -1 and +1. For non-floating-point part, 
-    /// this is lossless, but only has benefit if you use less than half the bits of the type.
-    /// if you are not using DO_NOT_SWAP_ENDIAN the opposite is true for types 
-    /// larger than 1 byte
+    //! @method SerializeMini
+    //! @access public 
+    //! @returns void
+    //! @template BasicType all integral types plus all floating types
+    //! @param [in] bool writeBitstream
+    //! @param [in] templateType & inOutTemplateVar
+    //! @brief  
+    //! bidirectional serialize/deserialize any basic type to/from a bitstream.
+    //! undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    //! @notice in case of floating type, 
+    //! for floating-point part, this is lossy, using 2 bytes for a float and 4 for a double.
+    //! the range must be between -1 and +1. For non-floating-point part, 
+    //! this is lossless, but only has benefit if you use less than half the bits of the type.
+    //! if you are not using DO_NOT_SWAP_ENDIAN the opposite is true for types 
+    //! larger than 1 byte
     template <class BasicType>
     inline void SerializeMini(bool writeBitstream, BasicType &inOutTemplateVar)
     {
@@ -335,25 +337,25 @@ class GECO_EXPORT MemeoryStream
             ReadMini(inOutTemplateVar);
     }
 
-    /// @method SerializeMini
-    /// @access public 
-    /// @returns void
-    /// @template BasicType all integral types plus all floating types
-    /// @param[in] writeBitstream true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param[in] currValue The current value to be written or to be read
-    /// @param[in] lastValue The last value to compare against to be written  
-    /// Only used if @param writeBitstream is true.
-    /// @brief 
-    /// Bidirectional serialize/deserialize any integral type to/from a bitstream.  
-    /// If the current value is different from the last value
-    /// the current value will be written.  Otherwise, a single bit will be written
-    /// @notice
-    /// For floating point, this is lossy, using 2 bytes for a float and 4 for a double.  
-    /// The range must be between -1 and +1.
-    /// For non-floating point, this is lossless, but only has benefit if you use less than
-    /// half the bits of the type.  If you are not using DO_NOT_SWAP_ENDIAN the 
-    /// opposite is true for types larger than 1 byte
+    //! @method SerializeMini
+    //! @access public 
+    //! @returns void
+    //! @template BasicType all integral types plus all floating types
+    //! @param[in] writeBitstream true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param[in] currValue The current value to be written or to be read
+    //! @param[in] lastValue The last value to compare against to be written  
+    //! Only used if @param writeBitstream is true.
+    //! @brief 
+    //! Bidirectional serialize/deserialize any integral type to/from a bitstream.  
+    //! If the current value is different from the last value
+    //! the current value will be written.  Otherwise, a single bit will be written
+    //! @notice
+    //! For floating point, this is lossy, using 2 bytes for a float and 4 for a double.  
+    //! The range must be between -1 and +1.
+    //! For non-floating point, this is lossless, but only has benefit if you use less than
+    //! half the bits of the type.  If you are not using DO_NOT_SWAP_ENDIAN the 
+    //! opposite is true for types larger than 1 byte
     template <class BasicType>
     inline void SerializeMiniChangedValue(bool writeBitstream,
         BasicType &currValue, const BasicType &lastValue)
@@ -374,21 +376,21 @@ class GECO_EXPORT MemeoryStream
             ReadMiniChanged(currValue);
     }
 
-    /// @method SerializeCasted
-    /// @access public 
-    /// @returns void
-    /// @template serializationType all integral types plus all floating types dest type
-    /// @template sourceType all integral types plus all floating types src type
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param [in] sourceType & value
-    /// @brief Serialize one type casted to another (smaller) type, to save bandwidth
-    /// serializationType should be uint8, uint16, uint24, or uint32
-    /// @use
-    /// would use 1 byte to write what would otherwise be an integer(4 or 8 bytes)
-    /// int num=53; SerializeCasted<uint8>(true, num); 
-    /// uint8 val; SerializeCasted<uint8>(false, val);
+    //! @method SerializeCasted
+    //! @access public 
+    //! @returns void
+    //! @template serializationType all integral types plus all floating types dest type
+    //! @template sourceType all integral types plus all floating types src type
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param [in] sourceType & value
+    //! @brief Serialize one type casted to another (smaller) type, to save bandwidth
+    //! serializationType should be uint8, uint16, uint24, or uint32
+    //! @use
+    //! would use 1 byte to write what would otherwise be an integer(4 or 8 bytes)
+    //! int num=53; SerializeCasted<uint8>(true, num); 
+    //! uint8 val; SerializeCasted<uint8>(false, val);
     template <class serializationType, class sourceType >
     void SerializeCasted(bool writeBitstream, sourceType &value)
     {
@@ -398,39 +400,39 @@ class GECO_EXPORT MemeoryStream
             ReadCasted<serializationType>(value);
     }
 
-    /// @method SerializeIntegerRange
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream 
-    /// true to write from your data to this bitstream.
-    /// false to read from this bitstream and write to your data
-    /// @param [in] templateType & value  Integer value to write, 
-    /// which should be between @paramminimum and @param maximum
-    /// @param [in] const templateType minimum best to use global const
-    /// @param [in] const templateType maximum best to use global const
-    /// @param [in] bool allowOutsideRange
-    /// If true, all sends will take an extra bit, however value can deviate
-    /// from outside @param minimum and @param maximum.
-    /// If false, will assert if the value deviates
-    /// @brief Given the minimum and maximum values for an integer type,
-    /// figure out the minimum number of bits to represent the range
-    /// Then serialize only those bits, smaller the difference is, less bits to use,
-    /// no matter how big the max or mini is, best to send and recv huge numbers,
-    /// like 666666666, SerializeMini() will not work well in such case,
-    /// @notice
-    /// A static is used so that the required number of bits for
-    /// (maximum - minimum) is only calculated once.This does require that
-    /// @param minimum and @param maximum are fixed values for a 
-    /// given line of code  for the life of the program
-    /// @use 
-    /// const uint64 MAX_VALUE = 1000000000;
-    /// const uint64 Mini_VALUE = 999999900;
-    /// uint64 currVal = 999999966; 
-    /// SerializeIntegerRange(true, currVal, MAX_VALUE, Mini_VALUE);
-    /// uint64 Val;
-    /// SerializeIntegerRange(fals, Val, MAX_VALUE, Mini_VALUE);
-    /// the sample above will use 7 bits (128) instead of 8 bytes
-    /// if you use SerializeMini(), will also use 8 bytes for no all zero byte to compress 
+    //! @method SerializeIntegerRange
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream 
+    //! true to write from your data to this bitstream.
+    //! false to read from this bitstream and write to your data
+    //! @param [in] templateType & value  Integer value to write, 
+    //! which should be between @paramminimum and @param maximum
+    //! @param [in] const templateType minimum best to use global const
+    //! @param [in] const templateType maximum best to use global const
+    //! @param [in] bool allowOutsideRange
+    //! If true, all sends will take an extra bit, however value can deviate
+    //! from outside @param minimum and @param maximum.
+    //! If false, will assert if the value deviates
+    //! @brief Given the minimum and maximum values for an integer type,
+    //! figure out the minimum number of bits to represent the range
+    //! Then serialize only those bits, smaller the difference is, less bits to use,
+    //! no matter how big the max or mini is, best to send and recv huge numbers,
+    //! like 666666666, SerializeMini() will not work well in such case,
+    //! @notice
+    //! A static is used so that the required number of bits for
+    //! (maximum - minimum) is only calculated once.This does require that
+    //! @param minimum and @param maximum are fixed values for a 
+    //! given line of code  for the life of the program
+    //! @use 
+    //! const uint64 MAX_VALUE = 1000000000;
+    //! const uint64 Mini_VALUE = 999999900;
+    //! uint64 currVal = 999999966; 
+    //! SerializeIntegerRange(true, currVal, MAX_VALUE, Mini_VALUE);
+    //! uint64 Val;
+    //! SerializeIntegerRange(fals, Val, MAX_VALUE, Mini_VALUE);
+    //! the sample above will use 7 bits (128) instead of 8 bytes
+    //! if you use SerializeMini(), will also use 8 bytes for no all zero byte to compress 
     template <class IntegerType>
     void SerializeIntegerRange(bool writeBitstream,
         IntegerType &value,
@@ -451,7 +453,7 @@ class GECO_EXPORT MemeoryStream
         else
             ReadIntegerRange(value, minimum, maximum, allowOutsideRange);
     }
-    /// \param[in] requiredBits Primarily for internal use, called from above function() after calculating number of bits needed to represent maximum-minimum
+    //! \param[in] requiredBits Primarily for internal use, called from above function() after calculating number of bits needed to represent maximum-minimum
     //template <class templateType>
     //bool SerializeIntegerRange(bool writeBitstream, templateType &value, const templateType minimum, const templateType maximum, const int requiredBits, bool allowOutsideRange = false)
     //{
@@ -463,21 +465,21 @@ class GECO_EXPORT MemeoryStream
     //		requiredBits, allowOutsideRange);
     //}
 
-    /// @method SerializeNormVector
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param [in] templateType & x
-    /// @param [in] templateType & y
-    /// @param [in] templateType & z
-    /// @brief bidirectional serialize/deserialize a normalized 3D vector,
-    /// using (at most) 4 bytes + 3 bits instead of 12-24 bytes. 
-    /// will further compress y or z axis aligned vectors.
-    /// Accurate to 1/32767.5.
-    /// @notice
-    /// templateType for this function must be a float or double
+    //! @method SerializeNormVector
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param [in] templateType & x
+    //! @param [in] templateType & y
+    //! @param [in] templateType & z
+    //! @brief bidirectional serialize/deserialize a normalized 3D vector,
+    //! using (at most) 4 bytes + 3 bits instead of 12-24 bytes. 
+    //! will further compress y or z axis aligned vectors.
+    //! Accurate to 1/32767.5.
+    //! @notice
+    //! templateType for this function must be a float or double
     template <class templateType>
     void SerializeNormVector(bool writeBitstream,
         templateType &x, templateType &y, templateType &z)
@@ -489,21 +491,21 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method SerializeVector
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param [in] templateType & x
-    /// @param [in] templateType & y
-    /// @param [in] templateType & z
-    /// @brief 
-    /// bidirectional serialize/deserialize a vector, using 10 bytes instead of 12.
-    /// loses accuracy to about 3 / 10ths and only saves 2 bytes, 
-    /// so only use if accuracy is not important.
-    /// @notice
-    /// templateType for this function must be a float or double
+    //! @method SerializeVector
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param [in] templateType & x
+    //! @param [in] templateType & y
+    //! @param [in] templateType & z
+    //! @brief 
+    //! bidirectional serialize/deserialize a vector, using 10 bytes instead of 12.
+    //! loses accuracy to about 3 / 10ths and only saves 2 bytes, 
+    //! so only use if accuracy is not important.
+    //! @notice
+    //! templateType for this function must be a float or double
     template <class templateType>
     void SerializeVector(bool writeBitstream,
         templateType &x, templateType &y, templateType &z)
@@ -515,20 +517,20 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method SerializeNormQuat
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param [in] templateType & x
-    /// @param [in] templateType & y
-    /// @param [in] templateType & z
-    /// @brief 
-    /// bidirectional serialize / deserialize a normalized quaternion
-    /// in 6 bytes + 4 bits instead of 16 bytes.Slightly lossy.
-    /// @notice
-    /// templateType for this function must be a float or double
+    //! @method SerializeNormQuat
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param [in] templateType & x
+    //! @param [in] templateType & y
+    //! @param [in] templateType & z
+    //! @brief 
+    //! bidirectional serialize / deserialize a normalized quaternion
+    //! in 6 bytes + 4 bits instead of 16 bytes.Slightly lossy.
+    //! @notice
+    //! templateType for this function must be a float or double
     template <class templateType>
     void SerializeNormQuat(bool writeBitstream,
         templateType &w, templateType &x, templateType &y, templateType &z)
@@ -540,22 +542,22 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method SerializeOrthMatrix
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.  
-    /// false to read from this bitstream and write to your data
-    /// @param [in] templateType & x
-    /// @param [in] templateType & y
-    /// @param [in] templateType & z
-    /// @brief 
-    /// bidirectional serialize / deserialize an orthogonal matrix by creating a 
-    /// quaternion, and writing 3 components of the quaternion in 2 bytes each.
-    /// use 6 bytes instead of 36, 
-    /// @notice
-    /// templateType for this function must be a float or double
-    /// lossy, although the result is renormalized
+    //! @method SerializeOrthMatrix
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.  
+    //! false to read from this bitstream and write to your data
+    //! @param [in] templateType & x
+    //! @param [in] templateType & y
+    //! @param [in] templateType & z
+    //! @brief 
+    //! bidirectional serialize / deserialize an orthogonal matrix by creating a 
+    //! quaternion, and writing 3 components of the quaternion in 2 bytes each.
+    //! use 6 bytes instead of 36, 
+    //! @notice
+    //! templateType for this function must be a float or double
+    //! lossy, although the result is renormalized
     template <class templateType>
     void SerializeOrthMatrix(
         bool writeBitstream,
@@ -570,25 +572,25 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method SerializeBits
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool writeBitstream
-    /// true to write from your data to this bitstream.
-    /// false to read from this bitstream and write to your data
-    /// @param [in] UInt8 * inOutByteArray
-    /// @param [in] const BitSize numberOfBitsSerialize
-    /// @param [in] const bool rightAlignedBits
-    /// @brief
-    /// @notice
-    /// from the right (bit 0) rather than the left (as in the normal
-    /// internal representation) You would set this to true when
-    /// writing user data, and false when copying bitstream data, such
-    /// as writing one bitstream to another
-    /// @remarks
-    /// right aligned data means in the case of a partial byte, 
-    /// the bits are aligned right
-    /// @see
+    //! @method SerializeBits
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool writeBitstream
+    //! true to write from your data to this bitstream.
+    //! false to read from this bitstream and write to your data
+    //! @param [in] UInt8 * inOutByteArray
+    //! @param [in] const BitSize numberOfBitsSerialize
+    //! @param [in] const bool rightAlignedBits
+    //! @brief
+    //! @notice
+    //! from the right (bit 0) rather than the left (as in the normal
+    //! internal representation) You would set this to true when
+    //! writing user data, and false when copying bitstream data, such
+    //! as writing one bitstream to another
+    //! @remarks
+    //! right aligned data means in the case of a partial byte, 
+    //! the bits are aligned right
+    //! @see
     void SerializeBits(bool writeBitstream,
         UInt8* inOutByteArray,
         const BitSize numberOfBitsSerialize,
@@ -603,61 +605,61 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method AlignReadPosBitsByteBoundary
-    /// @access public 
-    /// @returns void
-    /// @param [in] void
-    /// @brief align the next read to a byte boundary.  
-    /// @notice
-    /// this can be used to 'waste' bits to byte align for efficiency reasons It
-    /// can also be used to force coalesced bitstreams to start on byte
-    /// boundaries so so WriteAlignedBits and ReadAlignedBits both
-    /// calculate the same offset when aligning.
-    /// @see
+    //! @method AlignReadPosBitsByteBoundary
+    //! @access public 
+    //! @returns void
+    //! @param [in] void
+    //! @brief align the next read to a byte boundary.  
+    //! @notice
+    //! this can be used to 'waste' bits to byte align for efficiency reasons It
+    //! can also be used to force coalesced bitstreams to start on byte
+    //! boundaries so so WriteAlignedBits and ReadAlignedBits both
+    //! calculate the same offset when aligning.
+    //! @see
     inline void AlignReadPosBitsByteBoundary(void)
     {
         mReadingPosBits += 8 - (((mReadingPosBits - 1) & 7) + 1);
     }
 
 
-    /// @method Read
-    /// @access public 
-    /// @returns void
-    /// @param [in] Int8 * output 
-    /// The result byte array. It should be larger than @em numberOfBytes.
-    /// @param [in] const unsigned int numberOfBytes  The number of byte to read
-    /// @brief Read an array of raw data or casted stream of byte.
-    /// @notice The array is raw data. 
-    /// There is no automatic endian conversion with this function
+    //! @method Read
+    //! @access public 
+    //! @returns void
+    //! @param [in] Int8 * output 
+    //! The result byte array. It should be larger than @em numberOfBytes.
+    //! @param [in] const unsigned int numberOfBytes  The number of byte to read
+    //! @brief Read an array of raw data or casted stream of byte.
+    //! @notice The array is raw data. 
+    //! There is no automatic endian conversion with this function
     void Read(Int8* output, const unsigned int numberOfBytes)
     {
         ReadBits((UInt8*)output, BYTES_TO_BITS(numberOfBytes));
     }
 
 
-    /// @func   ReadBits
-    /// @brief   Read numbers of bit into dest array
-    /// @access public
-    /// @param [out] [unsigned UInt8 * dest]  The destination array
-    /// @param [in] [BitSize bitsRead] The number of bits to read
-    /// @param [in] [const bool alignRight]  If true bits will be right aligned
-    /// @returns void
-    /// @remarks
-    /// 1.jackie stream internal data are aligned to the left side of byte boundary.
-    /// 2.user data are aligned to the right side of byte boundary.
-    /// @notice
-    /// 1.use True to read to user data 
-    /// 2.use False to read this stream to another stream 
-    /// @author mengdi[Jackie]
+    //! @func   ReadBits
+    //! @brief   Read numbers of bit into dest array
+    //! @access public
+    //! @param [out] [unsigned UInt8 * dest]  The destination array
+    //! @param [in] [BitSize bitsRead] The number of bits to read
+    //! @param [in] [const bool alignRight]  If true bits will be right aligned
+    //! @returns void
+    //! @remarks
+    //! 1.jackie stream internal data are aligned to the left side of byte boundary.
+    //! 2.user data are aligned to the right side of byte boundary.
+    //! @notice
+    //! 1.use True to read to user data 
+    //! 2.use False to read this stream to another stream 
+    //! @author mengdi[Jackie]
     void ReadBits(UInt8 *dest, BitSize bitsRead, bool alignRight = true);
 
 
-    /// @method Read
-    /// @access public 
-    /// @returns void
-    /// @param [in] IntegralType & outTemplateVar
-    /// @brief Read any integral type from a bitstream.  
-    /// Define DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    //! @method Read
+    //! @access public 
+    //! @returns void
+    //! @param [in] IntegralType & outTemplateVar
+    //! @brief Read any integral type from a bitstream.  
+    //! Define DO_NOT_SWAP_ENDIAN if you need endian swapping.
     template <class IntegralType>
     inline void Read(IntegralType &dest)
     {
@@ -681,11 +683,11 @@ class GECO_EXPORT MemeoryStream
 #endif
         }
     }
-    /// @method Read
-    /// @access public 
-    /// @returns void
-    /// @param [in] bool & dest The value to read
-    /// @brief  Read a bool from a bitstream.
+    //! @method Read
+    //! @access public 
+    //! @returns void
+    //! @param [in] bool & dest The value to read
+    //! @brief  Read a bool from a bitstream.
     template <>
     inline void Read(bool &dest)
     {
@@ -696,11 +698,11 @@ class GECO_EXPORT MemeoryStream
         dest = (data[mReadingPosBits >> 3] & (0x80 >> (mReadingPosBits & 7))) != 0;
         mReadingPosBits++;
     }
-    /// @method Read
-    /// @access public 
-    /// @returns void
-    /// @param [in] JackieAddress & dest The value to read
-    /// @brief Read a JackieAddress from a bitstream.
+    //! @method Read
+    //! @access public 
+    //! @returns void
+    //! @param [in] JackieAddress & dest The value to read
+    //! @brief Read a JackieAddress from a bitstream.
     template <>
     inline void Read(JackieAddress &dest)
     {
@@ -730,15 +732,15 @@ class GECO_EXPORT MemeoryStream
 #endif
         }
     }
-    /// @func Read 
-    /// @brief read three bytes into stream
-    /// @access  public  
-    /// @param [in] [const UInt24 & inTemplateVar]  
-    /// @return [void] 
-    /// @remark
-    /// @notice will align @mReadPosBIts to byte-boundary internally
-    /// @see  AlignReadPosBitsByteBoundary()
-    /// @author mengdi[Jackie]
+    //! @func Read 
+    //! @brief read three bytes into stream
+    //! @access  public  
+    //! @param [in] [const UInt24 & inTemplateVar]  
+    //! @return [void] 
+    //! @remark
+    //! @notice will align @mReadPosBIts to byte-boundary internally
+    //! @see  AlignReadPosBitsByteBoundary()
+    //! @author mengdi[Jackie]
     template <>
     inline void Read(UInt24 &dest)
     {
@@ -765,7 +767,7 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void Read(JackieString &outTemplateVar)
     {
-        outTemplateVar.Read(this);
+        //outTemplateVar.Read(this);
     }
     //template <>
     //inline bool Read(RakWString &outTemplateVar)
@@ -775,7 +777,7 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void Read(char *&varString)
     {
-        JackieString::Read(varString, this);
+        // JackieString::Read(varString, this);
     }
     //template <>
     //inline bool Read(wchar_t *&varString)
@@ -785,18 +787,18 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void Read(UInt8 *&varString)
     {
-        JackieString::Read((char*)varString, this);
+        // JackieString::Read((char*)varString, this);
     }
 
 
 
 
-    /// @brief Read any integral type from a bitstream.  
-    /// @details If the written value differed from the value 
-    /// compared against in the write function,
-    /// var will be updated.  Otherwise it will retain the current value.
-    /// ReadDelta is only valid from a previous call to WriteDelta
-    /// @param[in] outTemplateVar The value to read
+    //! @brief Read any integral type from a bitstream.  
+    //! @details If the written value differed from the value 
+    //! compared against in the write function,
+    //! var will be updated.  Otherwise it will retain the current value.
+    //! ReadDelta is only valid from a previous call to WriteDelta
+    //! @param[in] outTemplateVar The value to read
     template <class IntegralType>
     inline void ReadChangedValue(IntegralType &dest)
     {
@@ -806,8 +808,8 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @brief Read a bool from a bitstream.
-    /// @param[in] outTemplateVar The value to read
+    //! @brief Read a bool from a bitstream.
+    //! @param[in] outTemplateVar The value to read
     template <>
     inline void ReadChangedValue(bool &dest)
     {
@@ -815,22 +817,22 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @Brief Assume the input source points to a compressed native type. 
-    /// Decompress and read it.
+    //! @Brief Assume the input source points to a compressed native type. 
+    //! Decompress and read it.
     void ReadMini(UInt8* dest, const BitSize bits2Read, const bool isUnsigned);
 
 
-    /// @method ReadMini
-    /// @access public 
-    /// @returns void
-    /// @param [in] IntegralType & dest
-    /// @brief Read any integral type from a bitstream, 
-    /// endian swapping counters internally. default is unsigned (isUnsigned = true)
-    /// @notice
-    /// For floating point, this is lossy, using 2 bytes for a float and 4 for
-    /// a double.  The range must be between -1 and +1.
-    /// For non-floating point, this is lossless, but only has benefit if you 
-    /// use less than half the bits of the type
+    //! @method ReadMini
+    //! @access public 
+    //! @returns void
+    //! @param [in] IntegralType & dest
+    //! @brief Read any integral type from a bitstream, 
+    //! endian swapping counters internally. default is unsigned (isUnsigned = true)
+    //! @notice
+    //! For floating point, this is lossy, using 2 bytes for a float and 4 for
+    //! a double.  The range must be between -1 and +1.
+    //! For non-floating point, this is lossless, but only has benefit if you 
+    //! use less than half the bits of the type
     template <bool isUnsigned = UnSignedInteger, class IntegralType>
     inline void ReadMini(IntegralType &dest)
     {
@@ -873,14 +875,14 @@ class GECO_EXPORT MemeoryStream
     {
         Read(dest);
     }
-    template <> /// For values between -1 and 1
+    template <> //! For values between -1 and 1
     inline void ReadMini(float &dest)
     {
         UInt16 compressedFloat;
         ReadMini<UnSignedInteger>(compressedFloat);
         dest = ((float)compressedFloat / 32767.5f - 1.0f);
     }
-    template <> /// For values between -1 and 1
+    template <> //! For values between -1 and 1
     inline void ReadMini(double &dest)
     {
         UInt32 compressedFloat;
@@ -889,11 +891,11 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// For strings
+    //! For strings
     template <>
     inline void ReadMini(JackieString &outTemplateVar)
     {
-        outTemplateVar.ReadMini(this, false);
+        // outTemplateVar.ReadMini(this, false);
     }
     //template <>
     //inline void ReadMiniTo(RakWString &outTemplateVar)
@@ -903,7 +905,7 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void ReadMini(char *&outTemplateVar)
     {
-        JackieString::ReadMini(outTemplateVar, this, false);
+        // JackieString::ReadMini(outTemplateVar, this, false);
     }
     //template <>
     //inline void ReadMiniTo(wchar_t *&outTemplateVar)
@@ -913,11 +915,11 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void ReadMini(UInt8 *&outTemplateVar)
     {
-        JackieString::ReadMini((char*)outTemplateVar, this, false);
+        //JackieString::ReadMini((char*)outTemplateVar, this, false);
     }
 
-    /// @access public 
-    /// @brief
+    //! @access public 
+    //! @brief
     template <class srcType, class destType >
     void ReadCasted(destType &value)
     {
@@ -926,21 +928,21 @@ class GECO_EXPORT MemeoryStream
         value = (destType)val;
     }
 
-    /// @method ReadMiniChanged
-    /// @access public 
-    /// @returns void
-    /// @param [in] templateType & dest
-    /// @brief Read any integral type from a bitstream.  
-    /// If the written value differed from the value compared against in 
-    /// the write function, var will be updated.  Otherwise it will retain the
-    /// current value. the current value will be updated.
-    /// @notice
-    /// For floating point, this is lossy, using 2 bytes for a float and 4 for a 
-    /// double.  The range must be between -1 and +1. For non-floating point, 
-    /// this is lossless, but only has benefit if you use less than half the bits of the
-    /// type.  If you are not using DO_NOT_SWAP_ENDIAN the opposite is true for
-    /// types larger than 1 byte
-    /// @see
+    //! @method ReadMiniChanged
+    //! @access public 
+    //! @returns void
+    //! @param [in] templateType & dest
+    //! @brief Read any integral type from a bitstream.  
+    //! If the written value differed from the value compared against in 
+    //! the write function, var will be updated.  Otherwise it will retain the
+    //! current value. the current value will be updated.
+    //! @notice
+    //! For floating point, this is lossy, using 2 bytes for a float and 4 for a 
+    //! double.  The range must be between -1 and +1. For non-floating point, 
+    //! this is lossless, but only has benefit if you use less than half the bits of the
+    //! type.  If you are not using DO_NOT_SWAP_ENDIAN the opposite is true for
+    //! types larger than 1 byte
+    //! @see
     template <class IntegralType>
     inline void ReadMiniChanged(IntegralType &dest)
     {
@@ -950,8 +952,8 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @brief Read a bool from a bitstream.
-    /// @param[in] outTemplateVar The value to read
+    //! @brief Read a bool from a bitstream.
+    //! @param[in] outTemplateVar The value to read
     template <>
     inline void ReadMiniChanged(bool &dest)
     {
@@ -965,46 +967,46 @@ class GECO_EXPORT MemeoryStream
         const IntegerType maximum,
         bool allowOutsideRange = false)
     {
-        /// get the high byte bits size
+        //! get the high byte bits size
         IntegerType diff = maximum - minimum;
         int requiredBits = BYTES_TO_BITS(sizeof(IntegerType)) - GetLeadingZeroSize(diff);
         ReadIntegerRange(value, minimum, maximum, requiredBits, allowOutsideRange);
     }
 
 
-    /// @method ReadBitsIntegerRange
-    /// @access public 
-    /// @returns void
-    /// @param [in] templateType & value
-    /// @param [in] const templateType minimum
-    /// @param [in] const templateType maximum
-    /// @param [in] const int requiredBits the value of bits to read
-    /// @param [in] bool allowOutsideRange 
-    /// if true, we directly read it
-    /// @brief
-    /// @notice
-    /// This is how we write value
-    /// Assume@valueBeyondMini's value is 0x000012
-    ///------------------> Memory Address
-    ///+++++++++++
-    ///| 00 | 00 | 00 | 12 |  Big Endian
-    ///+++++++++++
-    ///+++++++++++
-    ///| 12 | 00 | 00 | 00 |  Little Endian 
-    ///+++++++++++
-    /// so for big endian, we need to reverse byte so that
-    /// the high byte of 0x00 that was put in low address can be written correctly
-    /// for little endian, we do nothing.
-    /// After reverse bytes:
-    ///+++++++++++
-    ///| 12 | 00 | 00 | 00 |  Big Endian 
-    ///+++++++++++
-    ///+++++++++++
-    ///| 12 | 00 | 00 | 00 |  Little Endian 
-    ///+++++++++++
-    /// When reading it, we have to reverse it back fro big endian
-    /// we do nothing for little endian.
-    /// @see
+    //! @method ReadBitsIntegerRange
+    //! @access public 
+    //! @returns void
+    //! @param [in] templateType & value
+    //! @param [in] const templateType minimum
+    //! @param [in] const templateType maximum
+    //! @param [in] const int requiredBits the value of bits to read
+    //! @param [in] bool allowOutsideRange 
+    //! if true, we directly read it
+    //! @brief
+    //! @notice
+    //! This is how we write value
+    //! Assume@valueBeyondMini's value is 0x000012
+    //!------------------> Memory Address
+    //!+++++++++++
+    //!| 00 | 00 | 00 | 12 |  Big Endian
+    //!+++++++++++
+    //!+++++++++++
+    //!| 12 | 00 | 00 | 00 |  Little Endian 
+    //!+++++++++++
+    //! so for big endian, we need to reverse byte so that
+    //! the high byte of 0x00 that was put in low address can be written correctly
+    //! for little endian, we do nothing.
+    //! After reverse bytes:
+    //!+++++++++++
+    //!| 12 | 00 | 00 | 00 |  Big Endian 
+    //!+++++++++++
+    //!+++++++++++
+    //!| 12 | 00 | 00 | 00 |  Little Endian 
+    //!+++++++++++
+    //! When reading it, we have to reverse it back fro big endian
+    //! we do nothing for little endian.
+    //! @see
     template <class templateType>
     void ReadIntegerRange(
         templateType &value,
@@ -1033,60 +1035,53 @@ class GECO_EXPORT MemeoryStream
             ReverseBytes((UInt8*)&value, sizeof(value));
         }
         value += minimum;
-
-        //UInt8 output[sizeof(templateType)] = { 0 };
-        //ReadBits(output, requiredBits, true);
-        //if (IsBigEndian()) ReverseBytes(output, sizeof(output));
-        //memcpy(&value, output, sizeof(output));
-        //value += minimum;
-
     }
 
 
-    /// @method Read
-    /// @access public 
-    /// @returns void
-    /// @param [in] float & outFloat The float to read
-    /// @param [in] float floatMin  Predetermined minimum value of f
-    /// @param [in] float floatMax Predetermined maximum value of f
-    /// @brief
-    /// Read a float into 2 bytes, spanning the range between
-    /// @param floatMin and @param floatMax
-    /// @notice
-    /// @see
+    //! @method Read
+    //! @access public 
+    //! @returns void
+    //! @param [in] float & outFloat The float to read
+    //! @param [in] float floatMin  Predetermined minimum value of f
+    //! @param [in] float floatMax Predetermined maximum value of f
+    //! @brief
+    //! Read a float into 2 bytes, spanning the range between
+    //! @param floatMin and @param floatMax
+    //! @notice
+    //! @see
     void ReadFloatRange(float &outFloat, float floatMin, float floatMax);
 
 
-    /// @brief Read bytes, starting at the next aligned byte. 
-    /// @details Note that the modulus 8 starting offset of the sequence
-    /// must be the same as was used with WriteBits. This will be a problem
-    /// with packet coalescence unless you byte align the coalesced packets.
-    /// @param[in] dest The byte array larger than @em numberOfBytesRead
-    /// @param[in] bytes2Read The number of byte to read from the internal state
-    /// @return true if there is enough byte.
+    //! @brief Read bytes, starting at the next aligned byte. 
+    //! @details Note that the modulus 8 starting offset of the sequence
+    //! must be the same as was used with WriteBits. This will be a problem
+    //! with packet coalescence unless you byte align the coalesced packets.
+    //! @param[in] dest The byte array larger than @em numberOfBytesRead
+    //! @param[in] bytes2Read The number of byte to read from the internal state
+    //! @return true if there is enough byte.
     void ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read);
 
 
-    /// @brief Reads what was written by WriteAlignedBytes.
-    /// @param[in] inOutByteArray The data
-    /// @param[in] maxBytesRead Maximum number of bytes to read
-    /// @return true on success, false on failure.
+    //! @brief Reads what was written by WriteAlignedBytes.
+    //! @param[in] inOutByteArray The data
+    //! @param[in] maxBytesRead Maximum number of bytes to read
+    //! @return true on success, false on failure.
     void ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read,
         const ByteSize maxBytes2Read);
 
 
-    /// @method ReadAlignedBytesAlloc
-    /// @access public 
-    /// @returns void
-    /// @param [in] Int8 * * dest  will be deleted if it is not a pointer to 0
-    /// @param [in] ByteSize & bytes2Read
-    /// @param [in] const ByteSize maxBytes2Read
-    /// @brief  Same as ReadAlignedBytesSafe() but allocates the memory
-    /// for you using new, rather than assuming it is safe to write to
+    //! @method ReadAlignedBytesAlloc
+    //! @access public 
+    //! @returns void
+    //! @param [in] Int8 * * dest  will be deleted if it is not a pointer to 0
+    //! @param [in] ByteSize & bytes2Read
+    //! @param [in] const ByteSize maxBytes2Read
+    //! @brief  Same as ReadAlignedBytesSafe() but allocates the memory
+    //! for you using new, rather than assuming it is safe to write to
     void ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read);
 
     // @brief return 1 if the next data read is a 1, 0 if it is a 0
-    ///@access public 
+    //!@access public 
     inline UInt32 ReadBit(void)
     {
         UInt32 result = ((data[mReadingPosBits >> 3] & (0x80 >> (mReadingPosBits & 7))) != 0) ? 1 : 0;
@@ -1094,16 +1089,16 @@ class GECO_EXPORT MemeoryStream
         return result;
     }
 
-    /// @access public
-    /// @brief Read a normalized 3D vector, using (at most) 4 bytes 
-    /// + 3 bits instead of 12-24 bytes.  
-    /// @details Will further compress y or z axis aligned vectors.
-    /// Accurate to 1/32767.5.
-    /// @param[in] x x
-    /// @param[in] y y
-    /// @param[in] z z
-    /// @return void
-    /// @notice templateType for this function must be a float or double
+    //! @access public
+    //! @brief Read a normalized 3D vector, using (at most) 4 bytes 
+    //! + 3 bits instead of 12-24 bytes.  
+    //! @details Will further compress y or z axis aligned vectors.
+    //! Accurate to 1/32767.5.
+    //! @param[in] x x
+    //! @param[in] y y
+    //! @param[in] z z
+    //! @return void
+    //! @notice templateType for this function must be a float or double
     template <class templateType>
     void ReadNormVector(templateType &x, templateType &y, templateType &z)
     {
@@ -1113,15 +1108,15 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @brief Read 3 floats or doubles, using 10 bytes, 
-    /// where those float or doubles comprise a vector.
-    /// @details Loses accuracy to about 3/10ths and only saves 2 bytes, 
-    /// so only use if accuracy is not important.
-    /// @param[in] x x
-    /// @param[in] y y
-    /// @param[in] z z
-    /// @return void
-    /// @notice templateType for this function must be a float or double
+    //! @brief Read 3 floats or doubles, using 10 bytes, 
+    //! where those float or doubles comprise a vector.
+    //! @details Loses accuracy to about 3/10ths and only saves 2 bytes, 
+    //! so only use if accuracy is not important.
+    //! @param[in] x x
+    //! @param[in] y y
+    //! @param[in] z z
+    //! @return void
+    //! @notice templateType for this function must be a float or double
     template <class templateType>
     void ReadVector(templateType &x, templateType &y, templateType &z)
     {
@@ -1156,13 +1151,13 @@ class GECO_EXPORT MemeoryStream
         }
     }
 
-    /// @brief Read a normalized quaternion in 6 bytes + 4 bits instead of 16 bytes.
-    /// @param[in] w w
-    /// @param[in] x x
-    /// @param[in] y y
-    /// @param[in] z z
-    /// @return void
-    /// @notice templateType for this function must be a float or double
+    //! @brief Read a normalized quaternion in 6 bytes + 4 bits instead of 16 bytes.
+    //! @param[in] w w
+    //! @param[in] x x
+    //! @param[in] y y
+    //! @param[in] z z
+    //! @return void
+    //! @notice templateType for this function must be a float or double
     template <class templateType>
     bool ReadNormQuat(templateType &w, templateType &x, templateType &y, templateType &z)
     {
@@ -1195,13 +1190,13 @@ class GECO_EXPORT MemeoryStream
 
 
 
-    /// @brief Read an orthogonal matrix from a quaternion, 
-    /// reading 3 components of the quaternion in 2 bytes each and
-    /// extrapolatig the 4th.
-    /// @details Use 6 bytes instead of 36
-    /// Lossy, although the result is renormalized
-    /// @return true on success, false on failure.
-    ///@notice templateType for this function must be a float or double
+    //! @brief Read an orthogonal matrix from a quaternion, 
+    //! reading 3 components of the quaternion in 2 bytes each and
+    //! extrapolatig the 4th.
+    //! @details Use 6 bytes instead of 36
+    //! Lossy, although the result is renormalized
+    //! @return true on success, false on failure.
+    //!@notice templateType for this function must be a float or double
     template <class templateType>
     void ReadOrthMatrix(
         templateType &m00, templateType &m01, templateType &m02,
@@ -1237,40 +1232,40 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @func AppendBitsCouldRealloc 
-    /// @brief 
-    /// reallocates (if necessary) in preparation of writing @bits2Append
-    /// all internal status will not be changed like @mWritePosBits and so on
-    /// @access  public  
-    /// @notice  
-    /// It is caller's reponsibility to ensure 
-    /// @param bits2Append > 0 and @param mReadOnly is false
-    /// @author mengdi[Jackie]
+    //! @func AppendBitsCouldRealloc 
+    //! @brief 
+    //! reallocates (if necessary) in preparation of writing @bits2Append
+    //! all internal status will not be changed like @mWritePosBits and so on
+    //! @access  public  
+    //! @notice  
+    //! It is caller's reponsibility to ensure 
+    //! @param bits2Append > 0 and @param mReadOnly is false
+    //! @author mengdi[Jackie]
     void AppendBitsCouldRealloc(const BitSize bits2Append);
 
 
-    /// @func  WriteBits 
-    /// @brief  write @bitsCount number of bits into @input
-    /// @access      public  
-    /// @param [in] [const UInt8 * src] source array
-    /// @param [in] [BitSize bits2Write] the number of bits to write
-    /// @param [in] [bool rightAligned] if true particial bits will be right aligned
-    /// @returns void
-    /// @remarks
-    /// 1.jackie stream internal data are aligned to the left side of byte boundary.
-    /// 2.user data are aligned to the right side of byte boundary.
-    /// @notice
-    /// 1.Use true to write user data to jackie stream 
-    /// 2.Use False to write this jackie stream internal data to another stream
-    /// @Author mengdi[Jackie]
+    //! @func  WriteBits 
+    //! @brief  write @bitsCount number of bits into @input
+    //! @access      public  
+    //! @param [in] [const UInt8 * src] source array
+    //! @param [in] [BitSize bits2Write] the number of bits to write
+    //! @param [in] [bool rightAligned] if true particial bits will be right aligned
+    //! @returns void
+    //! @remarks
+    //! 1.jackie stream internal data are aligned to the left side of byte boundary.
+    //! 2.user data are aligned to the right side of byte boundary.
+    //! @notice
+    //! 1.Use true to write user data to jackie stream 
+    //! 2.Use False to write this jackie stream internal data to another stream
+    //! @Author mengdi[Jackie]
     void WriteBits(const UInt8* src, BitSize bits2Write, bool rightAligned = true);
 
-    /// @func Write
-    /// @access  public  
-    /// @brief write an array or raw data in bytes.
-    /// NOT do endian swapp.
-    /// default is right aligned[true]
-    /// @author mengdi[Jackie]
+    //! @func Write
+    //! @access  public  
+    //! @brief write an array or raw data in bytes.
+    //! NOT do endian swapp.
+    //! default is right aligned[true]
+    //! @author mengdi[Jackie]
     inline void Write(const Int8* src, const ByteSize bytes2Write)
     {
         WriteBits((UInt8*)src, BYTES_TO_BITS(bytes2Write), true);
@@ -1280,9 +1275,9 @@ class GECO_EXPORT MemeoryStream
         WriteBits(src, BYTES_TO_BITS(bytes2Write), true);
     }
 
-    /// @brief Write one JackieBits to another.
-    /// @param[in] [bits2Write] bits to write
-    /// @param[in] [JackieBits] the JackieBits to copy from
+    //! @brief Write one JackieBits to another.
+    //! @param[in] [bits2Write] bits to write
+    //! @param[in] [JackieBits] the JackieBits to copy from
     void Write(MemeoryStream *jackieBits, BitSize bits2Write);
     inline void Write(MemeoryStream &jackieBits, BitSize bits2Write)
     {
@@ -1294,13 +1289,13 @@ class GECO_EXPORT MemeoryStream
     }
     inline void Write(MemeoryStream &jackieBits) { Write(&jackieBits); }
 
-    /// @method WritePtr
-    /// @access public 
-    /// @returns void
-    /// @param [in] IntergralType * src pointing to the value to write
-    /// @brief  
-    /// write the dereferenced pointer to any integral type to a bitstream.  
-    /// Undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    //! @method WritePtr
+    //! @access public 
+    //! @returns void
+    //! @param [in] IntergralType * src pointing to the value to write
+    //! @brief  
+    //! write the dereferenced pointer to any integral type to a bitstream.  
+    //! Undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
     template <class IntergralType>
     void WritePtr(IntergralType *src)
     {
@@ -1321,10 +1316,10 @@ class GECO_EXPORT MemeoryStream
         }
     }
 
-    /// @func WriteBitZero 
-    /// @access  public  
-    /// @notice @mReadOnly must be false
-    /// @author mengdi[Jackie]
+    //! @func WriteBitZero 
+    //! @access  public  
+    //! @notice @mReadOnly must be false
+    //! @author mengdi[Jackie]
     inline void WriteBitZero(void)
     {
         assert(mReadOnly == false);
@@ -1335,15 +1330,15 @@ class GECO_EXPORT MemeoryStream
         //mWritingPosBits++;
 
         AppendBitsCouldRealloc(1);
-        /// New bytes need to be zeroed
+        //! New bytes need to be zeroed
         if ((mWritingPosBits & 7) == 0) data[mWritingPosBits >> 3] = 0;
         mWritingPosBits++;
     }
 
-    /// @func WriteBitOne 
-    /// @access  public  
-    /// @notice @mReadOnly must be false
-    /// @author mengdi[Jackie]
+    //! @func WriteBitOne 
+    //! @access  public  
+    //! @notice @mReadOnly must be false
+    //! @author mengdi[Jackie]
     inline void WriteBitOne(void)
     {
         assert(mReadOnly == false);
@@ -1357,67 +1352,67 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @func AlignWritePosBits2ByteBoundary 
-    /// @brief align @mWritePosBits to a byte boundary. 
-    /// @access  public  
-    /// @notice
-    /// this can be used to 'waste' bits to byte align for efficiency reasons It
-    /// can also be used to force coalesced bitstreams to start on byte
-    /// boundaries so so WriteAlignedBits and ReadAlignedBits both
-    /// calculate the same offset when aligning.
-    /// @author mengdi[Jackie]
+    //! @func AlignWritePosBits2ByteBoundary 
+    //! @brief align @mWritePosBits to a byte boundary. 
+    //! @access  public  
+    //! @notice
+    //! this can be used to 'waste' bits to byte align for efficiency reasons It
+    //! can also be used to force coalesced bitstreams to start on byte
+    //! boundaries so so WriteAlignedBits and ReadAlignedBits both
+    //! calculate the same offset when aligning.
+    //! @author mengdi[Jackie]
     inline void AlignWritePosBits2ByteBoundary(void)
     {
         mWritingPosBits += 8 - (((mWritingPosBits - 1) & 7) + 1);
     }
 
-    /// @func WriteAlignedBytes 
-    /// @brief  align the bitstream to the byte boundary and 
-    /// then write the specified number of bytes.  
-    /// @access  public  
-    /// @param [in] [const UInt8 * src]  
-    /// @param [in] [const ByteSize numberOfBytesWrite]  
-    /// @returns [void]
-    /// @notice this is faster than WriteBits() but
-    /// wastes the bits to do the alignment for @mWritePosBits and
-    /// requires you to call ReadAlignedBits() at the corresponding 
-    /// read position.
-    /// @author mengdi[Jackie]
+    //! @func WriteAlignedBytes 
+    //! @brief  align the bitstream to the byte boundary and 
+    //! then write the specified number of bytes.  
+    //! @access  public  
+    //! @param [in] [const UInt8 * src]  
+    //! @param [in] [const ByteSize numberOfBytesWrite]  
+    //! @returns [void]
+    //! @notice this is faster than WriteBits() but
+    //! wastes the bits to do the alignment for @mWritePosBits and
+    //! requires you to call ReadAlignedBits() at the corresponding 
+    //! read position.
+    //! @author mengdi[Jackie]
     void WriteAlignedBytes(const UInt8 *src, const ByteSize numberOfBytesWrite);
 
 
-    /// @brief Aligns the bitstream, writes inputLength, and writes input. 
-    /// @access  public  
-    /// @param[in] inByteArray The data
-    /// @param[in] inputLength the size of input.
-    /// @param[in] maxBytesWrite max bytes to write
-    /// @notice Won't write beyond maxBytesWrite
+    //! @brief Aligns the bitstream, writes inputLength, and writes input. 
+    //! @access  public  
+    //! @param[in] inByteArray The data
+    //! @param[in] inputLength the size of input.
+    //! @param[in] maxBytesWrite max bytes to write
+    //! @notice Won't write beyond maxBytesWrite
     void WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write,
         const ByteSize maxBytes2Write);
 
 
-    /// @func Write 
-    /// @brief write a float into 2 bytes, spanning the range, 
-    /// between @param[floatMin] and @param[floatMax]
-    /// @access  public  
-    /// @param [in] [float src]  value to write into stream
-    /// @param [in] [float floatMin] Predetermined mini value of f
-    /// @param [in] [float floatMax] Predetermined max value of f
-    /// @return bool
-    /// @notice 
-    /// @author mengdi[Jackie]
+    //! @func Write 
+    //! @brief write a float into 2 bytes, spanning the range, 
+    //! between @param[floatMin] and @param[floatMax]
+    //! @access  public  
+    //! @param [in] [float src]  value to write into stream
+    //! @param [in] [float floatMin] Predetermined mini value of f
+    //! @param [in] [float floatMax] Predetermined max value of f
+    //! @return bool
+    //! @notice 
+    //! @author mengdi[Jackie]
     void WriteFloatRange(float src, float floatMin, float floatMax);
 
 
-    /// @func Write 
-    /// @brief write any integral type to a bitstream.  
-    /// @access  public  
-    /// @param [in] [const templateType & src] 
-    /// it is user data that is right aligned in default
-    /// @return void
-    /// @notice will swap endian internally 
-    /// if DO_NOT_SWAP_ENDIAN not defined
-    /// @author mengdi[Jackie]
+    //! @func Write 
+    //! @brief write any integral type to a bitstream.  
+    //! @access  public  
+    //! @param [in] [const templateType & src] 
+    //! it is user data that is right aligned in default
+    //! @return void
+    //! @notice will swap endian internally 
+    //! if DO_NOT_SWAP_ENDIAN not defined
+    //! @author mengdi[Jackie]
     template <class IntergralType>
     void Write(const IntergralType &src)
     {
@@ -1441,12 +1436,12 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @func Write 
-    /// @access  public  
-    /// @brief Write a bool to a bitstream.
-    /// @param [in] [const bool & src] The value to write
-    /// @return [bool] true succeed, false failed
-    /// @author mengdi[Jackie]
+    //! @func Write 
+    //! @access  public  
+    //! @brief Write a bool to a bitstream.
+    //! @param [in] [const bool & src] The value to write
+    //! @return [bool] true succeed, false failed
+    //! @author mengdi[Jackie]
     template <>
     inline void Write(const bool &src)
     {
@@ -1456,14 +1451,14 @@ class GECO_EXPORT MemeoryStream
             WriteBitZero();
     }
 
-    /// @func Write 
-    /// @brief write a JackieAddress to stream
-    /// @access  public  
-    /// @param [in] [const JackieAddress & src]  
-    /// @return [bool]  true succeed, false failed
-    /// @remark
-    /// @notice  will not endian swap the address or port
-    /// @author mengdi[Jackie]
+    //! @func Write 
+    //! @brief write a JackieAddress to stream
+    //! @access  public  
+    //! @param [in] [const JackieAddress & src]  
+    //! @return [bool]  true succeed, false failed
+    //! @remark
+    //! @notice  will not endian swap the address or port
+    //! @author mengdi[Jackie]
     template <>
     inline void Write(const JackieAddress &src)
     {
@@ -1472,7 +1467,7 @@ class GECO_EXPORT MemeoryStream
 
         if (version == 4)
         {
-            /// Hide the address so routers don't modify it
+            //! Hide the address so routers don't modify it
             JackieAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
@@ -1491,15 +1486,15 @@ class GECO_EXPORT MemeoryStream
         }
     }
 
-    /// @func Write 
-    /// @brief write three bytes into stream
-    /// @access  public  
-    /// @param [in] [const UInt24 & inTemplateVar]  
-    /// @return [void]  true succeed, false failed
-    /// @remark
-    /// @notice will align write-position to byte-boundary internally
-    /// @see  AlignWritePosBits2ByteBoundary()
-    /// @author mengdi[Jackie]
+    //! @func Write 
+    //! @brief write three bytes into stream
+    //! @access  public  
+    //! @param [in] [const UInt24 & inTemplateVar]  
+    //! @return [void]  true succeed, false failed
+    //! @remark
+    //! @notice will align write-position to byte-boundary internally
+    //! @see  AlignWritePosBits2ByteBoundary()
+    //! @author mengdi[Jackie]
     template <>
     inline void Write(const UInt24 &inTemplateVar)
     {
@@ -1531,11 +1526,11 @@ class GECO_EXPORT MemeoryStream
         //mWritingPosBits += 24;
     }
 
-    /// @func Write 
-    /// @access  public  
-    /// @param [in] [const JackieGUID & inTemplateVar]  
-    /// @return void
-    /// @author mengdi[Jackie]
+    //! @func Write 
+    //! @access  public  
+    //! @param [in] [const JackieGUID & inTemplateVar]  
+    //! @return void
+    //! @author mengdi[Jackie]
     template <>
     inline void Write(const JackieGUID &inTemplateVar)
     {
@@ -1545,7 +1540,7 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void Write(const JackieString &src)
     {
-        src.Write(this);
+        //src.Write(this);
     }
     //template <>
     //inline void WriteFrom(const RakWString &src)
@@ -1555,7 +1550,7 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void Write(const char * const &inStringVar)
     {
-        JackieString::Write(inStringVar, this);
+        // JackieString::Write(inStringVar, this);
     }
     template <>
     inline void Write(const wchar_t * const &inStringVar)
@@ -1578,16 +1573,16 @@ class GECO_EXPORT MemeoryStream
         Write((const char*)src);
     }
 
-    /// @func WriteChanged 
-    /// @brief write any changed integral type to a bitstream.
-    /// @access  public  
-    /// @param [in] const templateType & latestVal 
-    /// @param [in] const templateType & lastVal  
-    /// @return void 
-    /// @notice 
-    /// If the current value is different from the last value
-    /// the current value will be written.  Otherwise, a single bit will be written
-    /// @author mengdi[Jackie]
+    //! @func WriteChanged 
+    //! @brief write any changed integral type to a bitstream.
+    //! @access  public  
+    //! @param [in] const templateType & latestVal 
+    //! @param [in] const templateType & lastVal  
+    //! @return void 
+    //! @notice 
+    //! If the current value is different from the last value
+    //! the current value will be written.  Otherwise, a single bit will be written
+    //! @author mengdi[Jackie]
     template <class templateType>
     inline void WriteChangedValue(const templateType &latestVal,
         const templateType &lastVal)
@@ -1605,13 +1600,13 @@ class GECO_EXPORT MemeoryStream
 
 
 
-    /// @func WriteChanged 
-    /// @brief write a bool delta. Same thing as just calling Write
-    /// @access  public  
-    /// @param [in] const bool & currentValue  
-    /// @param [in] const bool & lastValue  
-    /// @return void 
-    /// @author mengdi[Jackie]
+    //! @func WriteChanged 
+    //! @brief write a bool delta. Same thing as just calling Write
+    //! @access  public  
+    //! @param [in] const bool & currentValue  
+    //! @param [in] const bool & lastValue  
+    //! @return void 
+    //! @author mengdi[Jackie]
     template <>
     inline void WriteChangedValue(const bool &currentValue,
         const bool &lastValue)
@@ -1620,15 +1615,15 @@ class GECO_EXPORT MemeoryStream
         Write(currentValue);
     }
 
-    /// @brief WriteDelta when you don't know what the last value is, or there is no last value.
-    /// @param[in] currentValue The current value to write
-    /// @func WriteChanged 
-    /// @brief 
-    /// writeDelta when you don't know what the last value is, or there is no last value.
-    /// @access  public  
-    /// @param [in] const templateType & currentValue  
-    /// @return void  
-    /// @author mengdi[Jackie]
+    //! @brief WriteDelta when you don't know what the last value is, or there is no last value.
+    //! @param[in] currentValue The current value to write
+    //! @func WriteChanged 
+    //! @brief 
+    //! writeDelta when you don't know what the last value is, or there is no last value.
+    //! @access  public  
+    //! @param [in] const templateType & currentValue  
+    //! @return void  
+    //! @author mengdi[Jackie]
     template <class templateType>
     inline void WriteChangedValue(const templateType &currentValue)
     {
@@ -1637,24 +1632,24 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @func WriteMiniChanged 
-    /// @brief write any integral type to a bitstream.  
-    /// @access  public  
-    /// @param [in] const templateType & currVal 
-    /// The current value to write 
-    /// @param [in] const templateType & lastValue  
-    ///  The last value to compare against
-    /// @return void 
-    /// @notice
-    /// If the current value is different from the last value. the current
-    /// value will be written.  Otherwise, a single bit will be written
-    /// For floating point, this is lossy, using 2 bytes for a float and 
-    /// 4 for a double. The range must be between -1 and +1.
-    /// For non-floating point, this is lossless, but only has benefit
-    /// if you use less than half the bits of the type
-    /// If you are not using DO_NOT_SWAP_ENDIAN the opposite is
-    /// true for types larger than 1 byte
-    /// @author mengdi[Jackie]
+    //! @func WriteMiniChanged 
+    //! @brief write any integral type to a bitstream.  
+    //! @access  public  
+    //! @param [in] const templateType & currVal 
+    //! The current value to write 
+    //! @param [in] const templateType & lastValue  
+    //!  The last value to compare against
+    //! @return void 
+    //! @notice
+    //! If the current value is different from the last value. the current
+    //! value will be written.  Otherwise, a single bit will be written
+    //! For floating point, this is lossy, using 2 bytes for a float and 
+    //! 4 for a double. The range must be between -1 and +1.
+    //! For non-floating point, this is lossless, but only has benefit
+    //! if you use less than half the bits of the type
+    //! If you are not using DO_NOT_SWAP_ENDIAN the opposite is
+    //! true for types larger than 1 byte
+    //! @author mengdi[Jackie]
     template <class templateType>
     inline void WriteMiniChanged(const templateType&currVal,
         const templateType &lastValue)
@@ -1670,9 +1665,9 @@ class GECO_EXPORT MemeoryStream
         }
     }
 
-    /// @brief Write a bool delta.  Same thing as just calling Write
-    /// @param[in] currentValue The current value to write
-    /// @param[in] lastValue The last value to compare against
+    //! @brief Write a bool delta.  Same thing as just calling Write
+    //! @param[in] currentValue The current value to write
+    //! @param[in] lastValue The last value to compare against
     template <>
     inline void WriteMiniChanged(const bool &currentValue, const bool&
         lastValue)
@@ -1681,8 +1676,8 @@ class GECO_EXPORT MemeoryStream
         Write(currentValue);
     }
 
-    /// @brief Same as WriteMiniChanged() 
-    /// when we have an unknown second parameter
+    //! @brief Same as WriteMiniChanged() 
+    //! when we have an unknown second parameter
     template <class templateType>
     inline void WriteMiniChanged(const templateType &currentValue)
     {
@@ -1691,49 +1686,49 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @func WriteMini 
-    /// @access  public  
-    /// @param [in] const UInt8 * src  
-    /// @param [in] const BitSize bits2Write  write size in bits
-    /// @param [in] const bool isUnsigned  
-    /// @return void 
-    /// @notice 
-    /// this function assumes that @src points to a native type,
-    /// compress and write it.
-    /// @Remarks
-    /// assume we have src with value of FourOnes-FourOnes-FourOnes-11110001
-    ///++++++++++++++> High Memory Address (hma)
-    ///++++++++++++++++++++++++++++++
-    /// | FourOnes | FourOnes | FourOnes | 11110001 |  Big Endian 
-    ///++++++++++++++++++++++++++++++
-    ///++++++++++++++++++++++++++++++
-    /// |11110001 | FourOnes | FourOnes | FourOnes |  Little Endian 
-    ///++++++++++++++++++++++++++++++
-    /// for little endian, the high bytes are located in hma and so @currByte should 
-    /// increment from value of highest index ((bits2Write >> 3) - 1)
-    /// for big endian, the high bytes are located in lma and so @currByte should 
-    /// increment from value of lowest index (0)
-    /// 在字节内部，一个字节的二进制排序，不存在大小端问题。
-    /// 就和平常书写的一样，先写高位，即低地址存储高位。
-    /// 如char a=0x12.存储从低位到高位就为0001 0010
-    /// @author mengdi[Jackie]
+    //! @func WriteMini 
+    //! @access  public  
+    //! @param [in] const UInt8 * src  
+    //! @param [in] const BitSize bits2Write  write size in bits
+    //! @param [in] const bool isUnsigned  
+    //! @return void 
+    //! @notice 
+    //! this function assumes that @src points to a native type,
+    //! compress and write it.
+    //! @Remarks
+    //! assume we have src with value of FourOnes-FourOnes-FourOnes-11110001
+    //!++++++++++++++> High Memory Address (hma)
+    //!++++++++++++++++++++++++++++++
+    //! | FourOnes | FourOnes | FourOnes | 11110001 |  Big Endian 
+    //!++++++++++++++++++++++++++++++
+    //!++++++++++++++++++++++++++++++
+    //! |11110001 | FourOnes | FourOnes | FourOnes |  Little Endian 
+    //!++++++++++++++++++++++++++++++
+    //! for little endian, the high bytes are located in hma and so @currByte should 
+    //! increment from value of highest index ((bits2Write >> 3) - 1)
+    //! for big endian, the high bytes are located in lma and so @currByte should 
+    //! increment from value of lowest index (0)
+    //! 在字节内部，一个字节的二进制排序，不存在大小端问题。
+    //! 就和平常书写的一样，先写高位，即低地址存储高位。
+    //! 如char a=0x12.存储从低位到高位就为0001 0010
+    //! @author mengdi[Jackie]
     void WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned);
 
 
-    /// @func WriteMini 
-    /// @brief Write any integral type to a bitstream,
-    /// endian swapping counters internally. default is unsigned (isUnsigned = true)
-    /// @access  public  
-    /// @param [in] const IntergralType & src  
-    /// @return void 
-    /// @notice
-    /// For floating point, this is lossy, using 2 bytes for a float and 4 for 
-    /// a double.  The range must be between -1 and +1.
-    /// For non-floating point, this is lossless, but only has benefit 
-    /// if you use less than half the bits of the type
-    /// we write low bits and reassenble the value in receiver endpoint
-    /// based on its endian, so no need to do endian swap here
-    /// @author mengdi[Jackie]
+    //! @func WriteMini 
+    //! @brief Write any integral type to a bitstream,
+    //! endian swapping counters internally. default is unsigned (isUnsigned = true)
+    //! @access  public  
+    //! @param [in] const IntergralType & src  
+    //! @return void 
+    //! @notice
+    //! For floating point, this is lossy, using 2 bytes for a float and 4 for 
+    //! a double.  The range must be between -1 and +1.
+    //! For non-floating point, this is lossless, but only has benefit 
+    //! if you use less than half the bits of the type
+    //! we write low bits and reassenble the value in receiver endpoint
+    //! based on its endian, so no need to do endian swap here
+    //! @author mengdi[Jackie]
     template <bool isUnsigned = UnSignedInteger, class IntergralType>
     inline void WriteMini(const IntergralType &src)
     {
@@ -1748,7 +1743,7 @@ class GECO_EXPORT MemeoryStream
 
         if (version == 4)
         {
-            /// Hide the address so routers don't modify it
+            //! Hide the address so routers don't modify it
             JackieAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
@@ -1785,7 +1780,7 @@ class GECO_EXPORT MemeoryStream
         if (varCopy > 1.0f) varCopy = 1.0f;
         WriteMini<UnSignedInteger>((UInt16)((varCopy + 1.0f)*32767.5f));
     }
-    template <> ///@notice For values between -1 and 1
+    template <> //!@notice For values between -1 and 1
     inline void WriteMini(const double &src)
     {
         assert(src > -1.01f && src < 1.01f);
@@ -1795,11 +1790,11 @@ class GECO_EXPORT MemeoryStream
         WriteMini<UnSignedInteger>((UInt32)((varCopy + 1.0)*2147483648.0));
     }
 
-    /// Compress the string
+    //! Compress the string
     template <>
     inline void WriteMini(const JackieString &src)
     {
-        src.WriteMini(this, 0, false);
+        // src.WriteMini(this, 0, false);
     }
     //template <>
     //inline void WriteMini(const JackieWString &src)
@@ -1809,7 +1804,7 @@ class GECO_EXPORT MemeoryStream
     template <>
     inline void WriteMini(const char * const &inStringVar)
     {
-        JackieString::WriteMini(inStringVar, this);
+        // JackieString::WriteMini(inStringVar, this);
     }
     template <>
     inline void WriteMini(const wchar_t * const &inStringVar)
@@ -1832,8 +1827,8 @@ class GECO_EXPORT MemeoryStream
         WriteMini((const char*)src);
     }
 
-    /// @access public 
-    /// @returns void
+    //! @access public 
+    //! @returns void
     template <class destType, class srcType >
     void WriteCasted(const srcType &value)
     {
@@ -1841,29 +1836,29 @@ class GECO_EXPORT MemeoryStream
         Write(val);
     }
 
-    /// @method WriteBitsIntegerRange
-    /// @access public 
-    /// @returns void
-    /// @param [in] const templateType value 
-    /// value Integer value to write, which should be
-    /// between @param mini and @param max
-    /// @param [in] const templateType mini
-    /// @param [in] const templateType max
-    /// @param [in] bool allowOutsideRange
-    /// If true, all sends will take an extra bit,
-    /// however value can deviate from outside @a minimum and @a maximum.
-    /// If false, will assert if the value deviates. 
-    /// This should match the corresponding value passed to Read().
-    /// @brief 
-    /// given the minimum and maximum values for an integer type, 
-    /// figure out the minimum number of bits to represent the range
-    /// Then write only those bits
-    /// @notice
-    /// a static is used so that the required number of bits for
-    /// (maximum-minimum pair) is only calculated once. 
-    /// This does require that @param mini and @param max are fixed 
-    /// values for a given line of code for the life of the program
-    /// @see
+    //! @method WriteBitsIntegerRange
+    //! @access public 
+    //! @returns void
+    //! @param [in] const templateType value 
+    //! value Integer value to write, which should be
+    //! between @param mini and @param max
+    //! @param [in] const templateType mini
+    //! @param [in] const templateType max
+    //! @param [in] bool allowOutsideRange
+    //! If true, all sends will take an extra bit,
+    //! however value can deviate from outside @a minimum and @a maximum.
+    //! If false, will assert if the value deviates. 
+    //! This should match the corresponding value passed to Read().
+    //! @brief 
+    //! given the minimum and maximum values for an integer type, 
+    //! figure out the minimum number of bits to represent the range
+    //! Then write only those bits
+    //! @notice
+    //! a static is used so that the required number of bits for
+    //! (maximum-minimum pair) is only calculated once. 
+    //! This does require that @param mini and @param max are fixed 
+    //! values for a given line of code for the life of the program
+    //! @see
     template <class IntegerType> void WriteIntegerRange(
         const IntegerType value,
         const IntegerType mini,
@@ -1875,21 +1870,21 @@ class GECO_EXPORT MemeoryStream
         WriteIntegerRange(value, mini, max, requiredBits, allowOutsideRange);
     }
 
-    /// @brief 
-    /// only work for positive integers but you can transfer nagative integers as postive
-    /// integers and transform it back to negative at receipt endpoint.
-    /// the smaller difference between min and max, the less bits used to transmit
-    /// eg. given a number of 105 in 100 - 120 is more efficiently compressed 
-    /// than that in 0 - 120, you actually is sending number of 105-100=5
-    /// it is even more efficient than using WriteMini()
-    /// @Remarks
-    /// Assume@valueBeyondMini's value is 00000000 - 00101100 
-    /// Memory Address ------------------> 
-    /// 00000000   00101100   Big Endian
-    /// 00101100   00000000   Little Endian 
-    /// so for big endian, we need to reverse byte so that
-    /// the high byte of 00101100 that was put in low address can be written correctly
-    /// for little endian, we do nothing.
+    //! @brief 
+    //! only work for positive integers but you can transfer nagative integers as postive
+    //! integers and transform it back to negative at receipt endpoint.
+    //! the smaller difference between min and max, the less bits used to transmit
+    //! eg. given a number of 105 in 100 - 120 is more efficiently compressed 
+    //! than that in 0 - 120, you actually is sending number of 105-100=5
+    //! it is even more efficient than using WriteMini()
+    //! @Remarks
+    //! Assume@valueBeyondMini's value is 00000000 - 00101100 
+    //! Memory Address ------------------> 
+    //! 00000000   00101100   Big Endian
+    //! 00101100   00000000   Little Endian 
+    //! so for big endian, we need to reverse byte so that
+    //! the high byte of 00101100 that was put in low address can be written correctly
+    //! for little endian, we do nothing.
     template <class IntegerType>
     void WriteIntegerRange(
         const IntegerType value,
@@ -1903,13 +1898,13 @@ class GECO_EXPORT MemeoryStream
 
         if (allowOutsideRange)
         {
-            if (value <mini || value>max)  ///< out of range
+            if (value <mini || value>max)  //!< out of range
             {
                 Write(true);
                 WriteMini(value);
                 return;
             }
-            Write(false); ///< inside range
+            Write(false); //!< inside range
         }
 
         IntegerType valueBeyondMini = value - mini;
@@ -1926,19 +1921,19 @@ class GECO_EXPORT MemeoryStream
     }
 
 
-    /// @method WriteNormVector
-    /// @access public 
-    /// @returns void
-    /// @param [in] templateType x
-    /// @param [in] templateType y
-    /// @param [in] templateType z
-    /// @brief
-    /// Write a normalized 3D vector, using (at most) 4 bytes + 3 bits
-    /// instead of 12 - 24 bytes. Accurate to 1/32767.5.
-    /// @notice
-    /// Will further compress y or z axis aligned vectors.
-    /// templateType for this function must be a float or double
-    /// @see
+    //! @method WriteNormVector
+    //! @access public 
+    //! @returns void
+    //! @param [in] templateType x
+    //! @param [in] templateType y
+    //! @param [in] templateType z
+    //! @brief
+    //! Write a normalized 3D vector, using (at most) 4 bytes + 3 bits
+    //! instead of 12 - 24 bytes. Accurate to 1/32767.5.
+    //! @notice
+    //! Will further compress y or z axis aligned vectors.
+    //! templateType for this function must be a float or double
+    //! @see
     template <class templateType> void WriteNormVector(
         templateType x,
         templateType y,
@@ -1950,15 +1945,15 @@ class GECO_EXPORT MemeoryStream
         WriteFloatRange((float)z, -1.0f, 1.0f);
     }
 
-    /// @method WriteVector
-    /// @access public 
-    /// @returns void
-    /// @brief Write a vector, using 10 bytes instead of 12.
-    /// @notice
-    /// Loses accuracy to about 3/10ths and only saves 2 bytes, 
-    /// so only use if accuracy is not important
-    /// templateType for this function must be a float or double
-    /// @see
+    //! @method WriteVector
+    //! @access public 
+    //! @returns void
+    //! @brief Write a vector, using 10 bytes instead of 12.
+    //! @notice
+    //! Loses accuracy to about 3/10ths and only saves 2 bytes, 
+    //! so only use if accuracy is not important
+    //! templateType for this function must be a float or double
+    //! @see
     template <class templateType> void WriteVector(
         templateType x,
         templateType y,
@@ -1974,15 +1969,15 @@ class GECO_EXPORT MemeoryStream
         }
     }
 
-    /// @method WriteNormQuat
-    /// @access public 
-    /// @returns void
-    /// @brief 
-    /// Write a normalized quaternion in (18 bits[best case] to 6 bytes[worest case]) + 4 bits instead of 16 bytes.  
-    /// Slightly lossy.
-    /// @notice
-    /// templateType for this function must be a float or double
-    /// @see
+    //! @method WriteNormQuat
+    //! @access public 
+    //! @returns void
+    //! @brief 
+    //! Write a normalized quaternion in (18 bits[best case] to 6 bytes[worest case]) + 4 bits instead of 16 bytes.  
+    //! Slightly lossy.
+    //! @notice
+    //! templateType for this function must be a float or double
+    //! @see
     template <class templateType> void WriteNormQuat(
         templateType w,
         templateType x,
@@ -1999,17 +1994,17 @@ class GECO_EXPORT MemeoryStream
         // Leave out w and calculate it on the target
     }
 
-    /// @method WriteOrthMatrix
-    /// @access public 
-    /// @returns void
-    /// @brief
-    /// Write an orthogonal matrix by creating a quaternion, 
-    /// and writing 3 components of the quaternion in 2 bytes each.
-    /// @notice
-    /// Lossy, although the result is renormalized
-    /// Use (18 bits to 6 bytes) +4 bits instead of 36
-    /// templateType for this function must be a float or double
-    /// @see WriteNormQuat()
+    //! @method WriteOrthMatrix
+    //! @access public 
+    //! @returns void
+    //! @brief
+    //! Write an orthogonal matrix by creating a quaternion, 
+    //! and writing 3 components of the quaternion in 2 bytes each.
+    //! @notice
+    //! Lossy, although the result is renormalized
+    //! Use (18 bits to 6 bytes) +4 bits instead of 36
+    //! templateType for this function must be a float or double
+    //! @see WriteNormQuat()
     template <class templateType> void WriteOrthMatrix(
         templateType m00, templateType m01, templateType m02,
         templateType m10, templateType m11, templateType m12,
@@ -2046,33 +2041,34 @@ class GECO_EXPORT MemeoryStream
         WriteNormQuat(qw, qx, qy, qz);
     }
 
-    /// @brief  Write zeros until the bitstream is filled up to @param bytes
-    /// @notice will internally align write pos and then reallocate if necessary
-    ///  the @mWritePosBits will be byte aligned
+    //! @brief  Write zeros until the bitstream is filled up to @param bytes
+    //! @notice will internally align write pos and then reallocate if necessary
+    //!  the @mWritePosBits will be byte aligned
     void PadZero2LengthOf(UInt32 bytes);
 
-    /// @brief swao bytes starting from @data with offset given
+    //! @brief swao bytes starting from @data with offset given
     inline void EndianSwapBytes(UInt32 byteOffset, UInt32 length)
     {
         if (DoEndianSwap()) ReverseBytes(data + byteOffset, length);
     }
 
-    /// @brief Makes a copy of the internal data for you @param _data 
-    /// will point to the stream. Partial bytes are left aligned
-    /// @param[out] _data The allocated copy of GetData()
-    /// @return The length in bits of the stream.
-    /// @notice
-    /// all bytes are copied besides the bytes in GetPayLoadBits()
+    //! @brief Makes a copy of the internal data for you @param _data 
+    //! will point to the stream. Partial bytes are left aligned
+    //! @param[out] _data The allocated copy of GetData()
+    //! @return The length in bits of the stream.
+    //! @notice
+    //! all bytes are copied besides the bytes in GetPayLoadBits()
     BitSize Copy(UInt8*& _data) const
     {
         assert(mWritingPosBits > 0);
-        _data = (UInt8*)jackieMalloc_Ex(BITS_TO_BYTES(mWritingPosBits),
+
+        _data = (UInt8*)geco::ultils::jackieMalloc_Ex(BITS_TO_BYTES(mWritingPosBits),
             TRACE_FILE_AND_LINE_);
         memcpy(_data, data, sizeof(UInt8) * BITS_TO_BYTES(mWritingPosBits));
         return mWritingPosBits;
     }
 
-    ///@brief Ignore data we don't intend to read
+    //!@brief Ignore data we don't intend to read
     void ReadSkipBits(const BitSize numberOfBits)
     {
         mReadingPosBits += numberOfBits;
@@ -2187,14 +2183,14 @@ class GECO_EXPORT MemeoryStream
         mReadingPosBits += 32;
     }
 
-    ///@brief text-print bits starting from @data to @mWritingPosBits
-    void PrintBit(void);
-    void PrintHex(void);
+    //!@brief text-print bits starting from @data to @mWritingPosBits
+    void Bitify(void);
+    void Hexlify(void);
 
 
-    /// @briefAssume we have value of 00101100   00000000   Little Endian
-    /// the required bits are 8(0000000)+2(first 2 bits from left to right in 00101100)
-    /// = 10 buts in total
+    //! @briefAssume we have value of 00101100   00000000   Little Endian
+    //! the required bits are 8(0000000)+2(first 2 bits from left to right in 00101100)
+    //! = 10 buts in total
     inline static int GetLeadingZeroSize(Int8 x)
     {
         return GetLeadingZeroSize((UInt8)x);
@@ -2278,9 +2274,9 @@ class GECO_EXPORT MemeoryStream
     }
     inline static bool IsBigEndian(void) { return IsNetworkOrder(); }
 
-    /// @Brief faster than ReverseBytes() if you want to reverse byte
-    /// for a variable teself internnaly like uint64 will loop 12 times 
-    /// compared to 8 times using ReverseBytes()
+    //! @Brief faster than ReverseBytes() if you want to reverse byte
+    //! for a variable teself internnaly like uint64 will loop 12 times 
+    //! compared to 8 times using ReverseBytes()
     inline static void ReverseBytes(UInt8 *src, const UInt32 length)
     {
         UInt8 temp;
@@ -2299,10 +2295,18 @@ class GECO_EXPORT MemeoryStream
         }
     }
 
-    /// Can only print 4096 size of UInt8 no materr is is bit or byte
-    /// mainly used for dump binary data
-    static void PrintBit(char* outstr, BitSize bitsPrint, UInt8* src);
-    static void PrintHex(char* outstr, BitSize bitsPrint, UInt8* src);
+    //! Can only print 4096 size of UInt8 no materr is is bit or byte
+    //! mainly used for dump binary data
+
+    //! @brief Return the bit representation of the binary data.
+    static void Bitify(char* out_bitstr, BitSize bitsPrint, UInt8* src);
+    //! @brief Return the binary data represented by the bit string bitstr.
+    static void unBitify(char* outstr, BitSize bitsPrint, UInt8* src);
+
+    //! @brief Return the hexadecimal representation of the binary data.
+    static void Hexlify(char* out_hexstr, BitSize bitsPrint, UInt8* src);
+    //! @brief Return the binary data represented by the hexadecimal string hexstr.
+    static void unHexlify(char* outstr, BitSize bitsPrint, UInt8* src);
 };
 
 GECO_NET_END_NSPACE

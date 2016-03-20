@@ -46,8 +46,8 @@
 #endif
 
 // Redefine if you want to disable or change the target for debug RAKNET_DEBUG_PRINTF
-#ifndef GECO__NET_DEBUG_PRINTF
-#define GECO__NET_DEBUG_PRINTF printf
+#ifndef GECO__PRINTFS
+#define GECO_PRINTFS printf_s
 #endif
 
 /// #define DO_BYTE_SWAP 0 means NOT support byte swapping in the BitStream class.  

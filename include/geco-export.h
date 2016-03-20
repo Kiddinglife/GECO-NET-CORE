@@ -22,11 +22,4 @@
 #define GECO_EXPORT
 #endif
 
-#define GECO_STATIC_FACTORY_DECL(x) \
-static x* GetInstance(void); \
-static void DestroyInstance( x *i);
-
-#define GECO_STATIC_FACTORY_DEFI(x,y) \
-x* x::GetInstance(void) {return JACKIE_INET::OP_NEW<y>( TRACE_FILE_AND_LINE_ );} \
-void x::DestroyInstance( x *i) {JACKIE_INET::OP_DELETE(( y* ) i, TRACE_FILE_AND_LINE_);}
 #endif
