@@ -20,18 +20,18 @@ GECO_NET_BEGIN_NSPACE
 static const BitSize JACKIESTREAM_STACK_ALLOC_BITS_SIZE =
 BYTES_TO_BITS(GECO_STREAM_STACK_ALLOC_SIZE);
 
-MemeoryStream* MemeoryStream::GetInstance(void)
+GecoMemoryStream* GecoMemoryStream::GetInstance(void)
 {
-    return geco::ultils::OP_NEW<MemeoryStream>(TRACE_FILE_AND_LINE_);
+    return OP_NEW<GecoMemoryStream>(TRACE_FILE_AND_LINE_);
 }
 
-void MemeoryStream::DestroyInstance(MemeoryStream* i)
+void GecoMemoryStream::DestroyInstance(GecoMemoryStream* i)
 {
-    geco::ultils::OP_DELETE(i, TRACE_FILE_AND_LINE_);
+    OP_DELETE(i, TRACE_FILE_AND_LINE_);
 }
 
 
-MemeoryStream::MemeoryStream() :
+GecoMemoryStream::GecoMemoryStream() :
 mBitsAllocSize(JACKIESTREAM_STACK_ALLOC_BITS_SIZE),
 mWritingPosBits(0),
 mReadingPosBits(0),
@@ -42,7 +42,7 @@ mReadOnly(false)
     //memset(data, 0, GECO_STREAM_STACK_ALLOC_SIZE); // NO NEED TO SET ALL ZEROS
 }
 
-MemeoryStream::MemeoryStream(const BitSize initialBytesAllocate) :
+GecoMemoryStream::GecoMemoryStream(const BitSize initialBytesAllocate) :
 mWritingPosBits(0),
 mReadingPosBits(0),
 mReadOnly(false)
@@ -64,7 +64,7 @@ mReadOnly(false)
         //memset(data, 0, initialBytesAllocate); // NO NEED TO SET ALL ZEROS
     }
 }
-MemeoryStream::MemeoryStream(UInt8* src, const ByteSize len, bool copy/*=false*/) :
+GecoMemoryStream::GecoMemoryStream(UInt8* src, const ByteSize len, bool copy/*=false*/) :
 mBitsAllocSize(BYTES_TO_BITS(len)),
 mWritingPosBits(BYTES_TO_BITS(len)),
 mReadingPosBits(0),
@@ -104,7 +104,7 @@ mReadOnly(!copy)
         mNeedFree = false;
     }
 }
-MemeoryStream::~MemeoryStream()
+GecoMemoryStream::~GecoMemoryStream()
 {
     if (mNeedFree && mBitsAllocSize > JACKIESTREAM_STACK_ALLOC_BITS_SIZE)
     {
@@ -112,7 +112,7 @@ MemeoryStream::~MemeoryStream()
     }
 }
 
-void MemeoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool isUnsigned)
+void GecoMemoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool isUnsigned)
 {
     //JINFO << "get pay loads in read mini " << GetPayLoadBits();
     UInt32 currByte;
@@ -200,7 +200,7 @@ void MemeoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool is
     }
 }
 
-void MemeoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
+void GecoMemoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
 {
     BitSize newBitsAllocCount = bits2Append + mWritingPosBits; /// official
     //BitSize newBitsAllocCount = bits2Append + mWritingPosBits + 1;
@@ -251,7 +251,7 @@ void MemeoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
         mBitsAllocSize = newBitsAllocCount;
 }
 
-void MemeoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight /*= true*/)
+void GecoMemoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight /*= true*/)
 {
     /// Assume bits to write are 10101010+00001111, 
     /// bits2Write = 4, rightAligned = true, and so 
@@ -346,7 +346,7 @@ void MemeoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight /*=
     //return true;
 }
 
-void MemeoryStream::ReadFloatRange(float &outFloat, float floatMin, float floatMax)
+void GecoMemoryStream::ReadFloatRange(float &outFloat, float floatMin, float floatMax)
 {
     assert(floatMax > floatMin);
 
@@ -359,7 +359,7 @@ void MemeoryStream::ReadFloatRange(float &outFloat, float floatMin, float floatM
     else if (outFloat>floatMax) outFloat = floatMax;
 }
 
-void MemeoryStream::ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read)
+void GecoMemoryStream::ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read)
 {
     assert(bytes2Read > 0);
     assert(GetPayLoadBits() >= BYTES_TO_BITS(bytes2Read));
@@ -373,7 +373,7 @@ void MemeoryStream::ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read)
     mReadingPosBits += bytes2Read << 3;
 }
 
-void MemeoryStream::ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read)
+void GecoMemoryStream::ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read)
 {
     bytes2Read = ReadBit();
     ///ReadMini(bytes2Read);
@@ -382,7 +382,7 @@ void MemeoryStream::ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read, const Byt
     ReadAlignedBytes((UInt8*)dest, bytes2Read);
 }
 
-void MemeoryStream::ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read)
+void GecoMemoryStream::ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read)
 {
     jackieFree_Ex(*dest, TRACE_FILE_AND_LINE_);
     *dest = 0;
@@ -394,7 +394,7 @@ void MemeoryStream::ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, con
     ReadAlignedBytes((UInt8*)*dest, bytes2Read);
 }
 
-void MemeoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool rightAligned /*= true*/)
+void GecoMemoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool rightAligned /*= true*/)
 {
     /// Assume bits to write are 10101010+00001111, 
     /// bits2Write = 4, rightAligned = true, and so 
@@ -484,7 +484,7 @@ void MemeoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool rightAl
         }
     }
 }
-void MemeoryStream::Write(MemeoryStream *jackieBits, BitSize bits2Write)
+void GecoMemoryStream::Write(GecoMemoryStream *jackieBits, BitSize bits2Write)
 {
     assert(mReadOnly == false);
     assert(bits2Write > 0);
@@ -587,7 +587,7 @@ void MemeoryStream::Write(MemeoryStream *jackieBits, BitSize bits2Write)
     //// ? official way
 }
 
-void MemeoryStream::WriteFloatRange(float src, float floatMin, float floatMax)
+void GecoMemoryStream::WriteFloatRange(float src, float floatMin, float floatMax)
 {
     assert(floatMax > floatMin);
     assert(src < floatMax + .001);
@@ -600,7 +600,7 @@ void MemeoryStream::WriteFloatRange(float src, float floatMin, float floatMax)
     WriteMini((UInt16)percentile);
 }
 
-void MemeoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned)
+void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned)
 {
     static bool truee = true;
     static bool falsee = false;
@@ -689,13 +689,13 @@ void MemeoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const 
     }
 }
 
-void MemeoryStream::WriteAlignedBytes(const UInt8 *src, const ByteSize numberOfBytesWrite)
+void GecoMemoryStream::WriteAlignedBytes(const UInt8 *src, const ByteSize numberOfBytesWrite)
 {
     AlignWritePosBits2ByteBoundary();
     Write((Int8*)src, numberOfBytesWrite);
 }
 
-void MemeoryStream::WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write, const ByteSize maxBytes2Write)
+void GecoMemoryStream::WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write, const ByteSize maxBytes2Write)
 {
     if (src == 0 || bytes2Write == 0)
     {
@@ -710,7 +710,7 @@ void MemeoryStream::WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Wri
     bytes2Write : maxBytes2Write);
 }
 
-void MemeoryStream::PadZero2LengthOf(UInt32 bytes)
+void GecoMemoryStream::PadZero2LengthOf(UInt32 bytes)
 {
     Int32 numWrite = bytes - GetWrittenBytesCount();
     if (numWrite > 0)
@@ -722,7 +722,7 @@ void MemeoryStream::PadZero2LengthOf(UInt32 bytes)
     }
 }
 
-void MemeoryStream::Bitify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
+void GecoMemoryStream::Bitify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
 {
     printf_s("%s[%dbits %dbytes]:\n", "BitsDumpResult",
         mWritePosBits, BITS_TO_BYTES(mWritePosBits));
@@ -757,13 +757,13 @@ void MemeoryStream::Bitify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
     out[strIndex++] = '\n';
     out[strIndex++] = 0;
 }
-void MemeoryStream::Bitify(void)
+void GecoMemoryStream::Bitify(void)
 {
     char out[4096 * 8];
     Bitify(out, mWritingPosBits, data);
     printf_s("%s\n", out);
 }
-void MemeoryStream::Hexlify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
+void GecoMemoryStream::Hexlify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
 {
     printf_s("%s[%d bytes]:\n", "HexDumpResult", BITS_TO_BYTES(mWritePosBits));
     if (mWritePosBits <= 0)
@@ -777,7 +777,7 @@ void MemeoryStream::Hexlify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
     }
 
 }
-void MemeoryStream::Hexlify(void)
+void GecoMemoryStream::Hexlify(void)
 {
     char out[4096];
     Hexlify(out, mWritingPosBits, data);

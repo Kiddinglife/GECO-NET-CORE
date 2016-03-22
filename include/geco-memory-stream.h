@@ -68,7 +68,7 @@ GECO_NET_BEGIN_NSPACE
 //! = (12+7) >> 3 = 19/8 = 2( also is the number of written bytes)
 //! BITS_TO_BYTES(8[bit at index 8 is exclusive ])  = 
 //! (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
-class GECO_EXPORT MemeoryStream
+class GECO_EXPORT GecoMemoryStream
 {
     public:
     typedef UInt32 BitSize;
@@ -89,19 +89,19 @@ class GECO_EXPORT MemeoryStream
     bool mReadOnly;
     UInt8 mStacBuffer[GECO_STREAM_STACK_ALLOC_SIZE];
 
-    MemeoryStream(const MemeoryStream &jackieBits)
+    GecoMemoryStream(const GecoMemoryStream &jackieBits)
     {
 
     }
 
-    MemeoryStream& operator = (const MemeoryStream& jackieBits)
+    GecoMemoryStream& operator = (const GecoMemoryStream& jackieBits)
     {
         return *this;
     }
 
     public:
-    static MemeoryStream* GetInstance(void);
-    static void DestroyInstance(MemeoryStream *i);
+    static GecoMemoryStream* GetInstance(void);
+    static void DestroyInstance(GecoMemoryStream *i);
 
     //! @Param [in] [ BitSize initialBytesAllocate]:
     //! the number of bytes to pre-allocate.
@@ -110,7 +110,7 @@ class GECO_EXPORT MemeoryStream
     //! allocate. There is no benefit to calling this, unless you know exactly
     //! how many bytes you need and it is greater than 256.
     //! @Author mengdi[Jackie]
-    MemeoryStream(const BitSize initialBytesAllocate);
+    GecoMemoryStream(const BitSize initialBytesAllocate);
 
     //! @brief  Initialize by setting the @data to a predefined pointer.
     //! @access  public  
@@ -124,14 +124,14 @@ class GECO_EXPORT MemeoryStream
     //! in which case you should write something as follows:
     //! JACKIE_INET::JackieStream js(packet->data, packet->length, false);
     //! @author mengdi[Jackie]
-    MemeoryStream(UInt8* src, const ByteSize len, bool copy = false);
+    GecoMemoryStream(UInt8* src, const ByteSize len, bool copy = false);
 
     //! DEFAULT CTOR
-    MemeoryStream();
+    GecoMemoryStream();
 
     //! realloc and free are more efficient than delete and new  
     //! because it will not call ctor and dtor
-    ~MemeoryStream();
+    ~GecoMemoryStream();
 
     //! Getters and Setters
     BitSize WritePosBits() const { return mWritingPosBits; }
@@ -1278,16 +1278,16 @@ class GECO_EXPORT MemeoryStream
     //! @brief Write one JackieBits to another.
     //! @param[in] [bits2Write] bits to write
     //! @param[in] [JackieBits] the JackieBits to copy from
-    void Write(MemeoryStream *jackieBits, BitSize bits2Write);
-    inline void Write(MemeoryStream &jackieBits, BitSize bits2Write)
+    void Write(GecoMemoryStream *jackieBits, BitSize bits2Write);
+    inline void Write(GecoMemoryStream &jackieBits, BitSize bits2Write)
     {
         Write(&jackieBits, bits2Write);
     }
-    inline void Write(MemeoryStream *jackieBits)
+    inline void Write(GecoMemoryStream *jackieBits)
     {
         Write(jackieBits, jackieBits->GetPayLoadBits());
     }
-    inline void Write(MemeoryStream &jackieBits) { Write(&jackieBits); }
+    inline void Write(GecoMemoryStream &jackieBits) { Write(&jackieBits); }
 
     //! @method WritePtr
     //! @access public 

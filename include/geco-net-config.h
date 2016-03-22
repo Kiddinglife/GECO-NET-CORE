@@ -111,12 +111,12 @@
 #endif
 
 /// ASSERT
-#ifndef GECO__ASSERT
+#ifndef GECO_ASSERT
 #if defined(__native_client__)
 #define GECO__ASSERT(x)
 #else
 #if defined(_DEBUG)
-#define GECO__ASSERT(x) assert(x);
+#define GECO_ASSERT(x) assert(x);
 #else
 #define GECO__ASSERT(x) 
 #endif

@@ -26,7 +26,7 @@
 #include "geco-sock-includes.h"
 #include "geco-sock-defs.h"
 #include "geco-time.h"
-//#include "JackieReliabler.h"
+#include "JackieReliabler.h"
 #include "geco-features.h"
 #include "geco-secure-hand-shake.h"
 
@@ -834,7 +834,7 @@ struct GECO_EXPORT JackieRemoteSystem
     /// Their internal IP, behind the LAN
     JackieAddress theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
     /// The reliability layer associated with this player
-    //JackieReliabler reliabilityLayer;
+    JackieReliabler reliabilityLayer;
     /// True if we started this connection via Connect.  
     /// False if someone else connected to us.
     bool weInitiateConnection;
