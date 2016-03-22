@@ -38,6 +38,20 @@
     <ClInclude Include="..\..\..\include\geco-time.h" />
     <ClInclude Include="..\..\..\include\geco-net-type.h" />
     <ClInclude Include="..\..\..\include\geco-secure-hand-shake.h" />
+    <ClInclude Include="..\..\..\include\JackieApplication.h" />
+    <ClInclude Include="..\..\..\include\JackieArraryQueue.h" />
+    <ClInclude Include="..\..\..\include\JackieArrayList.h" />
+    <ClInclude Include="..\..\..\include\JackieINetSocket.h" />
+    <ClInclude Include="..\..\..\include\geco-net-plugin.h" />
+    <ClInclude Include="..\..\..\include\JackieINetVersion.h" />
+    <ClInclude Include="..\..\..\include\JackieMemoryPool.h" />
+    <ClInclude Include="..\..\..\include\JackieReliabler.h" />
+    <ClInclude Include="..\..\..\include\JackieSimpleMutex.h" />
+    <ClInclude Include="..\..\..\include\geco-sliding-windows.h" />
+    <ClInclude Include="..\..\..\include\JackieSPSCQueue.h" />
+    <ClInclude Include="..\..\..\include\JackieWaitEvent.h" />
+    <ClInclude Include="..\..\..\include\JACKIE_Atomic.h" />
+    <ClInclude Include="..\..\..\include\JACKIE_Thread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\geco-globals.cpp" />
@@ -48,6 +62,15 @@
     <ClCompile Include="..\..\..\src\geco-time.cpp" />
     <ClCompile Include="..\..\..\src\geco-net-type.cpp" />
     <ClCompile Include="..\..\..\src\geco-secure-hand-shake.cpp" />
+    <ClCompile Include="..\..\..\src\JackieApplication.cpp" />
+    <ClCompile Include="..\..\..\src\JackieINetSocket.cpp" />
+    <ClCompile Include="..\..\..\src\geco-net-plugin.cpp" />
+    <ClCompile Include="..\..\..\src\JackieReliabler.cpp" />
+    <ClCompile Include="..\..\..\src\JackieSimpleMutex.cpp" />
+    <ClCompile Include="..\..\..\src\geco-sliding-windows.cpp" />
+    <ClCompile Include="..\..\..\src\JackieWaitEvent.cpp" />
+    <ClCompile Include="..\..\..\src\JACKIE_Atomic.cpp" />
+    <ClCompile Include="..\..\..\src\JACKIE_Thread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{65E4D0B3-20FF-4BBE-B23F-F5244715E5D4}</ProjectGuid>

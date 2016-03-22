@@ -1,16 +1,17 @@
+
 /*
- * Copyright (c) 2016
- * Geco Gaming Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for GECO purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation. Geco Gaming makes no
- * representations about the suitability of this software for GECO
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- */
+* Copyright (c) 2016
+* Geco Gaming Company
+*
+* Permission to use, copy, modify, distribute and sell this software
+* and its documentation for GECO purpose is hereby granted without fee,
+* provided that the above copyright notice appear in all copies and
+* that both that copyright notice and this permission notice appear
+* in supporting documentation. Geco Gaming makes no
+* representations about the suitability of this software for GECO
+* purpose.  It is provided "as is" without express or implied warranty.
+*
+*/
 
 // created on 19-March-2016 by Jackie Zhang
 
@@ -110,12 +111,12 @@
 #endif
 
 /// ASSERT
-#ifndef GECO__ASSERT
+#ifndef GECO_ASSERT
 #if defined(__native_client__)
 #define GECO__ASSERT(x)
 #else
 #if defined(_DEBUG)
-#define GECO__ASSERT(x) assert(x);
+#define GECO_ASSERT(x) assert(x);
 #else
 #define GECO__ASSERT(x) 
 #endif
@@ -215,7 +216,7 @@
 
 /// 内存分配函数,与malloc,calloc,realloc类似.
 /// 但是注意一个重要的区别, _alloca是在栈(stack)上申请空间, 用完马上就释放.
-///  unsigned若省略后一个关键字，大多数编译器都会认为是unsigned int。
+///  unsigned若省略后一个关键字，大多数编译器都会认为是unsigned int.
 #ifndef USE_STACK_ALLOCA
 #define USE_STACK_ALLOCA 1
 #endif
