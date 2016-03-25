@@ -31,9 +31,9 @@
 #include <cstring>
 using namespace cat;
 
-#if defined(CAT_USE_LEGS_ASM64) && defined(CAT_COMPILER_COMPAT_MSVC)
-#pragma comment(lib, "./../../Source/cat/lib/cat/big_x64.lib")
-#endif
+//#if defined(CAT_USE_LEGS_ASM64) && defined(CAT_COMPILER_COMPAT_MSVC)
+//#pragma comment(lib, "../../../thirdparty/cat/lib/cat/big_x64.lib")
+//#endif
 
 BigRTL::BigRTL(int regs, int bits)
 {
