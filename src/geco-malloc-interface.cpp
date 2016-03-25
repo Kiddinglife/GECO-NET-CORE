@@ -25,7 +25,7 @@
 #endif
 
 
-GECO_ULTILS_BEGIN_NSPACE
+using namespace geco::ultils;
 
 void DefaultOutOfMemoryHandler(const char *file, const long line)
 {
@@ -66,6 +66,7 @@ JackieFree GetFree()
 JackieMalloc_Ex jackieMalloc_Ex = _DefaultMalloc_Ex;
 JackieRealloc_Ex  jackieRealloc_Ex = _DefaultRealloc_Ex;
 JackieFree_Ex jackieFree_Ex = _DefaultFree_Ex;
+
 void SetMalloc_Ex(JackieMalloc_Ex userFunction)
 {
     jackieMalloc_Ex = userFunction;
@@ -288,6 +289,3 @@ void FreeRakNetFixedHeap(void) { }
 #undef RMO_FREE_UNDEF
 #endif
 #endif
-
-
-GECO_ULTILS_END_NSPACE

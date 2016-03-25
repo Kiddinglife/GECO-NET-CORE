@@ -1,11 +1,12 @@
-#ifndef ReliabilityLayer_H_
-#define ReliabilityLayer_H_
+#ifndef __ReliabilityLayer_H
+#define __ReliabilityLayer_H
 
-#include "geco-time.h"
-#include "geco-namesapces.h"
 #include "geco-export.h"
+#include "geco-namesapces.h"
 #include "geco-features.h"
 #include "geco-basic-type.h"
+#include "geco-time.h"
+
 #if ENABLE_SECURE_HAND_SHAKE==1
 #include "geco-secure-hand-shake.h"
 #endif

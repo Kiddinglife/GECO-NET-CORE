@@ -1,17 +1,18 @@
+#ifndef __INCLUDE_GECO_MEMORY_STREAM_H
+#define __INCLUDE_GECO_MEMORY_STREAM_H
 
-#ifndef __INCLUDE_MEMORY_STREAM_H
-#define __INCLUDE_MEMORY_STREAM_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <float.h>
-#include <string.h>
-#include <math.h>
 
 #if defined(_WIN32)
 #include "geco-wins-includes.h"
 #endif
+
+#include <cstdio>
+#include <stdlib.h>
+#include <memory>
+#include <cfloat>
+#include <cstring>
+#include <cmath>
+#include <cassert>
 
 #include "geco-export.h"
 #include "geco-namesapces.h"
@@ -30,10 +31,10 @@
 #define UnSignedInteger true
 #define SignedInteger false
 
+GECO_NET_BEGIN_NSPACE
+
 class UInt24;
 class JackieString;
-
-GECO_NET_BEGIN_NSPACE
 
 //! This class allows you to write and read native types as a string of bits.  
 //! the value of @mWritePosBits always reprsents 
@@ -2062,7 +2063,7 @@ class GECO_EXPORT GecoMemoryStream
     {
         assert(mWritingPosBits > 0);
 
-        _data = (UInt8*)geco::ultils::jackieMalloc_Ex(BITS_TO_BYTES(mWritingPosBits),
+        _data = (UInt8*)jackieMalloc_Ex(BITS_TO_BYTES(mWritingPosBits),
             TRACE_FILE_AND_LINE_);
         memcpy(_data, data, sizeof(UInt8) * BITS_TO_BYTES(mWritingPosBits));
         return mWritingPosBits;

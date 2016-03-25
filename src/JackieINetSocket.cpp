@@ -331,7 +331,7 @@ JISBindResult JISBerkley::BindSharedIPV4And6(JISBerkleyBindParams *bindParameter
 
 inline JISRecvResult JISBerkley::RecvFrom(JISRecvParams *recvFromStruct)
 {
-    GECO_ASSERT(recvFromStruct != 0);
+    assert(recvFromStruct != 0);
 
     if (jst != 0)
     {
@@ -719,7 +719,7 @@ void JISBerkley::GetMyIPBerkleyV4V6(JackieAddress addresses[MAX_COUNT_LOCAL_IP_A
     int idx = 0;
 
     char buf[80];
-    GECO_ASSERT(gethostname(buf, 80) != -1);
+    assert(gethostname(buf, 80) != -1);
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof(addrinfo)); // make sure the struct is empty

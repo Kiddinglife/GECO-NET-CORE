@@ -38,7 +38,7 @@ typedef LPTHREAD_START_ROUTINE ThreadFunc;
 #elif defined(_WIN32)
 typedef unsigned int(__stdcall *ThreadFunc) (void* arguments);
 #define JACKIE_THREAD_DECLARATION(functionName)\
-	 unsigned int __stdcall functionName( void* arguments )
+	  unsigned int __stdcall functionName( void* arguments )
 #else
 typedef void* (*ThreadFunc)(void* arguments);
 #define JACKIE_THREAD_DECLARATION(functionName) \

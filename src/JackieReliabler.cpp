@@ -1,10 +1,16 @@
 #include "JackieReliabler.h"
 #include "JackieApplication.h"
 #include <iostream>
+
 using namespace geco::net;
 
-JackieReliabler::JackieReliabler() { }
-JackieReliabler::~JackieReliabler() { }
+JackieReliabler::JackieReliabler()
+{
+}
+
+JackieReliabler::~JackieReliabler()
+{
+}
 
 void JackieReliabler::ApplyNetworkSimulator(double _packetloss, unsigned short _minExtraPing, unsigned short _extraPingVariance)
 {

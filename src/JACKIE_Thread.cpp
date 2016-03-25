@@ -27,8 +27,7 @@ int JACKIE_Thread::Create(ThreadFunc start_address, void *arglist, int priority)
 #elif defined _WIN32_WCE
 	threadHandle = CreateThread(NULL,MAX_ALLOC_STACK_COUNT*2,start_address,arglist,0,(DWORD*)&threadID);
 #else
-	threadHandle = (HANDLE)_beginthreadex(NULL, MAX_ALLOC_STACK_COUNT * 2,
-		start_address, arglist, 0, &threadID);
+	threadHandle = (HANDLE)_beginthreadex(NULL, MAX_ALLOC_STACK_COUNT * 2,start_address, arglist, 0, &threadID);
 #endif
 
 	SetThreadPriority(threadHandle, priority);

@@ -16,7 +16,7 @@
 #define __INCLUDE_GECO_EXPORT_H
 
 #if defined(_WIN32) && !(defined(__GNUC__)  || defined(__GCCXML__)) \
-      && !defined(GECO_HAS_STATIC_LIB) && defined(GECO_HAS_DYNAMIC_LIB)
+      && !defined(GECO_LIB) && defined(GECO_DLL)
 #define GECO_EXPORT __declspec(dllexport)
 #else
 #define GECO_EXPORT

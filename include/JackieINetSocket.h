@@ -9,6 +9,7 @@
 #include "geco-globals.h" // only for JackieSleep() global function
 #include "geco-malloc-interface.h"
 #include "geco-net-config.h"
+#include <cassert>
 
 // #define TEST_NATIVE_CLIENT_ON_WINDOWS
 #ifdef TEST_NATIVE_CLIENT_ON_WINDOWS
@@ -234,17 +235,17 @@ class GECO_EXPORT JISBerkley : public JackieINetSocket
         /// do not support reuse addr which means you cannot to a in - use port， only in this way,
         /// detecting id a port is in use can be acheieved
         //returnVal = setsockopt(rns2Socket, SOL_SOCKET, SO_REUSEADDR, (const char*) &returnVal, sizeof(returnVal));
-        //GECO_ASSERT(returnVal == 0);
+        //assert(returnVal == 0);
 
         // This doubles the max throughput rate
         returnVal = GECO_SO_REVBUF_SIZE;
         returnVal = setsockopt__(rns2Socket, SOL_SOCKET, SO_RCVBUF, (char *)& returnVal, sizeof(returnVal));
-        GECO_ASSERT(returnVal == 0);
+        assert(returnVal == 0);
 
         // This doesn't make much difference: 10% maybe Not supported on console 2
         returnVal = GECO_SO_SNDBUF_SIZE;
         returnVal = setsockopt__(rns2Socket, SOL_SOCKET, SO_SNDBUF, (char *)& returnVal, sizeof(returnVal));
-        GECO_ASSERT(returnVal == 0);
+        assert(returnVal == 0);
 
         // Immediate fore-close with ignoring the buffered sending data. 
         // voice, xbox and windows's SOCK_DGRAM does not support 
@@ -252,7 +253,7 @@ class GECO_EXPORT JISBerkley : public JackieINetSocket
         returnVal = 0;
         returnVal = setsockopt__(rns2Socket, SOL_SOCKET, SO_LINGER,
             (char *)& returnVal, sizeof(returnVal));
-        //GECO_ASSERT(returnVal == 0);
+        //assert(returnVal == 0);
 
     }
     inline void SetNonBlockingSocket(unsigned long nonblocking)
@@ -269,11 +270,11 @@ class GECO_EXPORT JISBerkley : public JackieINetSocket
         else
             res = fcntl(rns2Socket, F_SETFL, 0); // setup to blocking
 #endif
-        GECO_ASSERT(res == 0);
+        assert(res == 0);
     }
     inline void SetBroadcastSocket(int broadcast)
     {
-        GECO_ASSERT(setsockopt__(rns2Socket, SOL_SOCKET, SO_BROADCAST,
+        assert(setsockopt__(rns2Socket, SOL_SOCKET, SO_BROADCAST,
             (char *)& broadcast, sizeof(broadcast)) == 0);
     }
     inline void SetIPHdrIncl(int ipHdrIncl)
@@ -283,18 +284,18 @@ class GECO_EXPORT JISBerkley : public JackieINetSocket
         val = setsockopt__(rns2Socket, IPPROTO_IP, SO_DONTLINGER,
             (const char*)&ipHdrIncl, sizeof(ipHdrIncl));
         /// this assert always fail maybe need admin permission
-        /// GECO_ASSERT(val == 0);
+        /// assert(val == 0);
     }
     inline void SetDoNotFragment(int opt)
     {
 #if defined( IP_DONTFRAGMENT )
 #if defined(_WIN32) && !defined(_DEBUG)
         // If this assert hit you improperly linked against WSock32.h
-        GECO_ASSERT(IP_DONTFRAGMENT == 14);
+        assert(IP_DONTFRAGMENT == 14);
 #endif
         opt = setsockopt__(rns2Socket, boundAddress.GetIPProtocol(), IP_DONTFRAGMENT,
             (char *)& opt, sizeof(opt));
-        GECO_ASSERT(opt == 0);
+        assert(opt == 0);
 #endif
     }
 

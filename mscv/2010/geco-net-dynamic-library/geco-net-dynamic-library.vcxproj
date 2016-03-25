@@ -30,24 +30,47 @@
     <ClInclude Include="..\..\..\include\geco-namesapces.h" />
     <ClInclude Include="..\..\..\include\geco-net-config-override.h" />
     <ClInclude Include="..\..\..\include\geco-net-config.h" />
+    <ClInclude Include="..\..\..\include\geco-net-plugin.h" />
     <ClInclude Include="..\..\..\include\geco-net-type.h" />
     <ClInclude Include="..\..\..\include\geco-random-seed-creator.h" />
     <ClInclude Include="..\..\..\include\geco-secure-hand-shake.h" />
+    <ClInclude Include="..\..\..\include\geco-sliding-windows.h" />
     <ClInclude Include="..\..\..\include\geco-sock-defs.h" />
     <ClInclude Include="..\..\..\include\geco-sock-includes.h" />
     <ClInclude Include="..\..\..\include\geco-time.h" />
     <ClInclude Include="..\..\..\include\geco-wins-includes.h" />
     <ClInclude Include="..\..\..\include\geco-wsa-singleton.h" />
+    <ClInclude Include="..\..\..\include\JackieApplication.h" />
+    <ClInclude Include="..\..\..\include\JackieArraryQueue.h" />
+    <ClInclude Include="..\..\..\include\JackieArrayList.h" />
+    <ClInclude Include="..\..\..\include\JackieINetSocket.h" />
+    <ClInclude Include="..\..\..\include\JackieINetVersion.h" />
+    <ClInclude Include="..\..\..\include\JackieMemoryPool.h" />
+    <ClInclude Include="..\..\..\include\JackieReliabler.h" />
+    <ClInclude Include="..\..\..\include\JackieSimpleMutex.h" />
+    <ClInclude Include="..\..\..\include\JackieSPSCQueue.h" />
+    <ClInclude Include="..\..\..\include\JackieWaitEvent.h" />
+    <ClInclude Include="..\..\..\include\JACKIE_Atomic.h" />
+    <ClInclude Include="..\..\..\include\JACKIE_Thread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\geco-globals.cpp" />
     <ClCompile Include="..\..\..\src\geco-malloc-interface.cpp" />
     <ClCompile Include="..\..\..\src\geco-memory-stream.cpp" />
+    <ClCompile Include="..\..\..\src\geco-net-plugin.cpp" />
     <ClCompile Include="..\..\..\src\geco-net-type.cpp" />
     <ClCompile Include="..\..\..\src\geco-random-seed-creator.cpp" />
     <ClCompile Include="..\..\..\src\geco-secure-hand-shake.cpp" />
+    <ClCompile Include="..\..\..\src\geco-sliding-windows.cpp" />
     <ClCompile Include="..\..\..\src\geco-time.cpp" />
     <ClCompile Include="..\..\..\src\geco-wsa-singleton.cpp" />
+    <ClCompile Include="..\..\..\src\JackieApplication.cpp" />
+    <ClCompile Include="..\..\..\src\JackieINetSocket.cpp" />
+    <ClCompile Include="..\..\..\src\JackieReliabler.cpp" />
+    <ClCompile Include="..\..\..\src\JackieSimpleMutex.cpp" />
+    <ClCompile Include="..\..\..\src\JackieWaitEvent.cpp" />
+    <ClCompile Include="..\..\..\src\JACKIE_Atomic.cpp" />
+    <ClCompile Include="..\..\..\src\JACKIE_Thread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{65559532-5B6A-4790-AC91-609304689B59}</ProjectGuid>
@@ -102,6 +125,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -124,14 +148,19 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>GECO_DLL;WIN32;_DEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>../../../include;../../../thirdparty/;../../../thirdparty/openssl-1.0.0d/include;../../../thirdparty/googletest/include/;../../../thirdparty/googlemock/include/;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile />
+      <OutputFile>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)$(Platform).dll</OutputFile>
+      <AdditionalDependencies>ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>LinkVerboseLib</ShowProgress>
+      <ForceFileOutput>
+      </ForceFileOutput>
+      <ImportLibrary>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)$(Platform).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -140,14 +169,23 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;GECO_HAS_DYNAMIC_LIB;DYNAMICLIBRARY_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../../../include;../../../thirdparty/;../../../thirdparty/openssl-1.0.0d/include;../../../thirdparty/googletest/include/;../../../thirdparty/googlemock/include/;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GECO_DLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../../../include;../../../thirdparty;../../../thirdparty/openssl-1.0.0d/include;../../../thirdparty/googletest/include;../../../thirdparty/googlemock/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\VS2013WorkSpace\geco-net\thirdparty\cat\lib\cat;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;big_x64.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>LinkVerboseLib</ShowProgress>
+      <ProgramDatabaseFile>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)_$(Platform).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)$(Platform).dll</OutputFile>
+      <ImportLibrary>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)_$(Platform).lib</ImportLibrary>
     </Link>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -157,7 +195,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GECO_DLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>../../../include;../../../thirdparty/;../../../thirdparty/openssl-1.0.0d/include;../../../thirdparty/googletest/include/;../../../thirdparty/googlemock/include/;</AdditionalIncludeDirectories>
     </ClCompile>
@@ -166,6 +204,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)_$(Platform).lib</ImportLibrary>
+      <OutputFile>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)$(Platform).dll</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -186,8 +227,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>../../../thirdparty/cat/lib/cat;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>big_x64.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;big_x64.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <NoEntryPoint>true</NoEntryPoint>
+      <ShowProgress>NotSet</ShowProgress>
+      <ImportLibrary>$(OutDir)$(SolutionName)_$(ProjectName)_$(Configuration)_$(Platform).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

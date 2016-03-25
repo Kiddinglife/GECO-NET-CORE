@@ -15,21 +15,19 @@ using namespace geco::net;
 using namespace geco::ultils;
 
 #define UNCONNETED_RECVPARAMS_HANDLER0 \
-	if (recvParams->bytesRead >= sizeof(MessageID) + \
-	sizeof(OFFLINE_MESSAGE_DATA_ID) + JackieGUID::size())\
-																																																																																																																																																																																																																																			{*isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),\
-	OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;}
+if (recvParams->bytesRead >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID) + JackieGUID::size())\
+{*isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),\
+OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;}
 
 #define UNCONNETED_RECVPARAMS_HANDLER1 \
-	if (recvParams->bytesRead >=sizeof(MessageID) + sizeof(Time) + sizeof\
-	(OFFLINE_MESSAGE_DATA_ID))\
-																																																																																																																																																																																																																																			{*isOfflinerecvParams =memcmp(recvParams->data + sizeof(MessageID) + \
-	sizeof(Time), OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;}
+if (recvParams->bytesRead >=sizeof(MessageID) + sizeof(Time) + sizeof(OFFLINE_MESSAGE_DATA_ID))\
+{*isOfflinerecvParams =memcmp(recvParams->data + sizeof(MessageID) + \
+sizeof(Time), OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;}
 
 #define UNCONNECTED_RECVPARAMS_HANDLER2 \
-   if (*isOfflinerecvParams) {\
-   for (index = 0; index < pluginListNTS.Size(); index++)\
-   pluginListNTS[index]->OnDirectSocketReceive(recvParams);}
+if (*isOfflinerecvParams) {\
+for (index = 0; index < pluginListNTS.Size(); index++)\
+pluginListNTS[index]->OnDirectSocketReceive(recvParams);}
 
 
 ////////////////////////////////////////////////// STATICS /////////////////////////////////////
@@ -419,7 +417,7 @@ void JackieApplication::End(UInt32 blockDuration,
 inline void JackieApplication::ReclaimOneJISRecvParams(JISRecvParams *s, UInt32 index)
 {
 	//std::cout << "Network Thread Reclaims One JISRecvParams";
-	GECO_ASSERT(deAllocRecvParamQ[index].PushTail(s), true);
+	assert(deAllocRecvParamQ[index].PushTail(s), true);
 }
 inline void JackieApplication::ReclaimAllJISRecvParams(UInt32 Index)
 {
@@ -428,7 +426,7 @@ inline void JackieApplication::ReclaimAllJISRecvParams(UInt32 Index)
 	JISRecvParams* recvParams = 0;
 	for (UInt32 index = 0; index < deAllocRecvParamQ[Index].Size(); index++)
 	{
-		GECO_ASSERT(deAllocRecvParamQ[Index].PopHead(recvParams), true);
+		assert(deAllocRecvParamQ[Index].PopHead(recvParams), true);
 		JISRecvParamsPool[Index].Reclaim(recvParams);
 	}
 }
@@ -447,13 +445,13 @@ void JackieApplication::ClearAllRecvParamsQs()
 		JISRecvParams *recvParams = 0;
 		for (UInt32 i = 0; i < allocRecvParamQ[index].Size(); i++)
 		{
-			GECO_ASSERT(allocRecvParamQ[index].PopHead(recvParams), true);
+			assert(allocRecvParamQ[index].PopHead(recvParams), true);
 			if (recvParams->data != 0) jackieFree_Ex(recvParams->data, TRACE_FILE_AND_LINE_);
 			JISRecvParamsPool[index].Reclaim(recvParams);
 		}
 		for (UInt32 i = 0; i < deAllocRecvParamQ[index].Size(); i++)
 		{
-			GECO_ASSERT(deAllocRecvParamQ[index].PopHead(recvParams), true);
+			assert(deAllocRecvParamQ[index].PopHead(recvParams), true);
 			if (recvParams->data != 0) jackieFree_Ex(recvParams->data, TRACE_FILE_AND_LINE_);
 			JISRecvParamsPool[index].Reclaim(recvParams);
 		}
@@ -471,8 +469,8 @@ inline void JackieApplication::ReclaimAllCommands()
 	Command* bufferedCommand = 0;
 	for (UInt32 index = 0; index < deAllocCommandQ.Size(); index++)
 	{
-		GECO_ASSERT(deAllocCommandQ.PopHead(bufferedCommand), true);
-		GECO_ASSERT(bufferedCommand);
+		assert(deAllocCommandQ.PopHead(bufferedCommand), true);
+		assert(bufferedCommand);
 		commandPool.Reclaim(bufferedCommand);
 	}
 }
@@ -490,15 +488,15 @@ void JackieApplication::ClearAllCommandQs(void)
 	/// first reclaim the elem in 
 	for (UInt32 i = 0; i < allocCommandQ.Size(); i++)
 	{
-		GECO_ASSERT(allocCommandQ.PopHead(bcs) ==  true);
-		GECO_ASSERT(bcs);
+		assert(allocCommandQ.PopHead(bcs) ==  true);
+		assert(bcs);
 		if (bcs->data != 0) jackieFree_Ex(bcs->data, TRACE_FILE_AND_LINE_);
 		commandPool.Reclaim(bcs);
 	}
 	for (UInt32 i = 0; i < deAllocCommandQ.Size(); i++)
 	{
-		GECO_ASSERT(deAllocCommandQ.PopHead(bcs) == true);
-		GECO_ASSERT(bcs);
+		assert(deAllocCommandQ.PopHead(bcs) == true);
+		assert(bcs);
 		if (bcs->data != 0) jackieFree_Ex(bcs->data, TRACE_FILE_AND_LINE_);
 		commandPool.Reclaim(bcs);
 	}
@@ -590,7 +588,7 @@ void JackieApplication::ReclaimAllPackets()
 	JackiePacket* packet;
 	for (UInt32 index = 0; index < deAllocPacketQ.Size(); index++)
 	{
-		GECO_ASSERT(deAllocPacketQ.PopHead(packet), true);
+		assert(deAllocPacketQ.PopHead(packet), true);
 		if (packet->freeInternalData)
 		{
 			//packet->~Packet(); no custom dtor so no need to call default dtor
@@ -602,7 +600,7 @@ void JackieApplication::ReclaimAllPackets()
 inline void JackieApplication::ReclaimPacket(JackiePacket *packet)
 {
 	std::cout << "User Thread Reclaims One Packet";
-	GECO_ASSERT(deAllocPacketQ.PushTail(packet) == true);
+	assert(deAllocPacketQ.PushTail(packet) == true);
 }
 
 
@@ -691,7 +689,7 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
 		return;
 	}
 
-	GECO_ASSERT(recvParams->senderINetAddress.GetPortHostOrder() != 0);
+	assert(recvParams->senderINetAddress.GetPortHostOrder() != 0);
 
 	// 2. Try to process this recv params as unconnected
 	//bool isUnconnectedRecvPrrams;
@@ -902,7 +900,7 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
 				(unsigned char*)recvParams->data);
 			packet->systemAddress = recvParams->senderINetAddress;
 			packet->guid = guid;
-			GECO_ASSERT(allocPacketQ.PushTail(packet), true);
+			assert(allocPacketQ.PushTail(packet), true);
 
 		}
 		//return true;
@@ -1399,7 +1397,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
 						packet = AllocPacket(sizeof(MessageID), &msgid);
 						packet->systemAddress = connectionRequest->receiverAddr;
 						packet->guid = serverGuid;
-						GECO_ASSERT(allocPacketQ.PushTail(packet) == true);
+						assert(allocPacketQ.PushTail(packet) == true);
 						return;
 					}
 #endif
@@ -1505,7 +1503,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 						//packet->data[0] = ID_WECLINOTUSE_SRVPUBKEY_2CONNECT;
 						//packet->data[1] = 0; // Indicate server public key is missing
 						//packet->bitSize = (sizeof(char) * 8);
-						GECO_ASSERT(allocPacketQ.PushTail(packet) == true);
+						assert(allocPacketQ.PushTail(packet) == true);
 						return;
 					}
 				}
@@ -1562,7 +1560,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 									packet = AllocPacket(sizeof(MessageID), &msgid);
 									packet->systemAddress = recvParams->senderINetAddress;
 									packet->guid = myGuid;
-									GECO_ASSERT(allocPacketQ.PushTail(packet) == true);
+									assert(allocPacketQ.PushTail(packet) == true);
 									return;
 								}
 							}
@@ -1630,7 +1628,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 						// Attempted a connection and couldn't
 						packet->systemAddress = connReq->receiverAddr;
 						packet->guid = guid;
-						GECO_ASSERT(allocPacketQ.PushTail(packet) == true);
+						assert(allocPacketQ.PushTail(packet) == true);
 					}
 				}
 
@@ -1743,7 +1741,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
 				MessageID msgid = ID_CONNECTION_ATTEMPT_FAILED;
 				JackiePacket* packet = AllocPacket(sizeof(MessageID), &msgid);
 				packet->systemAddress = connReq->receiverAddr;
-				GECO_ASSERT(allocPacketQ.PushTail(packet), true);
+				assert(allocPacketQ.PushTail(packet), true);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
 				std::cout << "AUDIT: Connection attempt FAILED so deleting connectionRequest->client_handshake object " << connReq->client_handshake;
@@ -1847,8 +1845,8 @@ void JackieApplication::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
 	{
 
 		/// no need to check if bufferedCommand == 0, because we never push 0 pointer
-		GECO_ASSERT(allocCommandQ.PopHead(cmd), true);
-		GECO_ASSERT(cmd);
+		assert(allocCommandQ.PopHead(cmd), true);
+		assert(cmd);
 
 		switch (cmd->commandID)
 		{
@@ -1922,7 +1920,7 @@ void JackieApplication::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
 		}
 
 		std::cout << "Network Thread Reclaims One Command";
-		GECO_ASSERT(deAllocCommandQ.PushTail(cmd), true);
+		assert(deAllocCommandQ.PushTail(cmd), true);
 	}
 
 }
@@ -1957,7 +1955,7 @@ void JackieApplication::ProcessAllocJISRecvParamsQ(void)
 		for (UInt32 inner = 0; inner < allocRecvParamQ[outter].Size(); inner++)
 		{
 			/// no need to check if recvParams == 0, because we never push 0 pointer
-			GECO_ASSERT(allocRecvParamQ[outter].PopHead(recvParams), true);
+			assert(allocRecvParamQ[outter].PopHead(recvParams), true);
 			ProcessOneRecvParam(recvParams);
 			ReclaimOneJISRecvParams(recvParams, inner);
 		}
@@ -2025,7 +2023,7 @@ JackieRemoteSystem* JackieApplication::GetRemoteSystem(const JackieAddress&
 		{
 			if (!onlyWantActiveEndPoint || remoteSystemList[index].isActive)
 			{
-				GECO_ASSERT(remoteSystemList[index].systemAddress == sa);
+				assert(remoteSystemList[index].systemAddress == sa);
 				return &remoteSystemList[index];
 			}
 		}
@@ -2118,7 +2116,7 @@ void JackieApplication::RefRemoteEndPoint(const JackieAddress &sa, UInt32 index)
 	if (old != JACKIE_NULL_ADDRESS)
 	{
 		// The system might be active if rerouting
-		GECO_ASSERT(remoteSystemList[index].isActive, false);
+		assert(remoteSystemList[index].isActive, false);
 		// Remove the reference if the reference is pointing to this inactive system
 		if (GetRemoteSystem(old) == remote)
 		{
@@ -2407,8 +2405,8 @@ JackiePacket* JackieApplication::RunGetPacketCycleOnce(void)
 		JackiePacket *incomePacket = 0;
 
 		/// Get one income packet from bufferedPacketsQueue
-		GECO_ASSERT(allocPacketQ.PopHead(incomePacket), true);
-		GECO_ASSERT(incomePacket->data);
+		assert(allocPacketQ.PopHead(incomePacket), true);
+		assert(incomePacket->data);
 
 		AdjustTimestamp(incomePacket);
 
@@ -2483,7 +2481,7 @@ void JackieApplication::RunRecvCycleOnce(UInt32 index)
 	int result = ((JISBerkley*)bindedSockets[index])->RecvFrom(recvParams);
 	if (result > 0)
 	{
-		GECO_ASSERT(allocRecvParamQ[index].PushTail(recvParams), true);
+		assert(allocRecvParamQ[index].PushTail(recvParams), true);
 		if (incomeDatagramEventHandler != 0)
 		{
 			if (!incomeDatagramEventHandler(recvParams))
@@ -2513,7 +2511,7 @@ void JackieApplication::RunRecvCycleOnce(UInt32 index)
 	}
 }
 
-JACKIE_THREAD_DECLARATION(RunRecvCycleLoop)
+JACKIE_THREAD_DECLARATION(geco::net::RunRecvCycleLoop)
 {
 	JackieApplication *serv = *(JackieApplication**)arguments;
 	UInt32 index = *((UInt32*)((char*)arguments + sizeof(JackieApplication*)));
@@ -2531,7 +2529,8 @@ JACKIE_THREAD_DECLARATION(RunRecvCycleLoop)
 	jackieFree_Ex(arguments, TRACE_FILE_AND_LINE_);
 	return 0;
 }
-JACKIE_THREAD_DECLARATION(RunNetworkUpdateCycleLoop)
+
+JACKIE_THREAD_DECLARATION(geco::net::RunNetworkUpdateCycleLoop)
 {
 	JackieApplication *serv = (JackieApplication*)arguments;
 	serv->isNetworkUpdateThreadActive = true;
@@ -2551,7 +2550,7 @@ JACKIE_THREAD_DECLARATION(RunNetworkUpdateCycleLoop)
 	return 0;
 }
 
-JACKIE_THREAD_DECLARATION(UDTConnect) { return 0; }
+JACKIE_THREAD_DECLARATION(geco::net::UDTConnect) { return 0; }
 //STATIC_FACTORY_DEFINITIONS(IServerApplication, ServerApplication);
 JackieApplication* JackieApplication::GetInstance(void)
 {
@@ -2599,7 +2598,7 @@ void JackieApplication::CancelConnectionRequest(const JackieAddress& target)
 {
 	std::cout << "User Thread Cancel Connection Request To " << target.ToString();
 	connReqCancelQLock.Lock();
-	GECO_ASSERT(connReqCancelQ.PushTail(target), true);
+	assert(connReqCancelQ.PushTail(target), true);
 	connReqCancelQLock.Unlock();
 }
 
@@ -2725,7 +2724,7 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
 			return CONNECTION_ATTEMPT_ALREADY_IN_PROGRESS;
 		}
 	}
-	GECO_ASSERT(connReqQ.PushTail(connReq), true);
+	assert(connReqQ.PushTail(connReq), true);
 	connReqQLock.Unlock();
 
 	return CONNECTION_ATTEMPT_POSTED;

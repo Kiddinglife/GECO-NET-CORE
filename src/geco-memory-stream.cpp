@@ -57,7 +57,7 @@ mReadOnly(false)
     }
     else
     {
-        data = (UInt8*)geco::ultils::jackieMalloc_Ex(initialBytesAllocate, TRACE_FILE_AND_LINE_);
+        data = (UInt8*)jackieMalloc_Ex(initialBytesAllocate, TRACE_FILE_AND_LINE_);
         mBitsAllocSize = BYTES_TO_BITS(initialBytesAllocate);
         mNeedFree = true;
         assert(data);
