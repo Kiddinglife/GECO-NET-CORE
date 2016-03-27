@@ -17,8 +17,13 @@
 #ifndef __INCLUDE_GECO_FAST_HASH_H
 #define __INCLUDE_GECO_FAST_HASH_H
 
+#include <cstddef>
+#include <cstdint>
+#include <emmintrin.h>
+
 #include "geco-export.h"
 #include "geco-namesapces.h"
+
 
 GECO_ULTILS_BEGIN_NSPACE
 
@@ -56,6 +61,10 @@ inline GECO_EXPORT extern char* PointerAlignBinary(unsigned char const * ptr, un
     return PointerAlignBinary(reinterpret_cast<char const *> (ptr), alignment);
 }
 
+//---------------------------------------------------------------------
+// main routine
+//---------------------------------------------------------------------
+GECO_EXPORT extern void* SuperFastMemCpy(void *destination, const void *source, size_t size);
 
 GECO_ULTILS_END_NSPACE
 #endif

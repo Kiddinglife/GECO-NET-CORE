@@ -26,7 +26,7 @@
 /// so your changes are not lost when updating JackieNet
 /// The user should not handly-change the content of DefaultDefine.h
 #include "geco-net-config-override.h"
-#include <assert.h>
+#include <cassert>
 
 /// #define USE_MEM_TRACK_OVERRIDE 1 for custom memory tracking
 /// See OverrideMemory.h. 
@@ -43,12 +43,16 @@
 /// for the bitstream class. 256 is an arbitrary size, just picking something likely to be larger 
 /// than  most packets
 #ifndef GECO_STREAM_STACK_ALLOC_SIZE
-#define GECO_STREAM_STACK_ALLOC_SIZE 256
+#define GECO_STREAM_STACK_ALLOC_BYTES 256
 #endif
 
 // Redefine if you want to disable or change the target for debug RAKNET_DEBUG_PRINTF
-#ifndef GECO__PRINTFS
-#define GECO_PRINTFS printf_s
+#ifndef debug_printfs(msg)
+#ifdef _DEBUG
+#define debug(msg) printf_s(msg)
+#else 
+#define debug(msg)
+#endif
 #endif
 
 /// #define DO_BYTE_SWAP 0 means NOT support byte swapping in the BitStream class.  
@@ -74,21 +78,12 @@
 #define USE_TIME_MS_64BITS 1
 #endif
 
-#ifndef TRACE_FILE_NAME
-#define TRACE_FILE_NAME __FILE__
 /// if you want to strip out file and line info for memory tracking from the EXE
-/// #define TRACE_FILE_NAME  "" or 0
-#endif
-#ifndef TRACE_LINE_NUMBER
-#define TRACE_LINE_NUMBER __LINE__
-/// if you want to strip out file and line info for memory tracking from the EXE
-/// #define TRACE_LINE_NUMBER  "" or 0
-#endif
-
-#ifndef TRACE_FILE_AND_LINE_
-#define TRACE_FILE_AND_LINE_ __FILE__,__LINE__
-/// if you want to strip out file and line info for memory tracking from the EXE
-/// #define TRACE_LINE_NUMBER  "" or 0
+/// #define DISABLE_TRACKE_MALLOC in overrided.h
+#ifndef DISABLE_TRACKE_MALLOC
+#define TRACKE_MALLOC __FILE__,__LINE__
+#else
+#define TRACKE_MALLOC 0,0
 #endif
 
 /// Use WaitForSingleObject instead of sleep. Defining it plays nicer with other systems, and 
@@ -234,5 +229,14 @@
 #ifndef GECO_SO_REVBUF_SIZE
 #define GECO_SO_REVBUF_SIZE 1024*256; //256KB
 #endif
+
+#define GECO_STATIC_FACTORY_DELC(TYPE)\
+static TYPE* GetInstance(void);\
+static void DestroyInstance(TYPE *i);
+
+// CAUTION: OP_DELETE is in namespace geco::ultils
+#define GECO_STATIC_FACTORY_DEFIS(FATHER_TYPE, CHILD_TYPE)\
+FATHER_TYPE* FATHER_TYPE::GetInstance(void){ return OP_NEW<CHILD_TYPE>(TRACKE_MALLOC);}\
+void FATHER_TYPE::DestroyInstance(FATHER_TYPE* i){OP_DELETE(i, TRACKE_MALLOC);}
 
 #endif

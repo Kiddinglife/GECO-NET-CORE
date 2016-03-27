@@ -34,6 +34,7 @@
 #include "geco-net-config.h"
 #include "geco-namesapces.h"
 
+
 // These pointers are statically and globally defined in RakMemoryOverride.cpp
 // Change them to point to your own allocators if you want.
 // Use the functions for a DLL, or just reassign the variable if using source
@@ -53,9 +54,9 @@ extern GECO_EXPORT JackieFree GetFree();
 typedef  void * (*JackieMalloc_Ex) (size_t size, const char *file, unsigned int line);
 typedef  void * (*JackieRealloc_Ex) (void *p, size_t size, const char *file, unsigned int line);
 typedef  void(*JackieFree_Ex) (void *p, const char *file, unsigned int line);
-extern GECO_EXPORT JackieMalloc_Ex jackieMalloc_Ex;
-extern GECO_EXPORT JackieRealloc_Ex jackieRealloc_Ex;
-extern GECO_EXPORT JackieFree_Ex jackieFree_Ex;
+extern GECO_EXPORT JackieMalloc_Ex gMallocEx;
+extern GECO_EXPORT JackieRealloc_Ex gReallocEx;
+extern GECO_EXPORT JackieFree_Ex gFreeEx;
 extern GECO_EXPORT void SetMalloc_Ex(JackieMalloc_Ex userFunction);
 extern GECO_EXPORT void SetRealloc_Ex(JackieRealloc_Ex userFunction);
 extern GECO_EXPORT void SetFree_Ex(JackieFree_Ex userFunction);

@@ -66,13 +66,13 @@ class GECO_EXPORT JackieMemoryPool
         UInt32 i = 0;
 
         ///  allocate @Cell Array
-        if ((page->cell = (Cell*)jackieMalloc_Ex(mPerPageSizeByte, TRACE_FILE_AND_LINE_))
+        if ((page->cell = (Cell*)gMallocEx(mPerPageSizeByte, TRACKE_MALLOC))
             == 0) return false;
 
         /// allocate @Cell Pointers Array
-        if ((page->freeCells = (Cell**)jackieMalloc_Ex(sizeof(Cell*)*mCellSizePerPage, TRACE_FILE_AND_LINE_)) == 0)
+        if ((page->freeCells = (Cell**)gMallocEx(sizeof(Cell*)*mCellSizePerPage, TRACKE_MALLOC)) == 0)
         {
-            jackieFree_Ex(page->cell, TRACE_FILE_AND_LINE_);
+            gFreeEx(page->cell, TRACKE_MALLOC);
             return false;
         }
 
@@ -106,7 +106,7 @@ class GECO_EXPORT JackieMemoryPool
     Type* Allocate(void)
     {
 #if _DISABLE_MEMORY_POOL != 0
-        return(Type*) jackieMalloc_Ex(sizeof(Type), TRACE_FILE_AND_LINE_);
+        return(Type*) gMallocEx(sizeof(Type), TRACKE_MALLOC);
 #endif
 
         if (mUsablePagesSize > 0)
@@ -138,7 +138,7 @@ class GECO_EXPORT JackieMemoryPool
             return retValue;
         }
 
-        if ((usablePage = (Page *)jackieMalloc_Ex(sizeof(Page), TRACE_FILE_AND_LINE_)) == 0) return 0;
+        if ((usablePage = (Page *)gMallocEx(sizeof(Page), TRACKE_MALLOC)) == 0) return 0;
         mUsablePagesSize = 1;
         if (!InitPage(usablePage, usablePage)) return 0;
         assert(usablePage->freeCellsSize > 1);
@@ -147,7 +147,7 @@ class GECO_EXPORT JackieMemoryPool
     void Reclaim(Type *m)
     {
 #if _DISABLE_MEMORY_POOL != 0
-        jackieFree_Ex(m, TRACE_FILE_AND_LINE_);
+        gFreeEx(m, TRACKE_MALLOC);
         return;
 #endif
         /// find the page where @m is in and return it
@@ -206,9 +206,9 @@ class GECO_EXPORT JackieMemoryPool
                 currPage->prev->next = currPage->next;
                 currPage->next->prev = currPage->prev;
                 mUsablePagesSize--;
-                jackieFree_Ex(currPage->freeCells, TRACE_FILE_AND_LINE_);
-                jackieFree_Ex(currPage->cell, TRACE_FILE_AND_LINE_);
-                jackieFree_Ex(currPage, TRACE_FILE_AND_LINE_);
+                gFreeEx(currPage->freeCells, TRACKE_MALLOC);
+                gFreeEx(currPage->cell, TRACKE_MALLOC);
+                gFreeEx(currPage, TRACKE_MALLOC);
             }
         }
     }
@@ -224,17 +224,17 @@ class GECO_EXPORT JackieMemoryPool
             currentPage = usablePage;
             while (true)
             {
-                jackieFree_Ex(currentPage->freeCells, TRACE_FILE_AND_LINE_);
-                jackieFree_Ex(currentPage->cell, TRACE_FILE_AND_LINE_);
+                gFreeEx(currentPage->freeCells, TRACKE_MALLOC);
+                gFreeEx(currentPage->cell, TRACKE_MALLOC);
                 freedPage = currentPage;
                 currentPage = currentPage->next;
                 if (currentPage == usablePage)
                 {
-                    jackieFree_Ex(freedPage, TRACE_FILE_AND_LINE_);
+                    gFreeEx(freedPage, TRACKE_MALLOC);
                     mUsablePagesSize = 0;
                     break;
                 }
-                jackieFree_Ex(freedPage, TRACE_FILE_AND_LINE_);
+                gFreeEx(freedPage, TRACKE_MALLOC);
             }
         }
 
@@ -243,17 +243,17 @@ class GECO_EXPORT JackieMemoryPool
             currentPage = unUsablePage;
             while (true)
             {
-                jackieFree_Ex(currentPage->freeCells, TRACE_FILE_AND_LINE_);
-                jackieFree_Ex(currentPage->cell, TRACE_FILE_AND_LINE_);
+                gFreeEx(currentPage->freeCells, TRACKE_MALLOC);
+                gFreeEx(currentPage->cell, TRACKE_MALLOC);
                 freedPage = currentPage;
                 currentPage = currentPage->next;
                 if (currentPage == unUsablePage)
                 {
-                    jackieFree_Ex(freedPage, TRACE_FILE_AND_LINE_);
+                    gFreeEx(freedPage, TRACKE_MALLOC);
                     mUnUsablePagesSize = 0;
                     break;
                 }
-                jackieFree_Ex(freedPage, TRACE_FILE_AND_LINE_);
+                gFreeEx(freedPage, TRACKE_MALLOC);
             }
         }
     }

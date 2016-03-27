@@ -22,12 +22,12 @@ class JackieSPSCQueue
     {
         //round up to the next power of 2
         if (!IsPower2(nSize*m_ElementSize)) { m_nSize = RoundUpPower2(nSize*m_ElementSize); }
-        m_pBuffer = (char*)jackieMalloc_Ex(m_nSize, __FILE__, __LINE__);
+        m_pBuffer = (char*)gMallocEx(m_nSize, __FILE__, __LINE__);
         m_nIn = m_nOut = 0;
     }
     virtual ~JackieSPSCQueue()
     {
-        if (0 != m_pBuffer) { jackieFree_Ex(m_pBuffer, __FILE__, __LINE__); m_pBuffer = 0; }
+        if (0 != m_pBuffer) { gFreeEx(m_pBuffer, __FILE__, __LINE__); m_pBuffer = 0; }
     }
 
     void Clear(void) { m_nIn = m_nOut = 0; }

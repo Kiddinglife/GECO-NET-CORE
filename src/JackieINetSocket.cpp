@@ -52,23 +52,23 @@ inline JackieINetSocket*  JISAllocator::AllocJIS(void)
 {
     JackieINetSocket* s2 = 0;
 #if defined(WINDOWS_STORE_RT)
-    s2 = geco::ultils::OP_NEW<JISWINSTROE8>(TRACE_FILE_AND_LINE_);
+    s2 = geco::ultils::OP_NEW<JISWINSTROE8>(TRACKE_MALLOC);
     if(s2 != 0)  s2->SetSocketType(JISType_WINDOWS_STORE_8);
 #elif defined(__native_client__)
-    s2 = geco::ultils::OP_NEW<JISNativeClient>(TRACE_FILE_AND_LINE_);
+    s2 = geco::ultils::OP_NEW<JISNativeClient>(TRACKE_MALLOC);
     s2->SetSocketType(RNS2T_CHROME);
 #elif defined(_WIN32)
-    s2 = geco::ultils::OP_NEW<JISBerkley>(TRACE_FILE_AND_LINE_);
+    s2 = geco::ultils::OP_NEW<JISBerkley>(TRACKE_MALLOC);
     if (s2 != 0) s2->SetSocketType(JISType_WINDOWS);
 #else
-    s2 = GECO_INET::OP_NEW<JISBerkley>(TRACE_FILE_AND_LINE_);
+    s2 = GECO_INET::OP_NEW<JISBerkley>(TRACKE_MALLOC);
     if(s2 != 0)  s2->SetSocketType(JISType_LINUX);
 #endif
     return s2;
 }
 inline void  JISAllocator::DeallocJIS(JackieINetSocket *s)
 {
-    geco::ultils::OP_DELETE(s, TRACE_FILE_AND_LINE_);
+    geco::ultils::OP_DELETE(s, TRACKE_MALLOC);
 }
 //////////////////////////////// JISAllocator ends  ///////////////////////
 
@@ -142,7 +142,7 @@ bool JISBerkley::IsPortInUse(unsigned short port, const char *hostAddress,
 
     JackieAddress boundAddress;
     JISBerkley *rns2 = (JISBerkley*)JISAllocator::AllocJIS();
-    JISBindResult bindResult = rns2->BindSharedIPV4And6(&bbp, TRACE_FILE_AND_LINE_);
+    JISBindResult bindResult = rns2->BindSharedIPV4And6(&bbp, TRACKE_MALLOC);
     JISAllocator::DeallocJIS(rns2);
     return bindResult == JISBindResult_FAILED_BIND_SOCKET;
 }
@@ -178,7 +178,7 @@ JISBindResult JISBerkley::BindShared(JISBerkleyBindParams *bindParameters,
     char zero[128] = { 0 };
     JISSendParams sendParams = { (char*)&zero, sizeof(zero), 0, boundAddress, 0 };
 
-    Send(&sendParams, TRACE_FILE_AND_LINE_);
+    Send(&sendParams, TRACKE_MALLOC);
     JackieSleep(10); // make sure data has been delivered into us
     JISRecvParams recvParams;
     recvParams.localBoundSocket = this;

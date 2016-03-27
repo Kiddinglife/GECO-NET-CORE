@@ -13,108 +13,100 @@
 */
 
 #include "geco-memory-stream.h"
-using namespace geco::ultils;
+#include "geco-globals.h"
 
+using namespace geco::ultils;
 GECO_NET_BEGIN_NSPACE
 
-static const BitSize JACKIESTREAM_STACK_ALLOC_BITS_SIZE =
-BYTES_TO_BITS(GECO_STREAM_STACK_ALLOC_SIZE);
+static const BitSize GECO_STREAM_STACK_ALLOC_BITS =
+BYTES_TO_BITS(GECO_STREAM_STACK_ALLOC_BYTES);
 
-GecoMemoryStream* GecoMemoryStream::GetInstance(void)
-{
-    return OP_NEW<GecoMemoryStream>(TRACE_FILE_AND_LINE_);
-}
-
-void GecoMemoryStream::DestroyInstance(GecoMemoryStream* i)
-{
-    OP_DELETE(i, TRACE_FILE_AND_LINE_);
-}
-
+GECO_STATIC_FACTORY_DEFIS(GecoMemoryStream, GecoMemoryStream);
 
 GecoMemoryStream::GecoMemoryStream() :
-mBitsAllocSize(JACKIESTREAM_STACK_ALLOC_BITS_SIZE),
-mWritingPosBits(0),
-mReadingPosBits(0),
-data(mStacBuffer),
-mNeedFree(false),
-mReadOnly(false)
+alloc_bits_size_(GECO_STREAM_STACK_ALLOC_BITS),
+write_pos_(0),
+read_pos_(0),
+data_(stack_buffer_),
+is_heap_buffer_(false),
+is_read_only_(false)
 {
-    //memset(data, 0, GECO_STREAM_STACK_ALLOC_SIZE); // NO NEED TO SET ALL ZEROS
+    memset(data_, 0, GECO_STREAM_STACK_ALLOC_BYTES);
 }
 
 GecoMemoryStream::GecoMemoryStream(const BitSize initialBytesAllocate) :
-mWritingPosBits(0),
-mReadingPosBits(0),
-mReadOnly(false)
+write_pos_(0),
+read_pos_(0),
+is_read_only_(false)
 {
-    if (initialBytesAllocate <= GECO_STREAM_STACK_ALLOC_SIZE)
+    if (initialBytesAllocate <= GECO_STREAM_STACK_ALLOC_BYTES)
     {
-        data = mStacBuffer;
-        mBitsAllocSize = JACKIESTREAM_STACK_ALLOC_BITS_SIZE;
-        mNeedFree = false;
-        assert(data);
-        //memset(data, 0, GECO_STREAM_STACK_ALLOC_SIZE); // NO NEED TO SET ALL ZEROS
+        data_ = stack_buffer_;
+        alloc_bits_size_ = GECO_STREAM_STACK_ALLOC_BITS;
+        is_heap_buffer_ = false;
     }
     else
     {
-        data = (UInt8*)jackieMalloc_Ex(initialBytesAllocate, TRACE_FILE_AND_LINE_);
-        mBitsAllocSize = BYTES_TO_BITS(initialBytesAllocate);
-        mNeedFree = true;
-        assert(data);
-        //memset(data, 0, initialBytesAllocate); // NO NEED TO SET ALL ZEROS
+        data_ = (UInt8*)gMallocEx(initialBytesAllocate, TRACKE_MALLOC);
+        alloc_bits_size_ = BYTES_TO_BITS(initialBytesAllocate);
+        is_heap_buffer_ = true;
     }
+
+    assert(data_ && "buffer_ cannot be 0.\n");
+    memset(data_, 0, GECO_STREAM_STACK_ALLOC_BYTES);
 }
-GecoMemoryStream::GecoMemoryStream(UInt8* src, const ByteSize len, bool copy/*=false*/) :
-mBitsAllocSize(BYTES_TO_BITS(len)),
-mWritingPosBits(BYTES_TO_BITS(len)),
-mReadingPosBits(0),
-mNeedFree(copy),
-mReadOnly(!copy)
+
+GecoMemoryStream::GecoMemoryStream(UInt8* const src, const ByteSize len, bool copy/*=false*/) :
+alloc_bits_size_(BYTES_TO_BITS(len)),
+write_pos_(BYTES_TO_BITS(len)),
+read_pos_(0),
+is_read_only_(false)
 {
-    if (mNeedFree)
+    if (copy)
     {
         if (len > 0)
         {
-            if (len <= GECO_STREAM_STACK_ALLOC_SIZE)
+            if (len <= GECO_STREAM_STACK_ALLOC_BYTES)
             {
-                data = mStacBuffer;
-                mNeedFree = false;
-                mBitsAllocSize = JACKIESTREAM_STACK_ALLOC_BITS_SIZE;
-                assert(data);
-                //memset(data, 0, GECO_STREAM_STACK_ALLOC_SIZE); // NO NEED TO SET ALL ZEROS
+                data_ = stack_buffer_;
+                is_heap_buffer_ = false;
+                alloc_bits_size_ = GECO_STREAM_STACK_ALLOC_BITS; // reset alloc_bit_size
+                memset(data_, 0, GECO_STREAM_STACK_ALLOC_BYTES);
             }
             else
             {
-                data = (UInt8*)jackieMalloc_Ex(len, TRACE_FILE_AND_LINE_);
-                mNeedFree = true;
-                assert(data);
-                //memset(data, 0, len); // NO NEED TO SET ALL ZEROS
+                data_ = (UInt8*)gMallocEx(len, TRACKE_MALLOC);
+                is_heap_buffer_ = true;
+                assert(data_ && "buffer_ cannot be 0.\n");
+                memset(data_, 0, len);
             }
-            memcpy(data, src, len);
+            SuperFastMemCpy(data_, src, len);
         }
         else
         {
-            data = 0;
-            mNeedFree = false;
+            data_ = 0;
+            is_heap_buffer_ = false;
         }
     }
     else
     {
-        data = src;
-        mNeedFree = false;
+        data_ = src;
+        is_heap_buffer_ = false;
     }
 }
+
 GecoMemoryStream::~GecoMemoryStream()
 {
-    if (mNeedFree && mBitsAllocSize > JACKIESTREAM_STACK_ALLOC_BITS_SIZE)
+    if (is_heap_buffer_ && alloc_bits_size_ > GECO_STREAM_STACK_ALLOC_BITS)
     {
-        jackieFree_Ex(data, TRACE_FILE_AND_LINE_);
+        gFreeEx(data_, TRACKE_MALLOC);
     }
 }
 
 void GecoMemoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool isUnsigned)
 {
-    //JINFO << "get pay loads in read mini " << GetPayLoadBits();
+    debug("pay loads '%d' in read mini\n", GetPayLoadBits);
+
     UInt32 currByte;
     UInt8 byteMatch;
     UInt8 halfByteMatch;
@@ -133,7 +125,8 @@ void GecoMemoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool
     if (!IsBigEndian())
     {
         currByte = (bits2Read >> 3) - 1;
-        //JINFO << "currByte" << currByte;
+        debug("currByte '%d'", currByte);
+
         while (currByte > 0)
         {
             // If we read a 1 then the data is byteMatch.
@@ -202,19 +195,19 @@ void GecoMemoryStream::ReadMini(UInt8* dest, const BitSize bits2Read, const bool
 
 void GecoMemoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
 {
-    BitSize newBitsAllocCount = bits2Append + mWritingPosBits; /// official
+    BitSize newBitsAllocCount = bits2Append + write_pos_; /// official
     //BitSize newBitsAllocCount = bits2Append + mWritingPosBits + 1;
 
     // If this assert hits then we need to specify mReadOnly as false 
     // It needs to reallocate to hold all the data and can't do it unless we allocated to begin with
     // Often hits if you call Write or Serialize on a read-only bitstream
-    assert(mReadOnly == false);
+    assert(is_read_only_ == false);
 
     //if (newBitsAllocCount > 0 && ((mBitsAllocSize - 1) >> 3) < // official
     //	((newBitsAllocCount - 1) >> 3)) 
 
     /// see if one or more new bytes need to be allocated
-    if (mBitsAllocSize < newBitsAllocCount)
+    if (alloc_bits_size_ < newBitsAllocCount)
     {
         // Less memory efficient but saves on news and deletes
         /// Cap to 1 meg buffer to save on huge allocations
@@ -226,29 +219,29 @@ void GecoMemoryStream::AppendBitsCouldRealloc(const BitSize bits2Append)
             newBitsAllocCount <<= 1;
         // Use realloc and free so we are more efficient than delete and new for resizing
         BitSize bytes2Alloc = BITS_TO_BYTES(newBitsAllocCount);
-        if (data == mStacBuffer)
+        if (data_ == stack_buffer_)
         {
-            if (bytes2Alloc > GECO_STREAM_STACK_ALLOC_SIZE)
+            if (bytes2Alloc > GECO_STREAM_STACK_ALLOC_BYTES)
             {
                 //printf("data == mStacBuffer\n");
-                data = (UInt8 *)jackieMalloc_Ex(bytes2Alloc, TRACE_FILE_AND_LINE_);
-                if (mWritingPosBits > 0) memcpy(data, mStacBuffer, BITS_TO_BYTES(mBitsAllocSize));
-                mNeedFree = true;
+                data_ = (UInt8 *)gMallocEx(bytes2Alloc, TRACKE_MALLOC);
+                if (write_pos_ > 0) memcpy(data_, stack_buffer_, BITS_TO_BYTES(alloc_bits_size_));
+                is_heap_buffer_ = true;
             }
         }
         else
         {
             //printf("data != mStacBuffer\n");
             /// if allocate new memory, old data is copied and old memory is frred
-            data = (UInt8*)jackieRealloc_Ex(data, bytes2Alloc, TRACE_FILE_AND_LINE_);
-            mNeedFree = true;
+            data_ = (UInt8*)gReallocEx(data_, bytes2Alloc, TRACKE_MALLOC);
+            is_heap_buffer_ = true;
         }
 
-        assert(data != 0);
+        assert(data_ != 0);
     }
 
-    if (newBitsAllocCount > mBitsAllocSize)
-        mBitsAllocSize = newBitsAllocCount;
+    if (newBitsAllocCount > alloc_bits_size_)
+        alloc_bits_size_ = newBitsAllocCount;
 }
 
 void GecoMemoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight /*= true*/)
@@ -272,23 +265,23 @@ void GecoMemoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight 
     //if (bits2Read <= 0 || bits2Read > GetPayLoadBits()) return;
 
     /// get offset that overlaps one byte boudary, &7 is same to %8, but faster
-    const BitSize startReadPosBits = mReadingPosBits & 7;
+    const BitSize startReadPosBits = read_pos_ & 7;
 
     /// byte position where start to read
-    ByteSize readPosByte = mReadingPosBits >> 3;
+    ByteSize readPosByte = read_pos_ >> 3;
 
     if (startReadPosBits == 0 && (bits2Read & 7) == 0)
     {
-        memcpy(dest, data + (mReadingPosBits >> 3), bits2Read >> 3);
-        mReadingPosBits += bits2Read;
+        memcpy(dest, data_ + (read_pos_ >> 3), bits2Read >> 3);
+        read_pos_ += bits2Read;
         return;
     }
 
     /// if @mReadPosBits is aligned  do memcpy for efficiency
     if (startReadPosBits == 0)
     {
-        memcpy(dest, &data[readPosByte], BITS_TO_BYTES(bits2Read));
-        mReadingPosBits += bits2Read;
+        memcpy(dest, &data_[readPosByte], BITS_TO_BYTES(bits2Read));
+        read_pos_ += bits2Read;
 
         /// if @bitsSize is not multiple times of 8, 
         /// process the last read byte to shit the bits
@@ -310,21 +303,21 @@ void GecoMemoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight 
     /// Read one complete byte each time 
     while (bits2Read > 0)
     {
-        readPosByte = mReadingPosBits >> 3;
+        readPosByte = read_pos_ >> 3;
 
         /// firstly read left-fragment bits in this byte 
-        dest[writePosByte] |= (data[readPosByte] << (startReadPosBits));
+        dest[writePosByte] |= (data_[readPosByte] << (startReadPosBits));
 
         /// secondly read right-fragment bits  ( if any ) in this byte
         if (startReadPosBits > 0 && bits2Read > (8 - startReadPosBits))
         {
-            dest[writePosByte] |= data[readPosByte + 1] >> (8 - startReadPosBits);
+            dest[writePosByte] |= data_[readPosByte + 1] >> (8 - startReadPosBits);
         }
 
         if (bits2Read >= 8)
         {
             bits2Read -= 8;
-            mReadingPosBits += 8;
+            read_pos_ += 8;
             writePosByte++;
         }
         else
@@ -339,7 +332,7 @@ void GecoMemoryStream::ReadBits(UInt8 *dest, BitSize bits2Read, bool alignRight 
                 dest[writePosByte] |= 0;  /// left align result byte: 1111 0000 
 
             ///  [11/15/2015 JACKIE] fix bug of not incrementing mReadingPosBits
-            mReadingPosBits += bits2Read;
+            read_pos_ += bits2Read;
             bits2Read = 0;
         }
     }
@@ -369,8 +362,8 @@ void GecoMemoryStream::ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read)
     AlignReadPosBitsByteBoundary();
 
     /// read the data
-    memcpy(dest, data + (mReadingPosBits >> 3), bytes2Read);
-    mReadingPosBits += bytes2Read << 3;
+    memcpy(dest, data_ + (read_pos_ >> 3), bytes2Read);
+    read_pos_ += bytes2Read << 3;
 }
 
 void GecoMemoryStream::ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read)
@@ -384,13 +377,13 @@ void GecoMemoryStream::ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read, const 
 
 void GecoMemoryStream::ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read)
 {
-    jackieFree_Ex(*dest, TRACE_FILE_AND_LINE_);
+    gFreeEx(*dest, TRACKE_MALLOC);
     *dest = 0;
     bytes2Read = ReadBit();
     ///ReadMini(bytes2Read);
     if (bytes2Read > maxBytes2Read) bytes2Read = maxBytes2Read;
     if (bytes2Read == 0) return;
-    *dest = (Int8*)jackieMalloc_Ex(bytes2Read, TRACE_FILE_AND_LINE_);
+    *dest = (Int8*)gMallocEx(bytes2Read, TRACKE_MALLOC);
     ReadAlignedBytes((UInt8*)*dest, bytes2Read);
 }
 
@@ -410,7 +403,7 @@ void GecoMemoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool righ
     /// start write first 3 bits 101 after shifting to right by , 00000 101 
     /// write result                                                                      00010 101
 
-    assert(mReadOnly == false);
+    assert(is_read_only_ == false);
     assert(bits2Write > 0);
 
     //if( mReadOnly ) return false;
@@ -420,13 +413,13 @@ void GecoMemoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool righ
 
     /// get offset that overlaps one byte boudary, &7 is same to %8, but faster
     /// @startWritePosBits could be zero
-    const BitSize startWritePosBits = mWritingPosBits & 7;
+    const BitSize startWritePosBits = write_pos_ & 7;
 
     // If currently aligned and numberOfBits is a multiple of 8, just memcpy for speed
     if (startWritePosBits == 0 && (bits2Write & 7) == 0)
     {
-        memcpy(data + (mWritingPosBits >> 3), src, bits2Write >> 3);
-        mWritingPosBits += bits2Write;
+        memcpy(data_ + (write_pos_ >> 3), src, bits2Write >> 3);
+        write_pos_ += bits2Write;
         return;
     }
 
@@ -446,7 +439,7 @@ void GecoMemoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool righ
         {
             /// startWritePosBits == 0  means there are no overlapped bits to be further 
             /// processed and so we can directly write @dataByte into stream
-            data[mWritingPosBits >> 3] = dataByte;
+            data_[write_pos_ >> 3] = dataByte;
         }
         else
         {
@@ -456,7 +449,7 @@ void GecoMemoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool righ
             /// firstly write the as the same number of bits from @dataByte intot
             /// @data[mWritePosBits >> 3] to that in the right-half of 
             /// @data[mWritePosBits >> 3]
-            data[mWritingPosBits >> 3] |= dataByte >> startWritePosBits;
+            data_[write_pos_ >> 3] |= dataByte >> startWritePosBits;
 
             /// then to see if we have remaining bits in @dataByte to write 
             /// 1. startWritePosBits > 0 means @data[mWritePosBits >> 3] is a partial byte
@@ -467,26 +460,26 @@ void GecoMemoryStream::WriteBits(const UInt8* src, BitSize bits2Write, bool righ
             if (bits2Write > (8 - startWritePosBits))
             {
                 /// write remaining bits into the  byte next to @data[mWritePosBits >> 3]
-                data[(mWritingPosBits >> 3) + 1] = (dataByte << (8 - startWritePosBits));
+                data_[(write_pos_ >> 3) + 1] = (dataByte << (8 - startWritePosBits));
             }
         }
 
         /// we wrote one complete byte in above codes just now
         if (bits2Write >= 8)
         {
-            mWritingPosBits += 8;
+            write_pos_ += 8;
             bits2Write -= 8;
         }
         else ///  it is the last (could be partial) byte we wrote in the above codes,
         {
-            mWritingPosBits += bits2Write;
+            write_pos_ += bits2Write;
             bits2Write = 0;
         }
     }
 }
 void GecoMemoryStream::Write(GecoMemoryStream *jackieBits, BitSize bits2Write)
 {
-    assert(mReadOnly == false);
+    assert(is_read_only_ == false);
     assert(bits2Write > 0);
     assert(bits2Write <= jackieBits->GetPayLoadBits());
 
@@ -494,47 +487,47 @@ void GecoMemoryStream::Write(GecoMemoryStream *jackieBits, BitSize bits2Write)
     /// test new  implementation 20 seconds
     /// write some bits that makes jackieBits->mReadingPosBits aligned to next byte boudary
     AppendBitsCouldRealloc(bits2Write);
-    BitSize numberOfBitsMod8 = (jackieBits->mReadingPosBits & 7);
+    BitSize numberOfBitsMod8 = (jackieBits->read_pos_ & 7);
     BitSize newBits2Read = 8 - numberOfBitsMod8;
     if (newBits2Read > 0)
     {
         while (newBits2Read-- > 0)
         {
-            numberOfBitsMod8 = mWritingPosBits & 7;
+            numberOfBitsMod8 = write_pos_ & 7;
             if (numberOfBitsMod8 == 0)
             {
                 /// see if this src bit  is 1 or 0, 0x80 (16)= 128(10)= 10000000 (2)
-                if ((jackieBits->data[jackieBits->mReadingPosBits >> 3] &
-                    (0x80 >> (jackieBits->mReadingPosBits & 7))))
+                if ((jackieBits->data_[jackieBits->read_pos_ >> 3] &
+                    (0x80 >> (jackieBits->read_pos_ & 7))))
                     // Write 1
-                    data[mWritingPosBits >> 3] = 0x80;
+                    data_[write_pos_ >> 3] = 0x80;
                 else
-                    data[mWritingPosBits >> 3] = 0;
+                    data_[write_pos_ >> 3] = 0;
             }
             else
             {
                 /// see if this src bit  is 1 or 0, 0x80 (16)= 128(10)= 10000000 (2)
-                if ((jackieBits->data[jackieBits->mReadingPosBits >> 3] &
-                    (0x80 >> (jackieBits->mReadingPosBits & 7))))
+                if ((jackieBits->data_[jackieBits->read_pos_ >> 3] &
+                    (0x80 >> (jackieBits->read_pos_ & 7))))
                 {
                     /// set dest bit to 1 if the src bit is 1,do-nothing if the src bit is 0
-                    data[mWritingPosBits >> 3] |= 0x80 >> (numberOfBitsMod8);
+                    data_[write_pos_ >> 3] |= 0x80 >> (numberOfBitsMod8);
                 }
                 else
                 {
-                    data[mWritingPosBits >> 3] |= 0;
+                    data_[write_pos_ >> 3] |= 0;
                 }
             }
 
-            jackieBits->mReadingPosBits++;
-            mWritingPosBits++;
+            jackieBits->read_pos_++;
+            write_pos_++;
         }
         bits2Write -= newBits2Read;
     }
     // call WriteBits() for efficient  because it writes one byte from src at one time much faster
-    assert((jackieBits->mReadingPosBits & 7) == 0);
-    WriteBits(&jackieBits->data[jackieBits->mReadingPosBits >> 3], bits2Write, false);
-    jackieBits->mReadingPosBits += bits2Write;
+    assert((jackieBits->read_pos_ & 7) == 0);
+    WriteBits(&jackieBits->data_[jackieBits->read_pos_ >> 3], bits2Write, false);
+    jackieBits->read_pos_ += bits2Write;
     ///?
 
     /// test Old Implementation 25 seconds
@@ -600,21 +593,19 @@ void GecoMemoryStream::WriteFloatRange(float src, float floatMin, float floatMax
     WriteMini((UInt16)percentile);
 }
 
-void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned)
+void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const is_integral_type is_integral, const is_signed_integral is_signed_integral_)
 {
-    static bool truee = true;
-    static bool falsee = false;
+    static ByteSize currByte;
+    static UInt8 byteMatch = 0xFF; /// 0xFF=255=11111111
 
-    ByteSize currByte;
-    UInt8 byteMatch = isUnsigned ? 0 : 0xFF; /// 0xFF=255=11111111
-
-    if (!IsBigEndian())
+    if (GecoMemoryStream::IsBigEndian() == false) // little endian
     {
-        //JINFO << "little endian ";
-        /// get the highest byte with highest index  PCs
+        debug("WriteMini::little endian\n");
+
+        /// little endian has the highest byte at the highest arrary index) 
         currByte = (bits2Write >> 3) - 1;
 
-        ///  high byte to low byte, 
+        ///  process from high byte to low byte, 
         /// if high byte is a byteMatch then write a 1 bit.
         /// Otherwise write a 0 bit and then write the remaining bytes
         while (currByte > 0)
@@ -623,14 +614,12 @@ void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, con
             /// then it would have the same value shifted
             if (src[currByte] == byteMatch)
             {
-                //JINFO << "write match " << byteMatch;
-                Write(truee);
+                Write(true);
                 currByte--;
             }
             else /// the first byte is not matched
             {
-                //JINFO << "write not match " << byteMatch;
-                Write(falsee);
+                Write(false);
                 // Write the remainder of the data after writing bit false
                 WriteBits(src, (currByte + 1) << 3, true);
                 return;
@@ -653,14 +642,14 @@ void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, con
             /// then it would have the same value shifted
             if (src[currByte] == byteMatch)
             {
-                GECO_PRINTFS("write match%d\n", byteMatch);
-                Write(truee);
+                debug("write match%d\n", byteMatch);
+                Write(true);
                 currByte++;
             }
             else /// the first byte is not matched
             {
-                GECO_PRINTFS("write not match%d\n", byteMatch);
-                Write(falsee);
+                debug("write not match%d\n", byteMatch);
+                Write(false);
                 // Write the remainder of the data after writing bit false
                 WriteBits(src + currByte, bits2Write - (currByte << 3), true);
                 return;
@@ -670,25 +659,106 @@ void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, con
         assert(currByte == ((bits2Write >> 3) - 1));
     }
 
-    /// last byte
-    if ((isUnsigned && (src[currByte] & 0xF0) == 0x00) ||
-        (!isUnsigned && (src[currByte] & 0xF0) == 0xF0))
+    /// last byte 0xF0 00001111
+    if ((src[currByte] & 0xF0) == 0x00 || (src[currByte] & 0xF0) == 0xF0)
     {/// the upper(left aligned) half of the last byte(now currByte == 0) is a 0000 (positive) or 1111 (nagative)
         /// write a bit 1 and the remaining 4 bits. 
         //JINFO << "match four zeros" << byteMatch;
-        Write(truee);
+        Write(true);
         WriteBits(src + currByte, 4, true);
         //JINFO << "get pay loads " << GetPayLoadBits();
     }
     else
     {/// write a 0 and the remaining 8 bites.
         //JINFO << "match one zeros" << byteMatch;
-        Write(falsee);
+        Write(false);
         WriteBits(src + currByte, 8, true);
         //JINFO << "get pay loads " << GetPayLoadBits();
     }
 }
+void GecoMemoryStream::WriteMini(const UInt8* src, const BitSize bits2Write, const is_integral_type is_integral, const is_unsigned_integral is_unsigned_integral_)
+{
+    static ByteSize currByte;
+    static UInt8 byteMatch = 0x00; /// 0xFF=255=11111111
 
+    if (GecoMemoryStream::IsBigEndian() == false) // little endian
+    {
+        debug("WriteMini::little endian\n");
+
+        /// little endian has the highest byte at the highest arrary index) 
+        currByte = (bits2Write >> 3) - 1;
+
+        ///  process from high byte to low byte, 
+        /// if high byte is a byteMatch then write a 1 bit.
+        /// Otherwise write a 0 bit and then write the remaining bytes
+        while (currByte > 0)
+        {
+            ///  If high byte is byteMatch (0 or 0xff)
+            /// then it would have the same value shifted
+            if (src[currByte] == byteMatch)
+            {
+                Write(true);
+                currByte--;
+            }
+            else /// the first byte is not matched
+            {
+                Write(false);
+                // Write the remainder of the data after writing bit false
+                WriteBits(src, (currByte + 1) << 3, true);
+                return;
+            }
+        }
+        /// make sure we are now on the lowest byte (index 0)
+        assert(currByte == 0);
+    }
+    else
+    {
+        /// get the highest byte with highest index  PCs
+        currByte = 0;
+
+        ///  high byte to low byte, 
+        /// if high byte is a byteMatch then write a 1 bit.
+        /// Otherwise write a 0 bit and then write the remaining bytes
+        while (currByte < ((bits2Write >> 3) - 1))
+        {
+            ///  If high byte is byteMatch (0 or 0xff)
+            /// then it would have the same value shifted
+            if (src[currByte] == byteMatch)
+            {
+                debug("write match%d\n", byteMatch);
+                Write(true);
+                currByte++;
+            }
+            else /// the first byte is not matched
+            {
+                debug("write not match%d\n", byteMatch);
+                Write(false);
+                // Write the remainder of the data after writing bit false
+                WriteBits(src + currByte, bits2Write - (currByte << 3), true);
+                return;
+            }
+        }
+        /// make sure we are now on the lowest byte (index highest)
+        assert(currByte == ((bits2Write >> 3) - 1));
+    }
+
+    /// last byte 0xF0 00001111
+    if ((src[currByte] & 0xF0) == 0x00 || (src[currByte] & 0xF0) == 0xF0)
+    {/// the upper(left aligned) half of the last byte(now currByte == 0) is a 0000 (positive) or 1111 (nagative)
+        /// write a bit 1 and the remaining 4 bits. 
+        //JINFO << "match four zeros" << byteMatch;
+        Write(true);
+        WriteBits(src + currByte, 4, true);
+        //JINFO << "get pay loads " << GetPayLoadBits();
+    }
+    else
+    {/// write a 0 and the remaining 8 bites.
+        //JINFO << "match one zeros" << byteMatch;
+        Write(false);
+        WriteBits(src + currByte, 8, true);
+        //JINFO << "get pay loads " << GetPayLoadBits();
+    }
+}
 void GecoMemoryStream::WriteAlignedBytes(const UInt8 *src, const ByteSize numberOfBytesWrite)
 {
     AlignWritePosBits2ByteBoundary();
@@ -717,8 +787,8 @@ void GecoMemoryStream::PadZero2LengthOf(UInt32 bytes)
     {
         AlignWritePosBits2ByteBoundary();
         AppendBitsCouldRealloc(BYTES_TO_BITS(numWrite));
-        memset(data + (mWritingPosBits >> 3), 0, numWrite);
-        mWritingPosBits += BYTES_TO_BITS(numWrite);
+        memset(data_ + (write_pos_ >> 3), 0, numWrite);
+        write_pos_ += BYTES_TO_BITS(numWrite);
     }
 }
 
@@ -760,7 +830,7 @@ void GecoMemoryStream::Bitify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
 void GecoMemoryStream::Bitify(void)
 {
     char out[4096 * 8];
-    Bitify(out, mWritingPosBits, data);
+    Bitify(out, write_pos_, data_);
     printf_s("%s\n", out);
 }
 void GecoMemoryStream::Hexlify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
@@ -780,7 +850,7 @@ void GecoMemoryStream::Hexlify(char* out, BitSize mWritePosBits, UInt8* mBuffer)
 void GecoMemoryStream::Hexlify(void)
 {
     char out[4096];
-    Hexlify(out, mWritingPosBits, data);
+    Hexlify(out, write_pos_, data_);
     printf_s("%s\n", out);
 }
 

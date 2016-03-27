@@ -127,7 +127,7 @@ JackieApplication::JackieApplication() : sendBitStream(MAXIMUM_MTU_SIZE
 }
 JackieApplication::~JackieApplication()
 {
-    OP_DELETE_ARRAY(JISRecvParamsPool, TRACE_FILE_AND_LINE_);
+    OP_DELETE_ARRAY(JISRecvParamsPool, TRACKE_MALLOC);
 }
 
 StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
@@ -223,7 +223,7 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
 #endif
 
             bindResult = ((JISBerkley*)sock)->Bind(&berkleyBindParams,
-                TRACE_FILE_AND_LINE_);
+                TRACKE_MALLOC);
 
             if (
 #if NET_SUPPORT_IPV6 ==0
@@ -280,17 +280,17 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
     }
 #endif
 
-    JISRecvParamsPool = OP_NEW_ARRAY < JackieMemoryPool < JISRecvParams >>(bindedSockets.Size(), TRACE_FILE_AND_LINE_);
+    JISRecvParamsPool = OP_NEW_ARRAY < JackieMemoryPool < JISRecvParams >>(bindedSockets.Size(), TRACKE_MALLOC);
 #if USE_SINGLE_THREAD == 0
     deAllocRecvParamQ = OP_NEW_ARRAY < JackieSPSCQueue <
-        JISRecvParams* >> (bindedSockets.Size(), TRACE_FILE_AND_LINE_);
+        JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
     allocRecvParamQ = OP_NEW_ARRAY < JackieSPSCQueue <
-        JISRecvParams* >> (bindedSockets.Size(), TRACE_FILE_AND_LINE_);
+        JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
 #else
     deAllocRecvParamQ = OP_NEW_ARRAY < JackieArraryQueue
-        < JISRecvParams* >> (bindedSockets.Size(), TRACE_FILE_AND_LINE_);
+        < JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
     allocRecvParamQ = OP_NEW_ARRAY < JackieArraryQueue <
-        JISRecvParams* >> (bindedSockets.Size(), TRACE_FILE_AND_LINE_);
+        JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
 #endif
 
     /// setup connections list
@@ -301,14 +301,14 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
             maxIncomingConnections = maxConn;
         maxConnections = maxConn;
 
-        remoteSystemList = OP_NEW_ARRAY<JackieRemoteSystem>(maxConnections, TRACE_FILE_AND_LINE_);
+        remoteSystemList = OP_NEW_ARRAY<JackieRemoteSystem>(maxConnections, TRACKE_MALLOC);
 
         // All entries in activeSystemList have valid pointers all the time.
-        activeSystemList = OP_NEW_ARRAY<JackieRemoteSystem*>(maxConnections, TRACE_FILE_AND_LINE_);
+        activeSystemList = OP_NEW_ARRAY<JackieRemoteSystem*>(maxConnections, TRACKE_MALLOC);
 
         // decrease the collision chance by increasing the hashtable size
         index = maxConnections*RemoteEndPointLookupHashMutiple;
-        remoteSystemLookup = OP_NEW_ARRAY<JackieRemoteIndex*>(index, TRACE_FILE_AND_LINE_);
+        remoteSystemLookup = OP_NEW_ARRAY<JackieRemoteIndex*>(index, TRACKE_MALLOC);
         memset((void**)remoteSystemLookup, 0, index*sizeof(JackieRemoteIndex*));
 
         for (index = 0; index < maxConnections; index++)
@@ -446,13 +446,13 @@ void JackieApplication::ClearAllRecvParamsQs()
         for (UInt32 i = 0; i < allocRecvParamQ[index].Size(); i++)
         {
             assert(allocRecvParamQ[index].PopHead(recvParams), true);
-            if (recvParams->data != 0) jackieFree_Ex(recvParams->data, TRACE_FILE_AND_LINE_);
+            if (recvParams->data != 0) gFreeEx(recvParams->data, TRACKE_MALLOC);
             JISRecvParamsPool[index].Reclaim(recvParams);
         }
         for (UInt32 i = 0; i < deAllocRecvParamQ[index].Size(); i++)
         {
             assert(deAllocRecvParamQ[index].PopHead(recvParams), true);
-            if (recvParams->data != 0) jackieFree_Ex(recvParams->data, TRACE_FILE_AND_LINE_);
+            if (recvParams->data != 0) gFreeEx(recvParams->data, TRACKE_MALLOC);
             JISRecvParamsPool[index].Reclaim(recvParams);
         }
         allocRecvParamQ[index].Clear();
@@ -490,14 +490,14 @@ void JackieApplication::ClearAllCommandQs(void)
     {
         assert(allocCommandQ.PopHead(bcs) == true);
         assert(bcs);
-        if (bcs->data != 0) jackieFree_Ex(bcs->data, TRACE_FILE_AND_LINE_);
+        if (bcs->data != 0) gFreeEx(bcs->data, TRACKE_MALLOC);
         commandPool.Reclaim(bcs);
     }
     for (UInt32 i = 0; i < deAllocCommandQ.Size(); i++)
     {
         assert(deAllocCommandQ.PopHead(bcs) == true);
         assert(bcs);
-        if (bcs->data != 0) jackieFree_Ex(bcs->data, TRACE_FILE_AND_LINE_);
+        if (bcs->data != 0) gFreeEx(bcs->data, TRACKE_MALLOC);
         commandPool.Reclaim(bcs);
     }
     deAllocCommandQ.Clear();
@@ -554,7 +554,7 @@ JackiePacket* JackieApplication::AllocPacket(UInt32 dataSize)
     do { p = packetPool.Allocate(); } while (p == 0);
 
     //p = new ( (void*) p ) Packet; we do not need call default ctor
-    p->data = (unsigned char*)jackieMalloc_Ex(dataSize, TRACE_FILE_AND_LINE_);
+    p->data = (unsigned char*)gMallocEx(dataSize, TRACKE_MALLOC);
     p->length = dataSize;
     p->bitSize = BYTES_TO_BITS(dataSize);
     p->freeInternalData = true;
@@ -592,7 +592,7 @@ void JackieApplication::ReclaimAllPackets()
         if (packet->freeInternalData)
         {
             //packet->~Packet(); no custom dtor so no need to call default dtor
-            jackieFree_Ex(packet->data, TRACE_FILE_AND_LINE_);
+            gFreeEx(packet->data, TRACKE_MALLOC);
         }
         packetPool.Reclaim(packet);
     }
@@ -606,7 +606,7 @@ inline void JackieApplication::ReclaimPacket(JackiePacket *packet)
 
 int JackieApplication::CreateRecvPollingThread(int threadPriority, UInt32 index)
 {
-    char* arg = (char*)jackieMalloc_Ex(sizeof(JackieApplication*) + sizeof(index), TRACE_FILE_AND_LINE_);
+    char* arg = (char*)gMallocEx(sizeof(JackieApplication*) + sizeof(index), TRACKE_MALLOC);
     JackieApplication* serv = this;
     memcpy(arg, &serv, sizeof(JackieApplication*));
     memcpy(arg + sizeof(JackieApplication*), (char*)&index, sizeof(index));
@@ -681,7 +681,7 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
         bsp.data = bs.DataInt8();
         bsp.length = bs.GetWrittenBytesCount();
         bsp.receiverINetAddress = recvParams->senderINetAddress;
-        if (recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_) > 0)
+        if (recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC) > 0)
         {
             for (index = 0; index < this->pluginListNTS.Size(); index++)
                 this->pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -884,10 +884,10 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
 
 #if ENABLE_SECURE_HAND_SHAKE==1
                 std::cout << "AUDIT: Connection attempt canceled so deleting connectionRequest->client_handshake object" << connectionRequest->client_handshake;
-                OP_DELETE(connectionRequest->client_handshake, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
 #endif // ENABLE_SECURE_HAND_SHAKE
 
-                OP_DELETE(connectionRequest, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connectionRequest, TRACKE_MALLOC);
                 break;
             }
         }
@@ -1060,7 +1060,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             bsp.data = toClientReplay2Writer.DataInt8();
             bsp.length = toClientReplay2Writer.GetWrittenBytesCount();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
-            recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_);
+            recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
             for (index = 0; index < pluginListNTS.Size(); index++)
                 pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -1079,7 +1079,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             bsp.data = toClientAlreadyConnectedWriter.DataInt8();
             bsp.length = toClientAlreadyConnectedWriter.GetWrittenBytesCount();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
-            recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_);
+            recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
             for (index = 0; index < pluginListNTS.Size(); index++)
                 pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -1102,7 +1102,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                 bsp.data = toClientWriter.DataInt8();
                 bsp.length = toClientWriter.GetWrittenBytesCount();
                 bsp.receiverINetAddress = recvParams->senderINetAddress;
-                recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_);
+                recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -1136,7 +1136,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                     bsp.data = toClientWriter.DataInt8();
                     bsp.length = toClientWriter.GetWrittenBytesCount();
                     bsp.receiverINetAddress = recvParams->senderINetAddress;
-                    recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_);
+                    recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
                     for (index = 0; index < pluginListNTS.Size(); index++)
                         pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -1166,7 +1166,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                 bsp.data = toClientReplay2Writer.DataInt8();
                 bsp.length = toClientReplay2Writer.GetWrittenBytesCount();
                 bsp.receiverINetAddress = recvParams->senderINetAddress;
-                recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_);
+                recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -1212,7 +1212,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
 
             /// we do not need test 10040 error because it is only 24 bytes length
             /// impossible to exceed the max mtu
-            if (recvParams->localBoundSocket->Send(&data2send, TRACE_FILE_AND_LINE_) > 0)
+            if (recvParams->localBoundSocket->Send(&data2send, TRACKE_MALLOC) > 0)
             {
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&data2send);
@@ -1269,7 +1269,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
             bsp.receiverINetAddress = recvParams->senderINetAddress;
 
             // this send will never return 10040 error because bsp.length must be <= MAXIMUM_MTU_SIZE
-            if (recvParams->localBoundSocket->Send(&bsp, TRACE_FILE_AND_LINE_) > 0)
+            if (recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC) > 0)
             {
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&bsp);
@@ -1421,7 +1421,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                 outcome_data.data = toServerWriter.DataInt8();
                 outcome_data.length = toServerWriter.GetWrittenBytesCount();
                 outcome_data.receiverINetAddress = recvParams->senderINetAddress;
-                recvParams->localBoundSocket->Send(&outcome_data, TRACE_FILE_AND_LINE_);
+                recvParams->localBoundSocket->Send(&outcome_data, TRACKE_MALLOC);
 
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&outcome_data);
@@ -1647,9 +1647,9 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 #if ENABLE_SECURE_HAND_SHAKE == 1
                 std::cout << "AUDIT: clients is deleting client_handshake object"
                     << connReq->client_handshake;
-                OP_DELETE(connReq->client_handshake, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connReq->client_handshake, TRACKE_MALLOC);
 #endif // ENABLE_SECURE_HAND_SHAKE
-                OP_DELETE(connReq, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connReq, TRACKE_MALLOC);
                 std::cout << "Client Connects Successfully !";
                 break;
             }
@@ -1688,9 +1688,9 @@ void JackieApplication::ProcessConnectionRequestCancelQ(void)
             {
 #if ENABLE_SECURE_HAND_SHAKE == 1
                 std::cout << "AUDIT: Deleting requested Connection Queue" << i << " client_handshake " << connReqQ[i]->client_handshake;
-                OP_DELETE(connReqQ[i]->client_handshake, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connReqQ[i]->client_handshake, TRACKE_MALLOC);
 #endif
-                OP_DELETE(connReqQ[i], TRACE_FILE_AND_LINE_);
+                OP_DELETE(connReqQ[i], TRACKE_MALLOC);
                 connReqQ.RemoveAtIndex(i);
                 break;
             }
@@ -1733,7 +1733,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
                 /// free data inside conn req
                 if (connReq->data != 0)
                 {
-                    jackieFree_Ex(connReq->data, TRACE_FILE_AND_LINE_);
+                    gFreeEx(connReq->data, TRACKE_MALLOC);
                     connReq->data = 0;
                 }
 
@@ -1746,9 +1746,9 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
 #if ENABLE_SECURE_HAND_SHAKE==1
                 std::cout << "AUDIT: Connection attempt FAILED so deleting connectionRequest->client_handshake object " << connReq->client_handshake;
                 OP_DELETE(connReq->client_handshake,
-                    TRACE_FILE_AND_LINE_);
+                    TRACKE_MALLOC);
 #endif
-                OP_DELETE(connReq, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connReq, TRACKE_MALLOC);
 
                 /// remove this conn request fron  queue
                 connReqQ.RemoveAtIndex(index);
@@ -1788,7 +1788,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
                     ((JISBerkley*)connReq->socket)->SetDoNotFragment(1);
 #endif
                 Time sendToStart = GetTimeMS();
-                if (connReq->socket->Send(&jsp, TRACE_FILE_AND_LINE_) < 0 &&
+                if (connReq->socket->Send(&jsp, TRACKE_MALLOC) < 0 &&
                     jsp.bytesWritten == 10040)
                 {
                     // MessageId: WSAEMSGSIZE
@@ -1860,7 +1860,7 @@ void JackieApplication::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
                 }
                 /// send data stored in this bc right now
                 if (SendRightNow(timeUS, true, cmd) == false)
-                    jackieFree_Ex(cmd->data, TRACE_FILE_AND_LINE_);
+                    gFreeEx(cmd->data, TRACKE_MALLOC);
                 /// Set the new connection state AFTER we call sendImmediate in case we are 
                 /// setting it to a disconnection state, which does not allow further sends
                 if (cmd->repStatus != JackieRemoteSystem::NO_ACTION)
@@ -2526,7 +2526,7 @@ JACKIE_THREAD_DECLARATION(geco::net::RunRecvCycleLoop)
     std::cout << "Recv polling thread Stops....";
 
     serv->isRecvPollingThreadActive.Decrement();
-    jackieFree_Ex(arguments, TRACE_FILE_AND_LINE_);
+    gFreeEx(arguments, TRACKE_MALLOC);
     return 0;
 }
 
@@ -2554,12 +2554,12 @@ JACKIE_THREAD_DECLARATION(geco::net::UDTConnect) { return 0; }
 //STATIC_FACTORY_DEFINITIONS(IServerApplication, ServerApplication);
 JackieApplication* JackieApplication::GetInstance(void)
 {
-    return OP_NEW<JackieApplication>(TRACE_FILE_AND_LINE_);
+    return OP_NEW<JackieApplication>(TRACKE_MALLOC);
 }
 
 void JackieApplication::DestroyInstance(JackieApplication* i)
 {
-    OP_DELETE(i, TRACE_FILE_AND_LINE_);
+    OP_DELETE(i, TRACKE_MALLOC);
 }
 
 
@@ -2611,7 +2611,7 @@ void JackieApplication::Connect_(const char* host,
     Command* conn_cmd = AllocCommand();
     conn_cmd->commandID = Command::BCS_CONEECT;
     conn_cmd->systemIdentifier.systemAddress.FromString(host, port);
-    conn_cmd->data = (char*)jackieMalloc_Ex(strlen(passwd) + 1 + sizeof(passwdLength) + sizeof(JackieSHSKey *) + sizeof(localSocketIndex) + sizeof(attemptTimes) + sizeof(attemptIntervalMS) + sizeof(timeout) + sizeof(extraData), TRACE_FILE_AND_LINE_);
+    conn_cmd->data = (char*)gMallocEx(strlen(passwd) + 1 + sizeof(passwdLength) + sizeof(JackieSHSKey *) + sizeof(localSocketIndex) + sizeof(attemptTimes) + sizeof(attemptIntervalMS) + sizeof(timeout) + sizeof(extraData), TRACKE_MALLOC);
 
     memcpy(conn_cmd->data, passwd, strlen(passwd) + 1);
     conn_cmd->data += strlen(passwd) + 1;
@@ -2686,7 +2686,7 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
     if (GetRemoteSystem(addr, false, true) != 0)
         return ALREADY_CONNECTED_TO_ENDPOINT;
 
-    ConnectionRequest* connReq = OP_NEW<ConnectionRequest>(TRACE_FILE_AND_LINE_);
+    ConnectionRequest* connReq = OP_NEW<ConnectionRequest>(TRACKE_MALLOC);
     connReq->receiverAddr = addr;
     connReq->nextRequestTime = GetTimeMS();
     connReq->requestsMade = 0;
@@ -2720,7 +2720,7 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
         if (connReqQ[Index]->receiverAddr == addr)
         {
             //connReqQLock.Unlock();
-            OP_DELETE(connReq, TRACE_FILE_AND_LINE_);
+            OP_DELETE(connReq, TRACKE_MALLOC);
             return CONNECTION_ATTEMPT_ALREADY_IN_PROGRESS;
         }
     }
@@ -2743,7 +2743,7 @@ bool JackieApplication::GenerateConnectionRequestChallenge(ConnectionRequest *co
 
         case SecureConnectionMode::ACCEPT_ANY_PUBLIC_KEY:
             CAT_OBJCLR(connectionRequest->remote_public_key);
-            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(TRACE_FILE_AND_LINE_);
+            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(TRACKE_MALLOC);
             connectionRequest->publicKeyMode = SecureConnectionMode::ACCEPT_ANY_PUBLIC_KEY;
             break;
 
@@ -2755,7 +2755,7 @@ bool JackieApplication::GenerateConnectionRequestChallenge(ConnectionRequest *co
             }
 
             // init client_handshake
-            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(TRACE_FILE_AND_LINE_);
+            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(TRACKE_MALLOC);
             // copy server pk
             memcpy(connectionRequest->remote_public_key, jackiePublicKey->remoteServerPublicKey, cat::EasyHandshake::PUBLIC_KEY_BYTES);
             if (!connectionRequest->client_handshake->Initialize(jackiePublicKey->remoteServerPublicKey) ||
@@ -2763,7 +2763,7 @@ bool JackieApplication::GenerateConnectionRequestChallenge(ConnectionRequest *co
                 !connectionRequest->client_handshake->GenerateChallenge(connectionRequest->handshakeChallenge))
             {
                 std::cout << "AUDIT: Failure initializing new client_handshake object with identity for this connection Request";
-                OP_DELETE(connectionRequest->client_handshake, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
                 connectionRequest->client_handshake = 0;
                 return false;
             }
@@ -2777,7 +2777,7 @@ bool JackieApplication::GenerateConnectionRequestChallenge(ConnectionRequest *co
             if (jackiePublicKey->remoteServerPublicKey == 0)
                 return false;
 
-            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(TRACE_FILE_AND_LINE_);
+            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(TRACKE_MALLOC);
 
             //copy server pk to conn req
             memcpy(connectionRequest->remote_public_key, jackiePublicKey->remoteServerPublicKey, cat::EasyHandshake::PUBLIC_KEY_BYTES);
@@ -2786,7 +2786,7 @@ bool JackieApplication::GenerateConnectionRequestChallenge(ConnectionRequest *co
                 !connectionRequest->client_handshake->GenerateChallenge(connectionRequest->handshakeChallenge))
             {
                 std::cout << "AUDIT: Failure initializing new client_handshake object for this RequestedConnectionStruct\n";
-                OP_DELETE(connectionRequest->client_handshake, TRACE_FILE_AND_LINE_);
+                OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
                 connectionRequest->client_handshake = 0;
                 return false;
             }
@@ -2858,16 +2858,16 @@ bool JackieApplication::EnableSecureIncomingConnections(const char *public_key, 
     if (serverHandShaker != 0)
     {
         std::cout << "AUDIT: Deleting old server_handshake" << serverHandShaker;
-        OP_DELETE(serverHandShaker, TRACE_FILE_AND_LINE_);
+        OP_DELETE(serverHandShaker, TRACKE_MALLOC);
     }
     if (serverCookie != 0)
     {
         std::cout << "AUDIT: Deleting old cookie jar" << serverCookie;
-        OP_DELETE(serverCookie, TRACE_FILE_AND_LINE_);
+        OP_DELETE(serverCookie, TRACKE_MALLOC);
     }
 
-    serverHandShaker = OP_NEW<cat::ServerEasyHandshake>(TRACE_FILE_AND_LINE_);
-    serverCookie = OP_NEW<cat::CookieJar>(TRACE_FILE_AND_LINE_);
+    serverHandShaker = OP_NEW<cat::ServerEasyHandshake>(TRACKE_MALLOC);
+    serverCookie = OP_NEW<cat::CookieJar>(TRACKE_MALLOC);
 
     std::cout << "AUDIT: Created new server_handshake" << serverHandShaker;
     std::cout << "AUDIT: Created new cookie" << serverCookie;
@@ -2885,8 +2885,8 @@ bool JackieApplication::EnableSecureIncomingConnections(const char *public_key, 
     std::cout <<
         "AUDIT: Failure to initialize so deleting server handshake and cookie jar; also setting secureIncomingConnectionEnabled flag = false";
 
-    OP_DELETE(serverHandShaker, TRACE_FILE_AND_LINE_);
-    OP_DELETE(serverCookie, TRACE_FILE_AND_LINE_);
+    OP_DELETE(serverHandShaker, TRACKE_MALLOC);
+    OP_DELETE(serverCookie, TRACKE_MALLOC);
     serverHandShaker = 0;
     serverCookie = 0;
     secureIncomingConnectionEnabled = false;
@@ -3082,7 +3082,7 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
 #if USE_STACK_ALLOCA ==1
         sendList = (unsigned *)alloca(sizeof(unsigned));
 #else
-        sendList = (unsigned *)jackieMalloc_Ex(sizeof(unsigned), TRACE_FILE_AND_LINE_);
+        sendList = (unsigned *)gMallocEx(sizeof(unsigned), TRACKE_MALLOC);
 #endif
 
         if (remoteSystemList[remoteSystemIndex].isActive &&
@@ -3100,7 +3100,7 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
 #if USE_STACK_ALLOCA==1
         sendList = (unsigned *)alloca(sizeof(unsigned));
 #else
-        sendList = (unsigned *)jackieMalloc_Ex(sizeof(unsigned), TRACE_FILE_AND_LINE_);
+        sendList = (unsigned *)gMallocEx(sizeof(unsigned), TRACKE_MALLOC);
 #endif
         unsigned int idx;
         for (idx = 0; idx < maxConnections; idx++)
@@ -3118,7 +3118,7 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
     if (sendListSize == 0)
     {
 #if USE_STACK_ALLOCA !=1
-        jackieFree_Ex(sendList, TRACE_FILE_AND_LINE_);
+        gFreeEx(sendList, TRACKE_MALLOC);
 #endif
         return false;
     }
@@ -3152,7 +3152,7 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
     }
 
 #if USE_STACK_ALLOCA !=1
-    jackieFree_Ex(sendList, TRACE_FILE_AND_LINE_);
+    gFreeEx(sendList, TRACKE_MALLOC);
 #endif
 
     // Return value only meaningful if true was passed for useCallerDataAllocation.  Means the reliability layer used that data copy, so the caller should not deallocate it
@@ -3245,7 +3245,7 @@ bool JackieApplication::IsBanned(JackieAddress& senderINetAddress)
             // remove this expired ban
             Banned* tmp = banList[index];
             banList.RemoveAtIndexFast(index);
-            OP_DELETE(tmp, TRACE_FILE_AND_LINE_);
+            OP_DELETE(tmp, TRACKE_MALLOC);
         }
         else
         {
@@ -3314,7 +3314,7 @@ void JackieApplication::AddToBanList(const char IP[32],
     }
 
     // not in the ban list so create a new ban for him
-    Banned *banStruct = OP_NEW<Banned>(TRACE_FILE_AND_LINE_);
+    Banned *banStruct = OP_NEW<Banned>(TRACKE_MALLOC);
     banStruct->firstTimeBanned = time;
     banStruct->bannedTImes = 1;
     if (milliseconds == 0)
