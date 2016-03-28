@@ -2,11 +2,9 @@
 #include "geco-memory-stream.h"
 using namespace geco::net;
 
-
 struct vec { float x; float y; float z; };
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 {
-    struct vec { float x; float y; float z; };
     GecoMemoryStream s8;
 
     UInt24 uint24 = 24;
@@ -212,10 +210,8 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 
     }
 }
-
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 {
-    struct vec { float x; float y; float z; };
     GecoMemoryStream s8;
 
     UInt24 uint24 = 24;
