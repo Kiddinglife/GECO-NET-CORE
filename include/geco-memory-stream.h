@@ -1092,8 +1092,8 @@ class GECO_EXPORT GecoMemoryStream
     //! @param[in] z z
     //! @return void
     //! @notice templateType for this function must be a float or double
-    template <class templateType>
-    void ReadNormVector(templateType &x, templateType &y, templateType &z)
+    template <class FloatingType>
+    void ReadNormVector(FloatingType &x, FloatingType &y, FloatingType &z)
     {
         ReadFloatRange(x, -1.0f, 1.0f);
         ReadFloatRange(y, -1.0f, 1.0f);
@@ -1109,26 +1109,15 @@ class GECO_EXPORT GecoMemoryStream
     //! @param[in] y y
     //! @param[in] z z
     //! @return void
-    //! @notice templateType for this function must be a float or double
-    template <class templateType>
-    void ReadVector(templateType &x, templateType &y, templateType &z)
+    //! @notice FloatingType for this function must be a float or double
+    template <class FloatingType>
+    void ReadVector(FloatingType &x, FloatingType &y, FloatingType &z)
     {
         float magnitude;
         Read(magnitude);
 
         if (magnitude > 0.00001f)
         {
-            //float cx = 0.0f, cy = 0.0f, cz = 0.0f;
-            //ReadMini(cx);
-            //ReadMini(cy);
-            //ReadMini(cz);
-            //x = cx;
-            //y = cy;
-            //z = cz;
-            //x *= magnitude;
-            //y *= magnitude;
-            //z *= magnitude;
-
             ReadMini(x);
             ReadMini(y);
             ReadMini(z);
@@ -1150,9 +1139,9 @@ class GECO_EXPORT GecoMemoryStream
     //! @param[in] y y
     //! @param[in] z z
     //! @return void
-    //! @notice templateType for this function must be a float or double
-    template <class templateType>
-    bool ReadNormQuat(templateType &w, templateType &x, templateType &y, templateType &z)
+    //! @notice FloatingType for this function must be a float or double
+    template <class FloatingType>
+    bool ReadNormQuat(FloatingType &w, FloatingType &x, FloatingType &y, FloatingType &z)
     {
         bool cwNeg = false, cxNeg = false, cyNeg = false, czNeg = false;
         Read(cwNeg);
@@ -1166,9 +1155,9 @@ class GECO_EXPORT GecoMemoryStream
         ReadMini(cz);
 
         // Calculate w from x,y,z
-        x = (templateType)(cx / 65535.0);
-        y = (templateType)(cy / 65535.0);
-        z = (templateType)(cz / 65535.0);
+        x = (FloatingType)(cx / 65535.0);
+        y = (FloatingType)(cy / 65535.0);
+        z = (FloatingType)(cz / 65535.0);
 
         if (cxNeg) x = -x;
         if (cyNeg) y = -y;
@@ -1177,7 +1166,7 @@ class GECO_EXPORT GecoMemoryStream
         float difference = 1.0f - x*x - y*y - z*z;
         if (difference < 0.0f) difference = 0.0f;
 
-        w = (templateType)(sqrt(difference));
+        w = (FloatingType)(sqrt(difference));
         if (cwNeg) w = -w;
     }
 
@@ -1189,12 +1178,12 @@ class GECO_EXPORT GecoMemoryStream
     //! @details Use 6 bytes instead of 36
     //! Lossy, although the result is renormalized
     //! @return true on success, false on failure.
-    //!@notice templateType for this function must be a float or double
-    template <class templateType>
+    //!@notice FloatingType for this function must be a float or double
+    template <class FloatingType>
     void ReadOrthMatrix(
-        templateType &m00, templateType &m01, templateType &m02,
-        templateType &m10, templateType &m11, templateType &m12,
-        templateType &m20, templateType &m21, templateType &m22)
+        FloatingType &m00, FloatingType &m01, FloatingType &m02,
+        FloatingType &m10, FloatingType &m11, FloatingType &m12,
+        FloatingType &m20, FloatingType &m21, FloatingType &m22)
     {
         float qw, qx, qy, qz;
         ReadNormQuat(qw, qx, qy, qz);
@@ -1205,23 +1194,23 @@ class GECO_EXPORT GecoMemoryStream
         double sqx = (double)qx*(double)qx;
         double sqy = (double)qy*(double)qy;
         double sqz = (double)qz*(double)qz;
-        m00 = (templateType)(sqx - sqy - sqz + sqw); // since sqw + sqx + sqy + sqz =1
-        m11 = (templateType)(-sqx + sqy - sqz + sqw);
-        m22 = (templateType)(-sqx - sqy + sqz + sqw);
+        m00 = (FloatingType)(sqx - sqy - sqz + sqw); // since sqw + sqx + sqy + sqz =1
+        m11 = (FloatingType)(-sqx + sqy - sqz + sqw);
+        m22 = (FloatingType)(-sqx - sqy + sqz + sqw);
 
         double tmp1 = (double)qx*(double)qy;
         double tmp2 = (double)qz*(double)qw;
-        m10 = (templateType)(2.0 * (tmp1 + tmp2));
-        m01 = (templateType)(2.0 * (tmp1 - tmp2));
+        m10 = (FloatingType)(2.0 * (tmp1 + tmp2));
+        m01 = (FloatingType)(2.0 * (tmp1 - tmp2));
 
         tmp1 = (double)qx*(double)qz;
         tmp2 = (double)qy*(double)qw;
-        m20 = (templateType)(2.0 * (tmp1 - tmp2));
-        m02 = (templateType)(2.0 * (tmp1 + tmp2));
+        m20 = (FloatingType)(2.0 * (tmp1 - tmp2));
+        m02 = (FloatingType)(2.0 * (tmp1 + tmp2));
         tmp1 = (double)qy*(double)qz;
         tmp2 = (double)qx*(double)qw;
-        m21 = (templateType)(2.0 * (tmp1 + tmp2));
-        m12 = (templateType)(2.0 * (tmp1 - tmp2));
+        m21 = (FloatingType)(2.0 * (tmp1 + tmp2));
+        m12 = (FloatingType)(2.0 * (tmp1 - tmp2));
     }
 
 
@@ -1947,12 +1936,12 @@ class GECO_EXPORT GecoMemoryStream
     //! so only use if accuracy is not important
     //! templateType for this function must be a float or double
     //! @see
-    template <class templateType> void WriteVector(
-        templateType x,
-        templateType y,
-        templateType z)
+    template <class FloatingType> void WriteVector(
+        FloatingType x,
+        FloatingType y,
+        FloatingType z)
     {
-        templateType magnitude = sqrt(x * x + y * y + z * z);
+        FloatingType magnitude = sqrt(x * x + y * y + z * z);
         Write((float)magnitude);
         if (magnitude > 0.00001f)
         {
@@ -1969,13 +1958,13 @@ class GECO_EXPORT GecoMemoryStream
     //! Write a normalized quaternion in (18 bits[best case] to 6 bytes[worest case]) + 4 bits instead of 16 bytes.  
     //! Slightly lossy.
     //! @notice
-    //! templateType for this function must be a float or double
+    //! FloatingType for this function must be a float or double
     //! @see
-    template <class templateType> void WriteNormQuat(
-        templateType w,
-        templateType x,
-        templateType y,
-        templateType z)
+    template <class FloatingType> void WriteNormQuat(
+        FloatingType w,
+        FloatingType x,
+        FloatingType y,
+        FloatingType z)
     {
         Write((bool)(w < 0.0));
         Write((bool)(x < 0.0));
@@ -1996,12 +1985,12 @@ class GECO_EXPORT GecoMemoryStream
     //! @notice
     //! Lossy, although the result is renormalized
     //! Use (18 bits to 6 bytes) +4 bits instead of 36
-    //! templateType for this function must be a float or double
+    //! FloatingType for this function must be a float or double
     //! @see WriteNormQuat()
-    template <class templateType> void WriteOrthMatrix(
-        templateType m00, templateType m01, templateType m02,
-        templateType m10, templateType m11, templateType m12,
-        templateType m20, templateType m21, templateType m22)
+    template <class FloatingType> void WriteOrthMatrix(
+        FloatingType m00, FloatingType m01, FloatingType m02,
+        FloatingType m10, FloatingType m11, FloatingType m12,
+        FloatingType m20, FloatingType m21, FloatingType m22)
     {
         double qw;
         double qx;
