@@ -21,7 +21,7 @@
 // uncommnet to support the famous dlalloc 
 //#define SUPPORT_DL_MALLOC
 
-#define debug(msg)
+//#define debug(msg)
 #define DISABLE_TRACKE_MALLOC
 
 #endif
