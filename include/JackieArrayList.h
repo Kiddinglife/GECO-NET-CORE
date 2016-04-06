@@ -58,18 +58,18 @@ class GECO_EXPORT JackieArrayList
 
         list_size = allocation_size = original_copy.list_size;
     }
-    JackieArrayList& operator= (const JackieArrayList& originalCopy)
+    JackieArrayList& operator= (const JackieArrayList& original_copy)
     {
-        if (this == &originalCopy) return *this;
+        if (this == &original_copy) return *this;
 
         /// allocate memory for copying the elements from @param original_copy
-        if (originalCopy.list_size == 0)
+        if (original_copy.list_size == 0)
         {
             Clear();
             return *this;
         }
 
-        if (originalCopy.list_size > allocation_size)
+        if (original_copy.list_size > allocation_size)
         {
             Clear();
             listArray = OP_NEW_ARRAY < ElementType>(original_copy.list_size, TRACKE_MALLOC);

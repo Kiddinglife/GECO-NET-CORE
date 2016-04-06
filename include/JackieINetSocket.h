@@ -281,8 +281,8 @@ class GECO_EXPORT JISBerkley : public JackieINetSocket
     {
         int val = setsockopt__(rns2Socket, IPPROTO_IP, IP_HDRINCL,
             (char*)&ipHdrIncl, sizeof(ipHdrIncl));
-        val = setsockopt__(rns2Socket, IPPROTO_IP, SO_DONTLINGER,
-            (const char*)&ipHdrIncl, sizeof(ipHdrIncl));
+//        val = setsockopt__(rns2Socket, IPPROTO_IP, SO_DONTLINGER,
+//            (const char*)&ipHdrIncl, sizeof(ipHdrIncl));
         /// this assert always fail maybe need admin permission
         /// assert(val == 0);
     }

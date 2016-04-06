@@ -299,7 +299,7 @@ struct GECO_EXPORT JackieAddress /// JACKIE_INET_Address
     static unsigned int ToHashCode(const JackieAddress &sa);
 
     /// Return the IP version, either IPV4 or IPV6
-    unsigned char JackieAddress::GetIPVersion(void) const;
+    unsigned char GetIPVersion(void) const;
 
     /// @internal Returns either IPPROTO_IP or IPPROTO_IPV6
     unsigned char GetIPProtocol(void) const;
@@ -330,7 +330,7 @@ struct GECO_EXPORT JackieAddress /// JACKIE_INET_Address
         {
             if (boundAddressToSocket.GetIPVersion() == 4)
             {
-                FromString(IPV4_LOOPBACK, (Int8)0, (UInt8)4);
+                FromString(IPV4_LOOPBACK, (char)0, (UInt8)4);
             }
         }
         else if (strcmp(str, IPV4_LOOPBACK) == 0)

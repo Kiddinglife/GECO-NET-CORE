@@ -40,36 +40,41 @@ class UInt24;
 class JackieString;
 
 //! This class allows you to write and read native types as a string of bits.  
-//! the value of @mWritePosBits always reprsents 
+//! the value of @mWritePosBits always reprsents
 //! the position where a bit is going to be written(not been written yet)
 //! the value of @mReadPosBits always reprsents 
 //! the position where a bit is going to be read(not been read yet)
 //! both of them will start to cout at index of 0, 
-//! so mWritePosBits = 2 means the first 2 bits has been written, the third bit is
-//! being written (not been written yet)
-//! so mReadPosBits = 2 means the first 2 bits has been read, the third bit is
-//! being read (not been read yet)
-//! |<-------data[0]------->|     |<---------data[0]------->|           
+//! so mWritePosBits = 2 means the first 2 bits (index 0 and 1) has been written,
+//! the third bit (index 2) is being written (not been written yet)
+//! so mReadPosBits = 2 means the first 2 bits (index 0 and 1) has been read,
+//! the third bit (index 2) is being read (not been read yet)
+//! |                  8 bits               |                  8 bits                |
 //!+++++++++++++++++++++++++++++++++++
-//! | 0 |  1 | 2 | 3 |  4 | 5 |  6 | 7 | 8 |  9 |10 |11 |12 |13 |14 |15 |   bit index
+//! | 0 |  1 | 2 | 3 |  4 | 5 |  6 | 7 | 8 | 9 |10 |11 |12 |13 |14 |15 |   bit index
 //!+++++++++++++++++++++++++++++++++++
-//! | 0 |  0 | 0 | 1 |  0 | 0 |  0 | 0 | 1 |  0 |  0 |  0 |  0  |  0 |  0 | 0  |  bit in memory
+//! | 0 |  0 | 0 | 1 |  0 | 0 |  0 | 0 | 1 | 0 | 0  | 0 | 0  |  0 |  0 | 0  |  bit in memory
 //!+++++++++++++++++++++++++++++++++++
-//!              ^                                                       ^
-//! for example, @mWritePosBits = 12, @mReadPosBits = 2,
-//! base on draw above, all the unwritten bits are 0000 (index 12,13,14,15), 
+//!
+//! Assume given @mWritePosBits = 12, @mReadPosBits = 2,
+//! base on draw above,
+//! all the unwritten bits are 4 bits at index 12 to 15,
+//! all the written bits are 12 bits at index 0 - 11
 //! all the unread bits are 10 bits (0100001000, index 2 to 11),
-//! we can calculate:
-//! @the index of the byte that @mReadPosBits points to is 
+//!
+//! Based on above, we can calculate:
+//! index of byte that @mReadPosBits points to is:
 //! 0 = @mReadPosBits >> 3 = 2/8 = index 0, data[0]
-//! @the index of the byte that @mWritePosBits points to is 
+//! index of byte that @mWritePosBits points to is:
 //! 1 = @mWritePosBits >> 3 = 12/8 = index 1, data[1]
-//! @the offset for mReadPosBits to the byte boundary = mReadPosBits mod 8
-//! =  mReadPosBits & 7 = 2 &7 = 2 bits (00, index 0,1) 
-//! @the offset for mWritePosBits to the byte boundary  = mWritePosBits mod 8 
-//! =  mWritePosBits & 7 = 12 &7 = 4 bits (1000, index 8,9,10,11) 
-//! @BITS_TO_BYTES(mWritePosBits[bit at index 12 is exclusive ]) 
-//! = (12+7) >> 3 = 19/8 = 2( also is the number of written bytes)
+//!
+//! offset of byte boundary behind @mReadPosBits is:
+//! mReadPosBits mods 8 =  mReadPosBits & 7 = 2 &7 = 2 bits (00 at index 0,1)
+//! offset of byte boundary behind mWritePosBits is:
+//! mWritePosBits mod 8 = mWritePosBits & 7 = 12 &7 = 4 bits (1000 at index 8,9,10,11)
+//!
+//! BITS_TO_BYTES for mWritePosBits (bit at index 12 is exclusive) is:
+//! (12+7) >> 3 = 19/8 = 2 ( also is the number of written bytes)
 //! BITS_TO_BYTES(8[bit at index 8 is exclusive ])  = 
 //! (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
 class GECO_EXPORT GecoMemoryStream
@@ -183,7 +188,7 @@ class GECO_EXPORT GecoMemoryStream
     //! @access public 
     //!@notice
     //! particial byte is also accounted and the bit at index @param 
-    //! mWritePosBits is exclusive). 
+    //! mWritePosBits is exclusive).
     //! if mWritingPosBits =12, will need 2 bytes to hold 12 written bits (6 bits wasted)
     //! if mWritingPosBits = 8, will need 1 byte to hold 8 written bits (0 bits wasted)
     //! @author mengdi[Jackie]
@@ -1335,7 +1340,7 @@ class GECO_EXPORT GecoMemoryStream
 
 
     //! @func AlignWritePosBits2ByteBoundary 
-    //! @brief align @mWritePosBits to a byte boundary. 
+    //! @brief align @mWritePosBits to a byte boundary.
     //! @access  public  
     //! @notice
     //! this can be used to 'waste' bits to byte align for efficiency reasons It

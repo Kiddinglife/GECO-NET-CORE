@@ -25,7 +25,7 @@
 #if !defined(GECO_LIB) && defined(GECO_DLL)
 # define CAT_BUILD_DLL
 #else
-//#define CAT_NEUTER_EXPORT
+#define CAT_NEUTER_EXPORT
 #endif
 
 #define CAT_AUDIT

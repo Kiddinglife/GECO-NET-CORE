@@ -34,11 +34,11 @@ using namespace ThreadEmulation;
 #if defined(_WIN32_WCE) || defined(WINDOWS_PHONE_8) || defined(WINDOWS_STORE_RT)
 typedef LPTHREAD_START_ROUTINE ThreadFunc;
 #define JACKIE_THREAD_DECLARATION(functionName)\
-	DWORD WINAPI functionName(LPVOID lpThreadParameter)
+DWORD WINAPI functionName(LPVOID lpThreadParameter)
 #elif defined(_WIN32)
 typedef unsigned int(__stdcall *ThreadFunc) (void* arguments);
 #define JACKIE_THREAD_DECLARATION(functionName)\
-	  unsigned int __stdcall functionName( void* arguments )
+unsigned int __stdcall functionName( void* arguments )
 #else
 typedef void* (*ThreadFunc)(void* arguments);
 #define JACKIE_THREAD_DECLARATION(functionName) \
