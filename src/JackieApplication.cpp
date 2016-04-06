@@ -526,7 +526,7 @@ void JackieApplication::InitIPAddress(void)
         }
         if (startingIdx != lowestIdx)
         {
-            JackieAddress temp = localIPAddrs[startingIdx];
+            InetAddress temp = localIPAddrs[startingIdx];
             localIPAddrs[startingIdx] = localIPAddrs[lowestIdx];
             localIPAddrs[lowestIdx] = temp;
         }
@@ -672,14 +672,14 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
         for (index = 0; index < pluginListNTS.Size(); index++)
             this->pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoMemoryStream bs;
+        GecoBitsStream bs;
         bs.Write((MessageID)ID_CONNECTION_BANNED);
         bs.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
         bs.WriteMini(myGuid);
 
         JISSendParams bsp;
-        bsp.data = bs.DataInt8();
-        bsp.length = bs.GetWrittenBytesCount();
+        bsp.data = bs.Int8Data();
+        bsp.length = bs.GetWrittenBytesSize();
         bsp.receiverINetAddress = recvParams->senderINetAddress;
         if (recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC) > 0)
         {
@@ -853,7 +853,7 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoMemoryStream reader((UInt8*)recvParams->data, recvParams->bytesRead);
+        GecoBitsStream reader((UInt8*)recvParams->data, recvParams->bytesRead);
         MessageID msgid;
         reader.Read(msgid);
         std::cout << "client receives msg with " << "msgid " << (int)msgid;
@@ -923,7 +923,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
         }
 
-        GecoMemoryStream fromClientReader((UInt8*)recvParams->data, recvParams->bytesRead);
+        GecoBitsStream fromClientReader((UInt8*)recvParams->data, recvParams->bytesRead);
         fromClientReader.ReadSkipBytes(sizeof(MessageID));
         fromClientReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -963,7 +963,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         }
 #endif // ENABLE_SECURE_HAND_SHAKE
 
-        JackieAddress recvivedBoundAddrFromClient;
+        InetAddress recvivedBoundAddrFromClient;
         fromClientReader.ReadMini(recvivedBoundAddrFromClient);
         std::cout << "serverReadMini(server_bound_addr) " << recvivedBoundAddrFromClient.ToString();
         UInt16 mtu;
@@ -1033,7 +1033,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             std::cout << " sever allowed new connection for this client";
         }
 
-        GecoMemoryStream toClientReplay2Writer;
+        GecoBitsStream toClientReplay2Writer;
         toClientReplay2Writer.Write(ID_OPEN_CONNECTION_REPLY_2);
         toClientReplay2Writer.Write((const unsigned char*)OFFLINE_MESSAGE_DATA_ID,
             sizeof(OFFLINE_MESSAGE_DATA_ID));
@@ -1057,8 +1057,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 #endif // ENABLE_SECURE_HAND_SHAKE
 
             JISSendParams bsp;
-            bsp.data = toClientReplay2Writer.DataInt8();
-            bsp.length = toClientReplay2Writer.GetWrittenBytesCount();
+            bsp.data = toClientReplay2Writer.Int8Data();
+            bsp.length = toClientReplay2Writer.GetWrittenBytesSize();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
             recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1069,15 +1069,15 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         else if (outcome != 0)
         {
             std::cout << "Server return ID_ALREADY_CONNECTED to client";
-            GecoMemoryStream toClientAlreadyConnectedWriter;
+            GecoBitsStream toClientAlreadyConnectedWriter;
             toClientAlreadyConnectedWriter.Write(ID_ALREADY_CONNECTED);
             toClientAlreadyConnectedWriter.Write((const unsigned char*)OFFLINE_MESSAGE_DATA_ID,
                 sizeof(OFFLINE_MESSAGE_DATA_ID));
             toClientAlreadyConnectedWriter.Write(myGuid);
 
             JISSendParams bsp;
-            bsp.data = toClientAlreadyConnectedWriter.DataInt8();
-            bsp.length = toClientAlreadyConnectedWriter.GetWrittenBytesCount();
+            bsp.data = toClientAlreadyConnectedWriter.Int8Data();
+            bsp.length = toClientAlreadyConnectedWriter.GetWrittenBytesSize();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
             recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1087,7 +1087,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         /// start to handle new connection from client
         else if (outcome == 0)
         {
-            GecoMemoryStream toClientWriter;
+            GecoBitsStream toClientWriter;
 
             // no more incoming conn accepted
             if (!CanAcceptIncomingConnection())
@@ -1099,8 +1099,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                 toClientWriter.WriteMini(myGuid);
 
                 JISSendParams bsp;
-                bsp.data = toClientWriter.DataInt8();
-                bsp.length = toClientWriter.GetWrittenBytesCount();
+                bsp.data = toClientWriter.Int8Data();
+                bsp.length = toClientWriter.GetWrittenBytesSize();
                 bsp.receiverINetAddress = recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1133,8 +1133,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                     //SocketLayer::SendTo( rakNetSocket, (const char*) bsOut.GetData(), bsOut.GetNumberOfBytesUsed(), systemAddress, _FILE_AND_LINE_ );
 
                     JISSendParams bsp;
-                    bsp.data = toClientWriter.DataInt8();
-                    bsp.length = toClientWriter.GetWrittenBytesCount();
+                    bsp.data = toClientWriter.Int8Data();
+                    bsp.length = toClientWriter.GetWrittenBytesSize();
                     bsp.receiverINetAddress = recvParams->senderINetAddress;
                     recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1163,8 +1163,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 #endif // ENABLE_SECURE_HAND_SHAKE
 
                 JISSendParams bsp;
-                bsp.data = toClientReplay2Writer.DataInt8();
-                bsp.length = toClientReplay2Writer.GetWrittenBytesCount();
+                bsp.data = toClientReplay2Writer.Int8Data();
+                bsp.length = toClientReplay2Writer.GetWrittenBytesSize();
                 bsp.receiverINetAddress = recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1192,7 +1192,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoMemoryStream writer;
+        GecoBitsStream writer;
         unsigned char remote_system_protcol = (unsigned char)recvParams->data[sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)];
 
         // see if the protocol is up-to-date
@@ -1206,8 +1206,8 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
             writer.WriteMini(myGuid);
 
             JISSendParams data2send;
-            data2send.data = writer.DataInt8();
-            data2send.length = writer.GetWrittenBytesCount();
+            data2send.data = writer.Int8Data();
+            data2send.length = writer.GetWrittenBytesSize();
             data2send.receiverINetAddress = recvParams->senderINetAddress;
 
             /// we do not need test 10040 error because it is only 24 bytes length
@@ -1264,8 +1264,8 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
             std::cout << "AUDIT: server PadZero2LengthOf " << newClientMTU - UDP_HEADER_SIZE;
 
             JISSendParams bsp;
-            bsp.data = writer.DataInt8();
-            bsp.length = writer.GetWrittenBytesCount();
+            bsp.data = writer.Int8Data();
+            bsp.length = writer.GetWrittenBytesSize();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
 
             // this send will never return 10040 error because bsp.length must be <= MAXIMUM_MTU_SIZE
@@ -1299,7 +1299,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoMemoryStream fromServerReader((UInt8*)recvParams->data, recvParams->bytesRead);
+        GecoBitsStream fromServerReader((UInt8*)recvParams->data, recvParams->bytesRead);
         fromServerReader.ReadSkipBytes(sizeof(MessageID));
         fromServerReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -1327,7 +1327,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                 connReqQLock.Unlock();
 
                 /// prepare out data to server
-                GecoMemoryStream toServerWriter;
+                GecoBitsStream toServerWriter;
                 toServerWriter.Write((MessageID)ID_OPEN_CONNECTION_REQUEST_2);
                 toServerWriter.Write((const unsigned char*)OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -1418,8 +1418,8 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                 std::cout << "client WriteMini(myGuid) " << myGuid.g << " to server ";
 
                 JISSendParams outcome_data;
-                outcome_data.data = toServerWriter.DataInt8();
-                outcome_data.length = toServerWriter.GetWrittenBytesCount();
+                outcome_data.data = toServerWriter.Int8Data();
+                outcome_data.length = toServerWriter.GetWrittenBytesSize();
                 outcome_data.receiverINetAddress = recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&outcome_data, TRACKE_MALLOC);
 
@@ -1451,9 +1451,9 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
         JackieGUID guid;
         UInt16 mtu;
         bool clientSecureRequiredbyServer = false;
-        JackieAddress ourOwnBoundAddEchoFromServer;
+        InetAddress ourOwnBoundAddEchoFromServer;
 
-        GecoMemoryStream bs((unsigned char*)recvParams->data, recvParams->bytesRead);
+        GecoBitsStream bs((unsigned char*)recvParams->data, recvParams->bytesRead);
         bs.ReadSkipBytes(sizeof(MessageID));
         bs.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
         bs.ReadMini(guid);
@@ -1572,7 +1572,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                         if (connReq->timeout != 0)
                             free_rs->reliabilityLayer.SetTimeoutTime(connReq->timeout);
 
-                        GecoMemoryStream temp;
+                        GecoBitsStream temp;
                         temp.Write(ID_CONNECTION_REQUEST);
                         temp.WriteMini(guid);
                         temp.WriteMini(GetTimeMS());
@@ -1609,8 +1609,8 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                         }
 
                         ReliableSendParams sendParams;
-                        sendParams.data = temp.DataInt8();
-                        sendParams.bitsSize = temp.GetWrittenBitsCount();
+                        sendParams.data = temp.Int8Data();
+                        sendParams.bitsSize = temp.GetWrittenBitsSize();
                         sendParams.broadcast = false;
                         sendParams.sendPriority = PacketSendPriority::UNBUFFERED_IMMEDIATELY_SEND;
                         sendParams.orderingChannel = 0;
@@ -1674,7 +1674,7 @@ void JackieApplication::ProcessConnectionRequestCancelQ(void)
 
     //std::cout << "Connection Request CancelQ is NOT EMPTY";
 
-    JackieAddress connReqCancelAddr;
+    InetAddress connReqCancelAddr;
     ConnectionRequest* connReq = 0;
 
     connReqCancelQLock.Lock();
@@ -1766,7 +1766,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
                 connReq->requestsMade++;
                 connReq->nextRequestTime = timeMS + connReq->connAttemptIntervalMS;
 
-                GecoMemoryStream bitStream;
+                GecoBitsStream bitStream;
                 bitStream.Write(ID_OPEN_CONNECTION_REQUEST_1);
                 bitStream.Write(OFFLINE_MESSAGE_DATA_ID,
                     sizeof(OFFLINE_MESSAGE_DATA_ID));
@@ -1779,8 +1779,8 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
                 connReq->receiverAddr.FixForIPVersion(connReq->socket->GetBoundAddress());
 
                 JISSendParams jsp;
-                jsp.data = bitStream.DataInt8();
-                jsp.length = bitStream.GetWrittenBytesCount();
+                jsp.data = bitStream.Int8Data();
+                jsp.length = bitStream.GetWrittenBytesSize();
                 jsp.receiverINetAddress = connReq->receiverAddr;
 
 #if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
@@ -1989,7 +1989,7 @@ void JackieApplication::AdjustTimestamp(JackiePacket*& incomePacket) const
     }
 }
 
-const JackieGUID& JackieApplication::GetGuidFromSystemAddress(const JackieAddress
+const JackieGUID& JackieApplication::GetGuidFromSystemAddress(const InetAddress
     input) const
 {
     if (input == JACKIE_NULL_ADDRESS) return myGuid;
@@ -2011,7 +2011,7 @@ const JackieGUID& JackieApplication::GetGuidFromSystemAddress(const JackieAddres
     return JACKIE_NULL_GUID;
 }
 
-JackieRemoteSystem* JackieApplication::GetRemoteSystem(const JackieAddress&
+JackieRemoteSystem* JackieApplication::GetRemoteSystem(const InetAddress&
     sa, bool neededBySendThread, bool onlyWantActiveEndPoint) const
 {
     if (sa == JACKIE_NULL_ADDRESS) return 0;
@@ -2076,15 +2076,15 @@ JackieRemoteSystem* JackieApplication::GetRemoteSystem(const JackieGUID&
     }
     return 0;
 }
-JackieRemoteSystem* JackieApplication::GetRemoteSystem(const JackieAddress& sa) const
+JackieRemoteSystem* JackieApplication::GetRemoteSystem(const InetAddress& sa) const
 {
     Int32 index = GetRemoteSystemIndex(sa);
     if (index == -1) return 0;
     return remoteSystemList + index;
 }
-Int32 JackieApplication::GetRemoteSystemIndex(const JackieAddress &sa) const
+Int32 JackieApplication::GetRemoteSystemIndex(const InetAddress &sa) const
 {
-    UInt32 hashindex = JackieAddress::ToHashCode(sa);
+    UInt32 hashindex = InetAddress::ToHashCode(sa);
     hashindex = hashindex % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
     JackieRemoteIndex* curr = remoteSystemLookup[hashindex];
     while (curr != 0)
@@ -2097,7 +2097,7 @@ Int32 JackieApplication::GetRemoteSystemIndex(const JackieAddress &sa) const
 }
 
 
-void JackieApplication::RefRemoteEndPoint(const JackieAddress &sa, UInt32 index)
+void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
 {
 #ifdef _DEBUG	
     for (int remoteSystemIndex = 0;
@@ -2112,7 +2112,7 @@ void JackieApplication::RefRemoteEndPoint(const JackieAddress &sa, UInt32 index)
 #endif // _DEBUG
 
     JackieRemoteSystem* remote = remoteSystemList + index;
-    JackieAddress old = remote->systemAddress;
+    InetAddress old = remote->systemAddress;
     if (old != JACKIE_NULL_ADDRESS)
     {
         // The system might be active if rerouting
@@ -2127,7 +2127,7 @@ void JackieApplication::RefRemoteEndPoint(const JackieAddress &sa, UInt32 index)
     DeRefRemoteSystem(sa);
     remoteSystemList[index].systemAddress = sa;
 
-    UInt32 hashindex = JackieAddress::ToHashCode(sa);
+    UInt32 hashindex = InetAddress::ToHashCode(sa);
     hashindex = hashindex % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
 
     JackieRemoteIndex *rsi = 0;
@@ -2149,9 +2149,9 @@ void JackieApplication::RefRemoteEndPoint(const JackieAddress &sa, UInt32 index)
     }
 
 }
-void JackieApplication::DeRefRemoteSystem(const JackieAddress &sa)
+void JackieApplication::DeRefRemoteSystem(const InetAddress &sa)
 {
-    UInt32 hashindex = JackieAddress::ToHashCode(sa);
+    UInt32 hashindex = InetAddress::ToHashCode(sa);
     hashindex = hashindex % (maxConnections *RemoteEndPointLookupHashMutiple - 1);
 
     JackieRemoteIndex *cur = remoteSystemLookup[hashindex];
@@ -2594,7 +2594,7 @@ UInt64 JackieApplication::CreateUniqueRandness(void)
     return g;
 }
 
-void JackieApplication::CancelConnectionRequest(const JackieAddress& target)
+void JackieApplication::CancelConnectionRequest(const InetAddress& target)
 {
     std::cout << "User Thread Cancel Connection Request To " << target.ToString();
     connReqCancelQLock.Lock();
@@ -2678,7 +2678,7 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
         return INVALID_PARAM;
     }
 
-    JackieAddress addr;
+    InetAddress addr;
     bool ret = addr.FromString(host, port,
         bindedSockets[ConnectionSocketIndex]->GetBoundAddress().GetIPVersion());
     if (!ret || addr == JACKIE_NULL_ADDRESS) return CANNOT_RESOLVE_DOMAIN_NAME;
@@ -2899,7 +2899,7 @@ bool JackieApplication::EnableSecureIncomingConnections(const char *public_key, 
 #endif
 }
 
-bool JackieApplication::IsInSecurityExceptionList(JackieAddress& jackieAddr)
+bool JackieApplication::IsInSecurityExceptionList(InetAddress& jackieAddr)
 {
     /// memcmp recvParams->senderINetAddress.address.addr4.sin_addr
     /// more efficient
@@ -2907,7 +2907,7 @@ bool JackieApplication::IsInSecurityExceptionList(JackieAddress& jackieAddr)
     return false;
 }
 
-void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams, JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu, JackieAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
+void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams, JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu, InetAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
     bool clientSecureRequiredbyServer)
 {
     TimeMS time = ::GetTimeMS();
@@ -3159,7 +3159,7 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
     return callerDataAllocationUsed;
 }
 
-Int32 JackieApplication::GetRemoteSystemIndexGeneral(const JackieAddress& systemAddress, bool calledFromNetworkThread /*= false*/) const
+Int32 JackieApplication::GetRemoteSystemIndexGeneral(const InetAddress& systemAddress, bool calledFromNetworkThread /*= false*/) const
 {
     if (systemAddress == JACKIE_NULL_ADDRESS)
         return -1;
@@ -3228,7 +3228,7 @@ Int32 JackieApplication::GetRemoteSystemIndexGeneral(const JackieGUID& input, bo
     return (unsigned int)-1;
 }
 
-bool JackieApplication::IsBanned(JackieAddress& senderINetAddress)
+bool JackieApplication::IsBanned(InetAddress& senderINetAddress)
 {
     if (banList.Size() == 0) return false;
 

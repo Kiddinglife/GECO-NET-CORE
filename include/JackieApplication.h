@@ -98,11 +98,11 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
 #endif
 
     RandomSeedCreator rnr;
-    GecoMemoryStream sendBitStream;
+    GecoBitsStream sendBitStream;
 
     JackieGUID myGuid;
-    JackieAddress localIPAddrs[MAX_COUNT_LOCAL_IP_ADDR];
-    JackieAddress firstExternalID;
+    InetAddress localIPAddrs[MAX_COUNT_LOCAL_IP_ADDR];
+    InetAddress firstExternalID;
 
 
     /// Store the maximum number of peers allowed to connect
@@ -250,7 +250,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
 #endif
 
 
-    JackieArraryQueue<JackieAddress, 8> connReqCancelQ;
+    JackieArraryQueue<InetAddress, 8> connReqCancelQ;
     JackieSimpleMutex connReqCancelQLock;
     JackieArraryQueue<ConnectionRequest*, 8> connReqQ;
     JackieSimpleMutex connReqQLock;
@@ -283,7 +283,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
     void ProcessOneRecvParam(JISRecvParams* recvParams);
     void IsOfflineRecvParams(JISRecvParams* recvParams,
         bool* isOfflinerecvParams);
-    void ProcessBufferedCommand(JISRecvParams* recvParams, GecoMemoryStream &updateBitStream);
+    void ProcessBufferedCommand(JISRecvParams* recvParams, GecoBitsStream &updateBitStream);
     void ProcessConnectionRequestCancelQ(void); /// @Done
     void ProcessAllocJISRecvParamsQ(void);
     void ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS);
@@ -351,7 +351,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
     /// you can't have multiple connections from the same system
     UInt64 CreateUniqueRandness(void);
     UInt32 GetSystemIndexFromGuid(const JackieGUID& input) const;
-    const JackieGUID& GetGuidFromSystemAddress(const JackieAddress input) const;
+    const JackieGUID& GetGuidFromSystemAddress(const InetAddress input) const;
 
     UInt32 MaxConnections() const { return maxConnections; }
     /// return how many client initiats a connection to us
@@ -374,7 +374,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
     /// @Param [in] [const JackieAddress & target] 
     ///  Which remote server the connection being cancelled to
     /// @Author mengdi[Jackie]
-    void CancelConnectionRequest(const JackieAddress& target);
+    void CancelConnectionRequest(const InetAddress& target);
 
     bool GenerateConnectionRequestChallenge(ConnectionRequest *connectionRequest, JackieSHSKey *jackiePublicKey);
 
@@ -501,25 +501,25 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
 
 
     const JackieGUID& GetMyGuid(void) const { return myGuid; }
-    JackieRemoteSystem* GetRemoteSystem(const JackieAddress& sa,
+    JackieRemoteSystem* GetRemoteSystem(const InetAddress& sa,
         bool neededBySendThread, bool onlyWantActiveEndPoint) const;
-    JackieRemoteSystem* GetRemoteSystem(const JackieAddress& sa)
+    JackieRemoteSystem* GetRemoteSystem(const InetAddress& sa)
         const;
     JackieRemoteSystem* GetRemoteSystem(const JackieAddressGuidWrapper&
         senderWrapper, bool neededBySendThread,
         bool onlyWantActiveEndPoint) const;
     JackieRemoteSystem* GetRemoteSystem(const JackieGUID& senderGUID,
         bool onlyWantActiveEndPoint) const;
-    Int32 GetRemoteSystemIndex(const JackieAddress &sa) const;
-    void RefRemoteEndPoint(const JackieAddress &sa, UInt32 index);
-    void DeRefRemoteSystem(const JackieAddress &sa);
+    Int32 GetRemoteSystemIndex(const InetAddress &sa) const;
+    void RefRemoteEndPoint(const InetAddress &sa, UInt32 index);
+    void DeRefRemoteSystem(const InetAddress &sa);
 
     /// \brief Given \a systemAddress, returns its index into remoteSystemList.
     /// \details Values range from 0 to the maximum number of players allowed-1.
     /// This includes systems which were formerly connected, but are now not connected.
     /// \param[in] systemAddress The SystemAddress we are referring to
     /// \return The index of this SystemAddress or -1 on system not found.
-    Int32 GetRemoteSystemIndexGeneral(const JackieAddress& systemAddress,
+    Int32 GetRemoteSystemIndexGeneral(const InetAddress& systemAddress,
         bool calledFromNetworkThread = false) const;
     Int32 GetRemoteSystemIndexGeneral(const JackieGUID& jackieGuid,
         bool calledFromNetworkThread = false) const;
@@ -538,8 +538,8 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
     bool SendImmediate(ReliableSendParams& sendParams);
 
     void AddToActiveSystemList(UInt32 index2use);
-    bool IsInSecurityExceptionList(JackieAddress& jackieAddr);
-    void Add2RemoteSystemList(JISRecvParams* recvParams, JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu, JackieAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
+    bool IsInSecurityExceptionList(InetAddress& jackieAddr);
+    void Add2RemoteSystemList(JISRecvParams* recvParams, JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu, InetAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
         bool clientSecureRequiredbyServer);
     void AddToSecurityExceptionList(const char *ip);
 
@@ -559,7 +559,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
     /// adding locks on @banlist 
     /// @!you can only call this from user thread after Startup() that clear cmd q
     void SetBannedRemoteSystem(const char IP[32], TimeMS milliseconds = 0);
-    bool IsBanned(JackieAddress& senderINetAddress);
+    bool IsBanned(InetAddress& senderINetAddress);
     private:
     void AddToBanList(const char IP[32], TimeMS milliseconds = 0);
     void OnConnectionFailed(JISRecvParams* recvParams, bool* isOfflinerecvParams);

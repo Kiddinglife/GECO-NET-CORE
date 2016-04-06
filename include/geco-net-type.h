@@ -36,7 +36,7 @@ GECO_NET_BEGIN_NSPACE
 class   INetApplication;
 class   JackieBits;
 struct  JackiePacket;
-struct  JackieAddress;
+struct  InetAddress;
 struct  JackieGUID;
 class JackieINetSocket;
 class JackieReliabler;
@@ -102,7 +102,7 @@ typedef UInt8 MessageID; ///< First byte of a network message
 
 /// Index of an invalid JACKIE_INET_Address and JACKIE_INet_GUID
 #ifndef SWIG
-GECO_EXPORT extern const  JackieAddress JACKIE_NULL_ADDRESS;
+GECO_EXPORT extern const  InetAddress JACKIE_NULL_ADDRESS;
 GECO_EXPORT extern const  JackieGUID JACKIE_NULL_GUID;
 #endif
 
@@ -258,7 +258,7 @@ struct GECO_EXPORT JackieBindingSocket
 /// Use JACKIE_INet_GUID for a unique per-instance of ServerApplication to identify 
 /// systems
 //////////////////////////////////////////////////////////////////////////
-struct GECO_EXPORT JackieAddress /// JACKIE_INET_Address
+struct GECO_EXPORT InetAddress /// JACKIE_INET_Address
 {
     /// In6 Or In4 
     /// JACKIE_INET_Address, with RAKNET_SUPPORT_IPV6 defined, 
@@ -282,21 +282,21 @@ struct GECO_EXPORT JackieAddress /// JACKIE_INET_Address
     UInt16 debugPort;
 
     /// Constructors
-    JackieAddress();
-    JackieAddress(const char *str);
-    JackieAddress(const char *str, UInt16 port);
+    InetAddress();
+    InetAddress(const char *str);
+    InetAddress(const char *str, UInt16 port);
 
-    JackieAddress& operator = (const JackieAddress& input);
-    bool operator==(const JackieAddress& right) const;
-    bool operator!=(const JackieAddress& right) const;
-    bool operator > (const JackieAddress& right) const;
-    bool operator < (const JackieAddress& right) const;
-    bool EqualsExcludingPort(const JackieAddress& right) const;
+    InetAddress& operator = (const InetAddress& input);
+    bool operator==(const InetAddress& right) const;
+    bool operator!=(const InetAddress& right) const;
+    bool operator > (const InetAddress& right) const;
+    bool operator < (const InetAddress& right) const;
+    bool EqualsExcludingPort(const InetAddress& right) const;
     /// @internal Return the size to write to a bitStream
     static Int32 size(void);
 
     /// Hash the JACKIE_INET_Address
-    static unsigned int ToHashCode(const JackieAddress &sa);
+    static unsigned int ToHashCode(const InetAddress &sa);
 
     /// Return the IP version, either IPV4 or IPV6
     unsigned char GetIPVersion(void) const;
@@ -319,9 +319,9 @@ struct GECO_EXPORT JackieAddress /// JACKIE_INET_Address
     void SetPortNetworkOrder(UInt16 s);
 
     /// set the port from another JACKIE_INET_Address structure
-    void SetPortNetworkOrder(const JackieAddress& right);
+    void SetPortNetworkOrder(const InetAddress& right);
 
-    void FixForIPVersion(const JackieAddress &boundAddressToSocket)
+    void FixForIPVersion(const InetAddress &boundAddressToSocket)
     {
         char str[128];
         ToString(false, str);
@@ -438,7 +438,7 @@ struct GECO_EXPORT JackieGUID
 struct GECO_EXPORT JackieAddressGuidWrapper
 {
     JackieGUID guid;
-    JackieAddress systemAddress;
+    InetAddress systemAddress;
 
     SystemIndex GetSystemIndex(void) const
     {
@@ -475,7 +475,7 @@ struct GECO_EXPORT JackieAddressGuidWrapper
         guid = input.guid;
         systemAddress = input.systemAddress;
     }
-    JackieAddressGuidWrapper(const JackieAddress& input)
+    JackieAddressGuidWrapper(const InetAddress& input)
     {
         guid = JACKIE_NULL_GUID;
         systemAddress = input;
@@ -492,7 +492,7 @@ struct GECO_EXPORT JackieAddressGuidWrapper
         systemAddress = input.systemAddress;
         return *this;
     }
-    JackieAddressGuidWrapper& operator = (const JackieAddress& input)
+    JackieAddressGuidWrapper& operator = (const InetAddress& input)
     {
         guid = JACKIE_NULL_GUID;
         systemAddress = input;
@@ -790,7 +790,7 @@ struct InternalPacket : public PacketHeader
 struct GECO_EXPORT JackiePacket
 {
     /// The system that send this packet.
-    JackieAddress systemAddress;
+    InetAddress systemAddress;
 
     /// A unique identifier for the system that sent this packet, 
     /// regardless of IP address (internal / external / remote system)
@@ -828,11 +828,11 @@ struct GECO_EXPORT JackieRemoteSystem
     // Is this structure in use?
     bool isActive;
     /// Their external IP on the internet
-    JackieAddress systemAddress;
+    InetAddress systemAddress;
     /// Your external IP on the internet, from their perspective
-    JackieAddress myExternalSystemAddress;
+    InetAddress myExternalSystemAddress;
     /// Their internal IP, behind the LAN
-    JackieAddress theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
+    InetAddress theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
     /// The reliability layer associated with this player
     JackieReliabler reliabilityLayer;
     /// True if we started this connection via Connect.  
@@ -931,7 +931,7 @@ struct GECO_EXPORT Command
 
 struct GECO_EXPORT ConnectionRequest
 {
-    JackieAddress receiverAddr;
+    InetAddress receiverAddr;
     Time nextRequestTime;
     unsigned char requestsMade;
     char *data;

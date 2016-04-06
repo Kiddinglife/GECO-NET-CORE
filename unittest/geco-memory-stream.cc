@@ -5,7 +5,7 @@ using namespace geco::net;
 struct vec { float x; float y; float z; };
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 {
-    GecoMemoryStream s8;
+    GecoBitsStream s8;
 
     UInt24 uint24 = 24;
     UInt8 uint8 = 8;
@@ -19,7 +19,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 
     UInt8 particialByte = 0xf0; /// 11110000
     JackieGUID guid(123);
-    JackieAddress addr("192.168.1.107", 32000);
+    InetAddress addr("192.168.1.107", 32000);
     vec vector_ = { 0.2f, -0.4f, -0.8f };
     vec vector__ = { 2.234f, -4.78f, -32.2f };
 
@@ -90,7 +90,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.WriteBits(&particialByte, 7, false);
         }
 
-        GecoMemoryStream s9;
+        GecoBitsStream s9;
         s9.Write(s8);
 
         if (i == 0)
@@ -112,7 +112,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s9.ReadMini(mini_uint24);
             EXPECT_TRUE(mini_uint24.val == 24);
 
-            JackieAddress addrr;
+            InetAddress addrr;
             s9.ReadMini(addrr);
             EXPECT_TRUE(addr == addrr);
 
@@ -212,7 +212,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 }
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 {
-    GecoMemoryStream s8;
+    GecoBitsStream s8;
 
     UInt24 uint24 = 24;
     UInt8 uint8 = 8;
@@ -226,7 +226,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 
     UInt8 particialByte = 0xf0; /// 11110000
     JackieGUID guid(123);
-    JackieAddress addr("192.168.1.107", 32000);
+    InetAddress addr("192.168.1.107", 32000);
     vec vector_ = { 0.2f, -0.4f, -0.8f };
     vec vector__ = { 2.234f, -4.78f, -32.2f };
 
@@ -297,7 +297,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
             s8.WriteBits(&particialByte, 7, false);
         }
 
-        GecoMemoryStream s9;
+        GecoBitsStream s9;
         s9.Write(s8);
 
         if (i == 0)
@@ -319,7 +319,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
             s9.Read(mini_uint24);
             EXPECT_TRUE(mini_uint24.val == 24);
 
-            JackieAddress addrr;
+            InetAddress addrr;
             s9.Read(addrr);
             EXPECT_TRUE(addr == addrr);
 

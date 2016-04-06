@@ -11,7 +11,7 @@ const char *IPV6_LOOPBACK = "::1";
 const char *IPV4_LOOPBACK = "127.0.0.1";
 
 #ifndef SWIG
-const JackieAddress JACKIE_NULL_ADDRESS;
+const InetAddress JACKIE_NULL_ADDRESS;
 const JackieGUID JACKIE_NULL_GUID;
 #endif
 
@@ -45,7 +45,7 @@ JackieBindingSocket::JackieBindingSocket(const char *_hostAddress, UInt16 _port)
     blockingSocket = USE_BLOBKING_SOCKET;
 }
 
-Int32 JackieAddress::size(void)
+Int32 InetAddress::size(void)
 {
 #if NET_SUPPORT_IPV6==1
     return sizeof(sockaddr_in6) + sizeof(Int8);
@@ -53,7 +53,7 @@ Int32 JackieAddress::size(void)
     return sizeof(unsigned int) + sizeof(UInt16) + sizeof(Int8);
 #endif
 }
-unsigned int JackieAddress::ToHashCode(const JackieAddress &sa)
+unsigned int InetAddress::ToHashCode(const InetAddress &sa)
 {
     unsigned int lastHash = SuperFastHashIncremental((const char*)& sa.address.addr4.sin_port,
         sizeof(sa.address.addr4.sin_port), sizeof(sa.address.addr4.sin_port));
@@ -71,27 +71,27 @@ unsigned int JackieAddress::ToHashCode(const JackieAddress &sa)
 #endif
 }
 
-JackieAddress::JackieAddress()
+InetAddress::InetAddress()
 {
     address.addr4.sin_family = AF_INET;
     systemIndex = (SystemIndex)-1;
     debugPort = 0;
 }
-JackieAddress::JackieAddress(const char *str)
+InetAddress::InetAddress(const char *str)
 {
     address.addr4.sin_family = AF_INET;
     SetPortHostOrder(0);
     FromString(str);
     systemIndex = (SystemIndex)-1;
 }
-JackieAddress::JackieAddress(const char *str, UInt16 port)
+InetAddress::InetAddress(const char *str, UInt16 port)
 {
     address.addr4.sin_family = AF_INET;
     FromString(str, port);
     systemIndex = (SystemIndex)-1;
 }
-JackieAddress& JackieAddress::operator = (const
-    JackieAddress& input)
+InetAddress& InetAddress::operator = (const
+    InetAddress& input)
 {
     memcpy(&address, &input.address, sizeof(address));
     systemIndex = input.systemIndex;
@@ -99,12 +99,12 @@ JackieAddress& JackieAddress::operator = (const
     return *this;
 }
 
-bool JackieAddress::operator==(const JackieAddress& right) const
+bool InetAddress::operator==(const InetAddress& right) const
 {
     return (address.addr4.sin_port == right.address.addr4.sin_port) && EqualsExcludingPort(right);
 }
 
-bool JackieAddress::EqualsExcludingPort(const JackieAddress& right) const
+bool InetAddress::EqualsExcludingPort(const InetAddress& right) const
 {
     return (address.addr4.sin_family == AF_INET && address.addr4.sin_addr.s_addr == right.address.addr4.sin_addr.s_addr)
 #if NET_SUPPORT_IPV6==1
@@ -113,11 +113,11 @@ bool JackieAddress::EqualsExcludingPort(const JackieAddress& right) const
         ;
 }
 
-bool JackieAddress::operator!=(const JackieAddress& right) const
+bool InetAddress::operator!=(const InetAddress& right) const
 {
     return (*this == right) == false;
 }
-bool JackieAddress::operator>(const JackieAddress& right) const
+bool InetAddress::operator>(const InetAddress& right) const
 {
     if (address.addr4.sin_port == right.address.addr4.sin_port)
     {
@@ -131,7 +131,7 @@ bool JackieAddress::operator>(const JackieAddress& right) const
     }
     return address.addr4.sin_port > right.address.addr4.sin_port;
 }
-bool JackieAddress::operator<(const JackieAddress& right) const
+bool InetAddress::operator<(const InetAddress& right) const
 {
     if (address.addr4.sin_port == right.address.addr4.sin_port)
     {
@@ -146,7 +146,7 @@ bool JackieAddress::operator<(const JackieAddress& right) const
     return address.addr4.sin_port < right.address.addr4.sin_port;
 }
 
-unsigned char JackieAddress::GetIPVersion(void) const
+unsigned char InetAddress::GetIPVersion(void) const
 {
     if (address.addr4.sin_family == AF_INET)
     {
@@ -157,7 +157,7 @@ unsigned char JackieAddress::GetIPVersion(void) const
         return 6;
     }
 }
-unsigned char JackieAddress::GetIPProtocol(void) const
+unsigned char InetAddress::GetIPProtocol(void) const
 {
 #if NET_SUPPORT_IPV6==1
     if (address.addr4.sin_family == AF_INET)
@@ -168,34 +168,34 @@ unsigned char JackieAddress::GetIPProtocol(void) const
 #endif
 }
 
-void JackieAddress::SetPortHostOrder(UInt16 s)
+void InetAddress::SetPortHostOrder(UInt16 s)
 {
     address.addr4.sin_port = htons(s);
     debugPort = s;
 }
-void JackieAddress::SetPortNetworkOrder(UInt16 s)
+void InetAddress::SetPortNetworkOrder(UInt16 s)
 {
     address.addr4.sin_port = s;
     debugPort = ntohs(s);
 }
-void JackieAddress::SetPortNetworkOrder(const JackieAddress& right)
+void InetAddress::SetPortNetworkOrder(const InetAddress& right)
 {
     address.addr4.sin_port = right.address.addr4.sin_port;
     debugPort = right.debugPort;
 }
-UInt16 JackieAddress::GetPortHostOrder(void) const
+UInt16 InetAddress::GetPortHostOrder(void) const
 {
     return ntohs(address.addr4.sin_port);
 }
-UInt16 JackieAddress::GetPortNetworkOrder(void) const
+UInt16 InetAddress::GetPortNetworkOrder(void) const
 {
     return address.addr4.sin_port;
 }
-void JackieAddress::SetToLoopBack(void)
+void InetAddress::SetToLoopBack(void)
 {
     SetToLoopBack(4);
 }
-void JackieAddress::SetToLoopBack(unsigned char ipVersion)
+void InetAddress::SetToLoopBack(unsigned char ipVersion)
 {
     if (ipVersion == 4)
     {
@@ -206,7 +206,7 @@ void JackieAddress::SetToLoopBack(unsigned char ipVersion)
         FromString(IPV6_LOOPBACK, '\0', ipVersion);
     }
 }
-bool JackieAddress::IsLoopback(void) const
+bool InetAddress::IsLoopback(void) const
 {
     if (GetIPVersion() == 4)
     {
@@ -225,7 +225,7 @@ bool JackieAddress::IsLoopback(void) const
 #endif
     return false;
 }
-bool JackieAddress::IsLANAddress(void)
+bool InetAddress::IsLANAddress(void)
 {
 #if defined(WIN32)
     return address.addr4.sin_addr.S_un.S_un_b.s_b1 == 10 || address.addr4.sin_addr.S_un.S_un_b.s_b1 == 192;
@@ -235,7 +235,7 @@ bool JackieAddress::IsLANAddress(void)
 #endif
 }
 
-bool JackieAddress::SetIP4Address(const char *str, char portDelineator)
+bool InetAddress::SetIP4Address(const char *str, char portDelineator)
 {
     if (isDomainIPAddr(str))
     {
@@ -309,7 +309,7 @@ bool JackieAddress::SetIP4Address(const char *str, char portDelineator)
     }
     return true;
 }
-bool JackieAddress::FromString(const char *str, char portDelineator,
+bool InetAddress::FromString(const char *str, char portDelineator,
     unsigned char ipVersion)
 {
 #if NET_SUPPORT_IPV6 != 1
@@ -429,7 +429,7 @@ bool JackieAddress::FromString(const char *str, char portDelineator,
 #endif // #if NET_SUPPORT_IPV6!=1
     return true;
 }
-bool JackieAddress::FromString(const char *str, UInt16 port, unsigned char ipVersion)
+bool InetAddress::FromString(const char *str, UInt16 port, unsigned char ipVersion)
 {
     bool b = FromString(str, '\0', ipVersion);
     if (b == false)
@@ -442,7 +442,7 @@ bool JackieAddress::FromString(const char *str, UInt16 port, unsigned char ipVer
     return true;
 }
 
-const char* JackieAddress::ToString(bool writePort, char portDelineator) const
+const char* InetAddress::ToString(bool writePort, char portDelineator) const
 {
     unsigned char strIndex = 0;
 
@@ -457,7 +457,7 @@ const char* JackieAddress::ToString(bool writePort, char portDelineator) const
     ToString(writePort, str[lastStrIndex & 7], portDelineator);
     return (char*)str[lastStrIndex & 7];
 }
-void JackieAddress::ToString(bool writePort, char *dest, char portDelineator) const
+void InetAddress::ToString(bool writePort, char *dest, char portDelineator) const
 {
 #if NET_SUPPORT_IPV6 !=1
     ToString_IPV4(writePort, dest, portDelineator);
@@ -465,7 +465,7 @@ void JackieAddress::ToString(bool writePort, char *dest, char portDelineator) co
     ToString_IPV6(writePort, dest, portDelineator);
 #endif // #if RAKNET_SUPPORT_IPV6!=1
 }
-void JackieAddress::ToString_IPV4(bool writePort, char *dest, char portDelineator)
+void InetAddress::ToString_IPV4(bool writePort, char *dest, char portDelineator)
 const
 {
     if (*this == JACKIE_NULL_ADDRESS)
@@ -488,7 +488,7 @@ const
         Itoa(GetPortHostOrder(), dest + strlen(dest), 10);
     }
 }
-void JackieAddress::ToString_IPV6(bool writePort, char *dest, char portDelineator)
+void InetAddress::ToString_IPV6(bool writePort, char *dest, char portDelineator)
 const
 {
     int ret;
@@ -607,7 +607,7 @@ unsigned long JackieAddressGuidWrapper::ToHashCode(const JackieAddressGuidWrappe
 {
     if (aog.guid != JACKIE_NULL_GUID)
         return JackieGUID::ToUInt32(aog.guid);
-    return JackieAddress::ToHashCode(aog.systemAddress);
+    return InetAddress::ToHashCode(aog.systemAddress);
 }
 const char *JackieAddressGuidWrapper::ToString(bool writePort) const
 {

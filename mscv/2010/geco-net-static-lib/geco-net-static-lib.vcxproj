@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\geco-bits-stream.h" />
     <ClInclude Include="..\..\..\include\geco-features.h" />
     <ClInclude Include="..\..\..\include\geco-features-overrided.h" />
     <ClInclude Include="..\..\..\include\geco-globals.h" />
     <ClInclude Include="..\..\..\include\geco-malloc-interface.h" />
-    <ClInclude Include="..\..\..\include\geco-memory-stream.h" />
     <ClInclude Include="..\..\..\include\geco-namesapces.h" />
     <ClInclude Include="..\..\..\include\geco-net-config.h" />
     <ClInclude Include="..\..\..\include\geco-basic-type.h" />
@@ -54,9 +54,9 @@
     <ClInclude Include="..\..\..\include\JACKIE_Thread.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\geco-bits-stream.cpp" />
     <ClCompile Include="..\..\..\src\geco-globals.cpp" />
     <ClCompile Include="..\..\..\src\geco-malloc-interface.cpp" />
-    <ClCompile Include="..\..\..\src\geco-memory-stream.cpp" />
     <ClCompile Include="..\..\..\src\geco-random-seed-creator.cpp" />
     <ClCompile Include="..\..\..\src\geco-wsa-singleton.cpp" />
     <ClCompile Include="..\..\..\src\geco-time.cpp" />

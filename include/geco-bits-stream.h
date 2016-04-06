@@ -1,5 +1,5 @@
-#ifndef __INCLUDE_GECO_MEMORY_STREAM_H
-#define __INCLUDE_GECO_MEMORY_STREAM_H
+#ifndef __INCLUDE_GECO_BITS_STREAM_H
+#define __INCLUDE_GECO_BITS_STREAM_H
 
 #if defined(_WIN32)
 #include "geco-wins-includes.h"
@@ -35,18 +35,18 @@ using namespace geco::ultils;
 
 GECO_NET_BEGIN_NSPACE
 
-classUInt24;
+class UInt24;
 class JackieString;
 
 //! This class allows you to write and read native types as a string of bits.  
 //! the value of @mWritePosBits always reprsents
 //! the position where a bit is going to be written(not been written yet)
-//! the value of @mReadPosBits always reprsents 
+//! the value of @curr_readable_pos always reprsents 
 //! the position where a bit is going to be read(not been read yet)
 //! both of them will start to cout at index of 0, 
 //! so mWritePosBits = 2 means the first 2 bits (index 0 and 1) has been written,
 //! the third bit (index 2) is being written (not been written yet)
-//! so mReadPosBits = 2 means the first 2 bits (index 0 and 1) has been read,
+//! so curr_readable_pos = 2 means the first 2 bits (index 0 and 1) has been read,
 //! the third bit (index 2) is being read (not been read yet)
 //! |                  8 bits               |                  8 bits                |
 //!+++++++++++++++++++++++++++++++++++
@@ -55,20 +55,20 @@ class JackieString;
 //! | 0 |  0 | 0 | 1 |  0 | 0 |  0 | 0 | 1 | 0 | 0  | 0 | 0  |  0 |  0 | 0  |  bit in memory
 //!+++++++++++++++++++++++++++++++++++
 //!
-//! Assume given @mWritePosBits = 12, @mReadPosBits = 2,
+//! Assume given @mWritePosBits = 12, @curr_readable_pos = 2,
 //! base on draw above,
 //! all the unwritten bits are 4 bits at index 12 to 15,
 //! all the written bits are 12 bits at index 0 - 11
 //! all the unread bits are 10 bits (0100001000, index 2 to 11),
 //!
 //! Based on above, we can calculate:
-//! index of byte that @mReadPosBits points to is:
-//! 0 = @mReadPosBits >> 3 = 2/8 = index 0, data[0]
+//! index of byte that @curr_readable_pos points to is:
+//! 0 = @curr_readable_pos >> 3 = 2/8 = index 0, data[0]
 //! index of byte that @mWritePosBits points to is:
 //! 1 = @mWritePosBits >> 3 = 12/8 = index 1, data[1]
 //!
-//! offset of byte boundary behind @mReadPosBits is:
-//! mReadPosBits mods 8 =  mReadPosBits & 7 = 2 &7 = 2 bits (00 at index 0,1)
+//! offset of byte boundary behind @curr_readable_pos is:
+//! curr_readable_pos mods 8 =  curr_readable_pos & 7 = 2 &7 = 2 bits (00 at index 0,1)
 //! offset of byte boundary behind mWritePosBits is:
 //! mWritePosBits mod 8 = mWritePosBits & 7 = 12 &7 = 4 bits (1000 at index 8,9,10,11)
 //!
@@ -76,29 +76,29 @@ class JackieString;
 //! (12+7) >> 3 = 19/8 = 2 ( also is the number of written bytes)
 //! BITS_TO_BYTES(8[bit at index 8 is exclusive ])  = 
 //! (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
-class GECO_EXPORT GecoMemoryStream
+class GECO_EXPORT GecoBitsStream
 {
-private:
+    private:
     typedef UInt32 BitSize;
     typedef UInt32 ByteSize;
 
-private:
-    BitSize mBitsAllocSize;
-    BitSize mWritingPosBits;
-    BitSize mReadingPosBits;
-    UInt8 *data;
+    private:
+    BitSize allocated_bits_size_;
+    BitSize writable_bit_pos_;
+    BitSize readable_bit_pos_;
+    UInt8 *data_;
 
     //! true if @data is pointint to heap-memory pointer, 
     //! false if it is stack-memory  pointer
-    bool mNeedFree;
+    bool can_free_;
 
     //! true if writting not allowed in which case all write functions will not work
     //! false if writting is allowed mainly used for reading receive_params
-    bool mReadOnly;
-    UInt8 mStacBuffer[GECO_STREAM_STACK_ALLOC_BYTES];
+    bool is_read_only_;
+    UInt8 statck_buffer_[GECO_STREAM_STACK_ALLOC_BYTES];
 
-public:
-    GECO_STATIC_FACTORY_DELC(GecoMemoryStream);
+    public:
+    GECO_STATIC_FACTORY_DELC(GecoBitsStream);
 
     //! @param [in] [ BitSize initialBytesAllocate]:
     //! the number of bytes to pre-allocate.
@@ -106,7 +106,7 @@ public:
     //! Create the JackieBits, with some number of bytes to immediately
     //! allocate. There is no benefit to calling this, unless you know exactly
     //! how many bytes you need and it is greater than 256.
-    GecoMemoryStream(const BitSize initialBytesAllocate);
+    GecoBitsStream(const BitSize initialBytesAllocate);
 
     //! @brief  Initialize by setting the @data to a predefined pointer.
     //! @access  public  
@@ -119,34 +119,58 @@ public:
     //! 99% of the time you will use this function to read Packet:;data, 
     //! in which case you should write something as follows:
     //! JackieStream js(packet->data, packet->length, false);
-    GecoMemoryStream(UInt8* src, const ByteSize len, bool copy = false);
+    GecoBitsStream(UInt8* src, const ByteSize len, bool copy = false);
 
     //! DEFAULT CTOR
-    GecoMemoryStream();
+    GecoBitsStream();
 
     //! realloc and free are more efficient than delete and new  
     //! because it will not call ctor and dtor
-    ~GecoMemoryStream();
+    ~GecoBitsStream();
 
     //! Getters and Setters
-    inline BitSize WritePosBits() const
-    {   return mWritingPosBits;}
-    inline BitSize WritePosByte() const
-    {   return BITS_TO_BYTES(mWritingPosBits);}
-    inline BitSize ReadPosBits() const
-    {   return mReadingPosBits;}
-    inline UInt8* Data() const
-    {   return data;}
-    inline Int8* DataInt8() const
-    {   return (Int8*)data;}
-    inline void Data(UInt8* val)
-    {   data = val; mReadOnly = true;}
-    inline void WritePosBits(BitSize val)
-    {   mWritingPosBits = val;}
-    inline void ReadPosBits(BitSize val)
-    {   mReadingPosBits = val;}
-    inline void BitsAllocSize(BitSize val)
-    {   mBitsAllocSize = val;}
+    inline BitSize writable_bit_position() const
+    {
+        return writable_bit_pos_;
+    }
+    inline BitSize writable_byte_position() const
+    {
+        return BITS_TO_BYTES(writable_bit_pos_);
+    }
+    inline BitSize readable_bit_position() const
+    {
+        return readable_bit_pos_;
+    }
+    inline UInt8* UInt8Data() const
+    {
+        return data_;
+    }
+    inline Int8* Int8Data() const
+    {
+        return (Int8*)data_;
+    }
+    inline void Int8Data(Int8* val)
+    {
+        data_ = (UInt8*)val;
+        is_read_only_ = true;
+    }
+    inline void UInt8Data(UInt8* val)
+    {
+        data_ = val; 
+        is_read_only_ = true;
+    }
+    inline void writable_byte_position(BitSize val)
+    {
+        writable_bit_pos_ = val;
+    }
+    inline void readable_bit_position(BitSize val)
+    {
+        readable_bit_pos_ = val;
+    }
+    inline void allocated_bits_size(BitSize val)
+    {
+        allocated_bits_size_ = val;
+    }
 
     //! @brief  Resets stream for reuse.
     //! @Access  public  
@@ -155,21 +179,23 @@ public:
     //! to serialize/deserialize a buffer. Reallocation is a dangerous 
     //! operation (may result in leaks).
     inline void Reset(void)
-    {   mWritingPosBits = mReadingPosBits = 0;}
+    {
+        writable_bit_pos_ = readable_bit_pos_ = 0;
+    }
 
     //!@brief Sets the read pointer back to the beginning of your data.
     //! @access public
     //! @author mengdi[Jackie]
-    inline void ResetReadPosBits(void)
+    inline void ResetReadableBitPosition(void)
     {
-        mReadingPosBits = 0;
+        readable_bit_pos_ = 0;
     }
 
     //! @brief Sets the write pointer back to the beginning of your data.
     //! @access public
-    inline void ResetWritePosBits(void)
+    inline void ResetWritableBitPosition(void)
     {
-        mWritingPosBits = 0;
+        writable_bit_pos_ = 0;
     }
 
     //! @brief this is good to call when you are done with reading the stream to make
@@ -178,14 +204,14 @@ public:
     //! @access public
     inline void AssertStreamEmpty(void)
     {
-        assert(mReadingPosBits == mWritingPosBits);
+        assert(readable_bit_pos_ == writable_bit_pos_);
     }
 
     //! @brief payload are actually the remaining readable bits.
     //! @access public 
     inline BitSize GetPayLoadBits(void) const
     {
-        return mWritingPosBits - mReadingPosBits;
+        return writable_bit_pos_ - readable_bit_pos_;
     }
 
     //!@brief the number of bytes needed to hold all the written bits.
@@ -194,18 +220,18 @@ public:
     //! particial byte is also accounted and the bit at index of mWritePosBits is exclusive.
     //! if mWritingPosBits =12, will need 2 bytes to hold 12 written bits (6 bits unused),
     //! if mWritingPosBits = 8, will need 1 byte to hold 8 written bits (0 bits unused).
-    inline ByteSize GetWrittenBytesCount(void) const
+    inline ByteSize GetWrittenBytesSize(void) const
     {
-        return BITS_TO_BYTES(mWritingPosBits);
+        return BITS_TO_BYTES(writable_bit_pos_);
     }
 
     //! @brief get the number of written bits
     //! will return same value to that of WritePosBits()
     //! @access public
     //! @author mengdi[Jackie]
-    inline BitSize GetWrittenBitsCount(void) const
+    inline BitSize GetWrittenBitsSize(void) const
     {
-        return mWritingPosBits;
+        return writable_bit_pos_;
     }
 
     //! @access public 
@@ -217,11 +243,11 @@ public:
     //! can also be used to force coalesced bitstreams to start on byte
     //! boundaries so so WriteAlignedBits and ReadAlignedBits both
     //! calculate the same offset when aligning.
-    inline void AlignReadPosBitsByteBoundary(void)
+    inline void AlignReadableBitPosition(void)
     {
         // 8 - ( (8-1)&7 +1 ) = 0 no change which is right
         // 8 - ( (7-1)&7 +1 ) = 1, then 7+1 = 8 which is also right
-        mReadingPosBits += 8 - (((mReadingPosBits - 1) & 7) + 1);
+        readable_bit_pos_ += 8 - (((readable_bit_pos_ - 1) & 7) + 1);
     }
 
     //! @method Read
@@ -254,17 +280,18 @@ public:
     //! @author mengdi[Jackie]
     void ReadBits(UInt8 *dest, BitSize bitsRead, bool alignRight = true);
 
-    //! @method Read
+
     //! @access public 
     //! @returns void
     //! @param [in] IntegralType & outTemplateVar
     //! @brief Read any integral type from a bitstream.  
-    //! Define DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    //! Define DO_NOT_SWAP_ENDIAN if you DO NOT need endian swapping.
+
     template <class IntegralType>
     inline void Read(IntegralType &dest)
     {
         if (sizeof(IntegralType) == 1)
-        ReadBits((UInt8*)&dest, sizeof(IntegralType) * 8, true);
+            ReadBits((UInt8*)&dest, sizeof(IntegralType) * 8, true);
         else
         {
 #ifndef DO_NOT_SWAP_ENDIAN
@@ -283,42 +310,33 @@ public:
 #endif
         }
     }
-    //! @method Read
-    //! @access public 
-    //! @returns void
-    //! @param [in] bool & dest The value to read
-    //! @brief  Read a bool from a bitstream.
+
+
+    //! Read a bool from a bitstream.
     template <>
     inline void Read(bool &dest)
     {
         assert(GetPayLoadBits() >= 1);
-        //if (GetPayLoadBits() < 1) return;
-        // Has to be on a different line for Mac
-        // Is it faster to just write it out here?
-        dest = (data[mReadingPosBits >> 3] & (0x80 >> (mReadingPosBits & 7))) != 0;
-        mReadingPosBits++;
+        dest = (data_[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0;
+        readable_bit_pos_++;
     }
-    //! @method Read
-    //! @access public 
-    //! @returns void
-    //! @param [in] JackieAddress & dest The value to read
-    //! @brief Read a JackieAddress from a bitstream.
+
+    //! @brief Read a InetAddress from a bitstream.
     template <>
-    inline void Read(JackieAddress &dest)
+    inline void Read(InetAddress &dest)
     {
         UInt8 ipVersion;
         Read(ipVersion);
         if (ipVersion == 4)
         {
             dest.address.addr4.sin_family = AF_INET;
-            // Read(var.binaryAddress);
             // Don't endian swap the address or port
             UInt32 binaryAddress;
-            ReadBits((UInt8*)& binaryAddress,
-                    BYTES_TO_BITS(sizeof(binaryAddress)), true);
+            ReadBits((UInt8*)& binaryAddress, BYTES_TO_BITS(sizeof(binaryAddress)), true);
             // Unhide the IP address, done to prevent routers from changing it
             dest.address.addr4.sin_addr.s_addr = ~binaryAddress;
-            ReadBits((UInt8*)& dest.address.addr4.sin_port, BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
+            ReadBits((UInt8*)& dest.address.addr4.sin_port,
+                BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
             dest.debugPort = ntohs(dest.address.addr4.sin_port);
         }
         else
@@ -326,12 +344,10 @@ public:
 #if NET_SUPPORT_IPV6==1
             ReadBits((UInt8*)&dest.address.addr6, BYTES_TO_BITS(sizeof(dest.address.addr6)), true);
             dest.debugPort = ntohs(dest.address.addr6.sin6_port);
-            //return b;
-#else
-            //return false;
 #endif
         }
     }
+
     //! @func Read 
     //! @brief read three bytes into stream
     //! @access  public  
@@ -432,7 +448,7 @@ public:
     {
         ReadMini((UInt8*)&dest, BYTES_TO_BITS(sizeof(IntegralType)), isUnsigned);
     }
-    template <> inline void ReadMini(JackieAddress &dest)
+    template <> inline void ReadMini(InetAddress &dest)
     {
         UInt8 ipVersion;
         ReadMini<unsigned_integral>(ipVersion);
@@ -554,10 +570,10 @@ public:
 
     template <class IntegerType>
     void ReadIntegerRange(
-            IntegerType &value,
-            const IntegerType minimum,
-            const IntegerType maximum,
-            bool allowOutsideRange = false)
+        IntegerType &value,
+        const IntegerType minimum,
+        const IntegerType maximum,
+        bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         IntegerType diff = maximum - minimum;
@@ -600,11 +616,11 @@ public:
     //! @see
     template <class templateType>
     void ReadIntegerRange(
-            templateType &value,
-            const templateType minimum,
-            const templateType maximum,
-            const int requiredBits,
-            bool allowOutsideRange)
+        templateType &value,
+        const templateType minimum,
+        const templateType maximum,
+        const int requiredBits,
+        bool allowOutsideRange)
     {
         assert(maximum >= minimum);
 
@@ -655,7 +671,7 @@ public:
     //! @param[in] maxBytesRead Maximum number of bytes to read
     //! @return true on success, false on failure.
     void ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read,
-            const ByteSize maxBytes2Read);
+        const ByteSize maxBytes2Read);
 
     //! @method ReadAlignedBytesAlloc
     //! @access public 
@@ -671,8 +687,8 @@ public:
     //!@access public 
     inline UInt32 ReadBit(void)
     {
-        UInt32 result = ((data[mReadingPosBits >> 3] & (0x80 >> (mReadingPosBits & 7))) != 0) ? 1 : 0;
-        mReadingPosBits++;
+        UInt32 result = ((data_[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0) ? 1 : 0;
+        readable_bit_pos_++;
         return result;
     }
 
@@ -772,9 +788,9 @@ public:
     //!@notice FloatingType for this function must be a float or double
     template <class FloatingType>
     void ReadOrthMatrix(
-            FloatingType &m00, FloatingType &m01, FloatingType &m02,
-            FloatingType &m10, FloatingType &m11, FloatingType &m12,
-            FloatingType &m20, FloatingType &m21, FloatingType &m22)
+        FloatingType &m00, FloatingType &m01, FloatingType &m02,
+        FloatingType &m10, FloatingType &m11, FloatingType &m12,
+        FloatingType &m20, FloatingType &m21, FloatingType &m22)
     {
         float qw, qx, qy, qz;
         ReadNormQuat(qw, qx, qy, qz);
@@ -849,17 +865,19 @@ public:
     //! @brief Write one JackieBits to another.
     //! @param[in] [bits2Write] bits to write
     //! @param[in] [JackieBits] the JackieBits to copy from
-    void Write(GecoMemoryStream *jackieBits, BitSize bits2Write);
-    inline void Write(GecoMemoryStream &jackieBits, BitSize bits2Write)
+    void Write(GecoBitsStream *jackieBits, BitSize bits2Write);
+    inline void Write(GecoBitsStream &jackieBits, BitSize bits2Write)
     {
         Write(&jackieBits, bits2Write);
     }
-    inline void Write(GecoMemoryStream *jackieBits)
+    inline void Write(GecoBitsStream *jackieBits)
     {
         Write(jackieBits, jackieBits->GetPayLoadBits());
     }
-    inline void Write(GecoMemoryStream &jackieBits)
-    {   Write(&jackieBits);}
+    inline void Write(GecoBitsStream &jackieBits)
+    {
+        Write(&jackieBits);
+    }
 
     //! @method WritePtr
     //! @access public 
@@ -872,7 +890,7 @@ public:
     void WritePtr(IntergralType *src)
     {
         if (sizeof(IntergralType) == 1)
-        WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+            WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
         else
         {
 #ifndef DO_NOT_SWAP_ENDIAN
@@ -884,7 +902,7 @@ public:
             }
             else
 #endif
-            WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+                WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
         }
     }
 
@@ -894,7 +912,7 @@ public:
     //! @author mengdi[Jackie]
     inline void WriteBitZero(void)
     {
-        assert(mReadOnly == false);
+        assert(is_read_only_ == false);
 
         //AppendBitsCouldRealloc(1);
         //BitSize shit = 8 - (mWritingPosBits & 7);
@@ -903,8 +921,8 @@ public:
 
         AppendBitsCouldRealloc(1);
         //! New bytes need to be zeroed
-        if ((mWritingPosBits & 7) == 0) data[mWritingPosBits >> 3] = 0;
-        mWritingPosBits++;
+        if ((writable_bit_pos_ & 7) == 0) data_[writable_bit_pos_ >> 3] = 0;
+        writable_bit_pos_++;
     }
 
     //! @func WriteBitOne 
@@ -913,14 +931,14 @@ public:
     //! @author mengdi[Jackie]
     inline void WriteBitOne(void)
     {
-        assert(mReadOnly == false);
+        assert(is_read_only_ == false);
         AppendBitsCouldRealloc(1);
 
         // Write bit 1
-        BitSize shift = mWritingPosBits & 7;
-        shift == 0 ? data[mWritingPosBits >> 3] = 0x80 :
-        data[mWritingPosBits >> 3] |= 0x80 >> shift;
-        mWritingPosBits++;
+        BitSize shift = writable_bit_pos_ & 7;
+        shift == 0 ? data_[writable_bit_pos_ >> 3] = 0x80 :
+            data_[writable_bit_pos_ >> 3] |= 0x80 >> shift;
+        writable_bit_pos_++;
     }
 
     //! @func AlignWritePosBits2ByteBoundary 
@@ -934,7 +952,7 @@ public:
     //! @author mengdi[Jackie]
     inline void AlignWritePosBits2ByteBoundary(void)
     {
-        mWritingPosBits += 8 - (((mWritingPosBits - 1) & 7) + 1);
+        writable_bit_pos_ += 8 - (((writable_bit_pos_ - 1) & 7) + 1);
     }
 
     //! @func WriteAlignedBytes 
@@ -958,7 +976,7 @@ public:
     //! @param[in] maxBytesWrite max bytes to write
     //! @notice Won't write beyond maxBytesWrite
     void WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write,
-            const ByteSize maxBytes2Write);
+        const ByteSize maxBytes2Write);
 
     //! @func Write 
     //! @brief write a float into 2 bytes, spanning the range, 
@@ -999,7 +1017,7 @@ public:
             }
             else
 #endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+                WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(IntergralType)), true);
         }
     }
 
@@ -1013,21 +1031,21 @@ public:
     inline void Write(const bool &src)
     {
         if (src == true)
-        WriteBitOne();
+            WriteBitOne();
         else
-        WriteBitZero();
+            WriteBitZero();
     }
 
     //! @func Write 
-    //! @brief write a JackieAddress to stream
+    //! @brief write a InetAddress to stream
     //! @access  public  
-    //! @param [in] [const JackieAddress & src]  
+    //! @param [in] [const InetAddress & src]  
     //! @return [bool]  true succeed, false failed
     //! @remark
     //! @notice  will not endian swap the address or port
     //! @author mengdi[Jackie]
     template <>
-    inline void Write(const JackieAddress &src)
+    inline void Write(const InetAddress &src)
     {
         UInt8 version = src.GetIPVersion();
         Write(version);
@@ -1035,12 +1053,12 @@ public:
         if (version == 4)
         {
             //! Hide the address so routers don't modify it
-            JackieAddress addr = src;
+            InetAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
             // Don't endian swap the address or port
             WriteBits((UInt8*)&binaryAddress,
-                    BYTES_TO_BITS(sizeof(binaryAddress)), true);
+                BYTES_TO_BITS(sizeof(binaryAddress)), true);
             WriteBits((UInt8*)&p, BYTES_TO_BITS(sizeof(p)), true);
         }
         else
@@ -1048,7 +1066,7 @@ public:
 #if NET_SUPPORT_IPV6 == 1
             // Don't endian swap
             WriteBits((UInt8*)&src.address.addr6,
-                    BYTES_TO_BITS(sizeof(src.address.addr6)), true);
+                BYTES_TO_BITS(sizeof(src.address.addr6)), true);
 #endif
         }
     }
@@ -1152,7 +1170,7 @@ public:
     //! @author mengdi[Jackie]
     template <class templateType>
     inline void WriteChangedValue(const templateType &latestVal,
-            const templateType &lastVal)
+        const templateType &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1174,7 +1192,7 @@ public:
     //! @author mengdi[Jackie]
     template <>
     inline void WriteChangedValue(const bool &currentValue,
-            const bool &lastValue)
+        const bool &lastValue)
     {
         (void)lastValue;
         Write(currentValue);
@@ -1216,7 +1234,7 @@ public:
     //! @author mengdi[Jackie]
     template <class templateType>
     inline void WriteMiniChanged(const templateType&currVal,
-            const templateType &lastValue)
+        const templateType &lastValue)
     {
         if (currVal == lastValue)
         {
@@ -1234,7 +1252,7 @@ public:
     //! @param[in] lastValue The last value to compare against
     template <>
     inline void WriteMiniChanged(const bool &currentValue, const bool&
-            lastValue)
+        lastValue)
     {
         (void)lastValue;
         Write(currentValue);
@@ -1271,9 +1289,9 @@ public:
     //! increment from value of highest index ((bits2Write >> 3) - 1)
     //! for big endian, the high bytes are located in lma and so @currByte should 
     //! increment from value of lowest index (0)
-    //! Âú®Â≠óËäÇÂÜÖÈÉ®Ôºå‰∏Ä‰∏™Â≠óËäÇÁöÑ‰∫åËøõÂà∂ÊéíÂ∫èÔºå‰∏çÂ≠òÂú®Â§ßÂ∞èÁ´ØÈóÆÈ¢ò„ÄÇ
-    //! Â∞±ÂíåÂπ≥Â∏∏‰π¶ÂÜôÁöÑ‰∏ÄÊ†∑ÔºåÂÖàÂÜôÈ´ò‰ΩçÔºåÂç≥‰ΩéÂú∞ÂùÄÂ≠òÂÇ®È´ò‰Ωç„ÄÇ
-    //! Â¶Çchar a=0x12.Â≠òÂÇ®‰ªé‰Ωé‰ΩçÂà∞È´ò‰ΩçÂ∞±‰∏∫0001 0010
+    //! ‘⁄◊÷Ω⁄ƒ⁄≤ø£¨“ª∏ˆ◊÷Ω⁄µƒ∂˛Ω¯÷∆≈≈–Ú£¨≤ª¥Ê‘⁄¥Û–°∂ÀŒ Ã‚°£
+    //! æÕ∫Õ∆Ω≥£ È–¥µƒ“ª—˘£¨œ»–¥∏ﬂŒª£¨º¥µÕµÿ÷∑¥Ê¥¢∏ﬂŒª°£
+    //! »Áchar a=0x12.¥Ê¥¢¥”µÕŒªµΩ∏ﬂŒªæÕŒ™0001 0010
     //! @author mengdi[Jackie]
     void WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned);
 
@@ -1297,7 +1315,7 @@ public:
         WriteMini((UInt8*)&src, sizeof(IntergralType) << 3, isUnsigned);
     }
 
-    template <> inline void WriteMini(const JackieAddress &src)
+    template <> inline void WriteMini(const InetAddress &src)
     {
         //Write(src);
         UInt8 version = src.GetIPVersion();
@@ -1306,7 +1324,7 @@ public:
         if (version == 4)
         {
             //! Hide the address so routers don't modify it
-            JackieAddress addr = src;
+            InetAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
             WriteMini<unsigned_integral>(binaryAddress);
@@ -1432,10 +1450,10 @@ public:
     //! if you use SerializeMini(), will also use 8 bytes because there are  no zero bits to compress
     template <class IntegerType>
     void WriteIntegerRange(
-            const IntegerType value,
-            const IntegerType mini,
-            const IntegerType max,
-            bool allowOutsideRange = false)
+        const IntegerType value,
+        const IntegerType mini,
+        const IntegerType max,
+        bool allowOutsideRange = false)
     {
         IntegerType diff = max - mini;
         int requiredBits = BYTES_TO_BITS(sizeof(IntegerType)) - GetLeadingZeroSize(diff);
@@ -1459,11 +1477,11 @@ public:
     //! for little endian, we do nothing.
     template <class IntegerType>
     void WriteIntegerRange(
-            const IntegerType value,
-            const IntegerType mini,
-            const IntegerType max,
-            const int requiredBits,
-            bool allowOutsideRange = false)
+        const IntegerType value,
+        const IntegerType mini,
+        const IntegerType max,
+        const int requiredBits,
+        bool allowOutsideRange = false)
     {
         assert(max >= mini);
         assert(allowOutsideRange == true || (value >= mini && value <= max));
@@ -1506,9 +1524,9 @@ public:
     //! templateType for this function must be a float or double
     //! @see
     template <class templateType> void WriteNormVector(
-            templateType x,
-            templateType y,
-            templateType z)
+        templateType x,
+        templateType y,
+        templateType z)
     {
         assert(x <= 1.01 &&y <= 1.01 &&z <= 1.01 &&x >= -1.01 &&y >= -1.01 &&z >= -1.01);
         WriteFloatRange((float)x, -1.0f, 1.0f);
@@ -1526,9 +1544,9 @@ public:
     //! templateType for this function must be a float or double
     //! @see
     template <class FloatingType> void WriteVector(
-            FloatingType x,
-            FloatingType y,
-            FloatingType z)
+        FloatingType x,
+        FloatingType y,
+        FloatingType z)
     {
         FloatingType magnitude = sqrt(x * x + y * y + z * z);
         Write((float)magnitude);
@@ -1550,10 +1568,10 @@ public:
     //! FloatingType for this function must be a float or double
     //! @see
     template <class FloatingType> void WriteNormQuat(
-            FloatingType w,
-            FloatingType x,
-            FloatingType y,
-            FloatingType z)
+        FloatingType w,
+        FloatingType x,
+        FloatingType y,
+        FloatingType z)
     {
         Write((bool)(w < 0.0));
         Write((bool)(x < 0.0));
@@ -1577,9 +1595,9 @@ public:
     //! FloatingType for this function must be a float or double
     //! @see WriteNormQuat()
     template <class FloatingType> void WriteOrthMatrix(
-            FloatingType m00, FloatingType m01, FloatingType m02,
-            FloatingType m10, FloatingType m11, FloatingType m12,
-            FloatingType m20, FloatingType m21, FloatingType m22)
+        FloatingType m00, FloatingType m01, FloatingType m02,
+        FloatingType m10, FloatingType m11, FloatingType m12,
+        FloatingType m20, FloatingType m21, FloatingType m22)
     {
         double qw;
         double qx;
@@ -1620,7 +1638,7 @@ public:
     //! @brief swao bytes starting from @data with offset given
     inline void EndianSwapBytes(UInt32 byteOffset, UInt32 length)
     {
-        if (DoEndianSwap()) ReverseBytes(data + byteOffset, length);
+        if (DoEndianSwap()) ReverseBytes(data_ + byteOffset, length);
     }
 
     //! @brief Makes a copy of the internal data for you @param _data 
@@ -1631,18 +1649,18 @@ public:
     //! all bytes are copied besides the bytes in GetPayLoadBits()
     BitSize Copy(UInt8*& _data) const
     {
-        assert(mWritingPosBits > 0);
+        assert(writable_bit_pos_ > 0);
 
-        _data = (UInt8*)gMallocEx(BITS_TO_BYTES(mWritingPosBits),
-                TRACKE_MALLOC);
-        memcpy(_data, data, sizeof(UInt8) * BITS_TO_BYTES(mWritingPosBits));
-        return mWritingPosBits;
+        _data = (UInt8*)gMallocEx(BITS_TO_BYTES(writable_bit_pos_),
+            TRACKE_MALLOC);
+        memcpy(_data, data_, sizeof(UInt8) * BITS_TO_BYTES(writable_bit_pos_));
+        return writable_bit_pos_;
     }
 
     //!@brief Ignore data we don't intend to read
     void ReadSkipBits(const BitSize numberOfBits)
     {
-        mReadingPosBits += numberOfBits;
+        readable_bit_pos_ += numberOfBits;
     }
     void ReadSkipBytes(const ByteSize numberOfBytes)
     {
@@ -1651,107 +1669,107 @@ public:
 
     void WriteOneAlignedBytes(const char *inByteArray)
     {
-        assert((mWritingPosBits & 7) == 0);
+        assert((writable_bit_pos_ & 7) == 0);
         AppendBitsCouldRealloc(8);
-        data[mWritingPosBits >> 3] = inByteArray[0];
-        mWritingPosBits += 8;
+        data_[writable_bit_pos_ >> 3] = inByteArray[0];
+        writable_bit_pos_ += 8;
     }
     void ReadOneAlignedBytes(char *inOutByteArray)
     {
-        assert((mReadingPosBits & 7) == 0);
+        assert((readable_bit_pos_ & 7) == 0);
         assert(GetPayLoadBits() >= 8);
-        // if (mReadPosBits + 1 * 8 > mWritePosBits) return;
+        // if (curr_readable_pos + 1 * 8 > mWritePosBits) return;
 
-        inOutByteArray[0] = data[(mReadingPosBits >> 3)];
-        mReadingPosBits += 8;
+        inOutByteArray[0] = data_[(readable_bit_pos_ >> 3)];
+        readable_bit_pos_ += 8;
     }
 
     void WriteTwoAlignedBytes(const char *inByteArray)
     {
-        assert((mWritingPosBits & 7) == 0);
+        assert((writable_bit_pos_ & 7) == 0);
         AppendBitsCouldRealloc(16);
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            data[(mWritingPosBits >> 3) + 0] = inByteArray[1];
-            data[(mWritingPosBits >> 3) + 1] = inByteArray[0];
+            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[1];
+            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[0];
         }
         else
 #endif
         {
-            data[(mWritingPosBits >> 3) + 0] = inByteArray[0];
-            data[(mWritingPosBits >> 3) + 1] = inByteArray[1];
+            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[0];
+            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[1];
         }
 
-        mWritingPosBits += 16;
+        writable_bit_pos_ += 16;
     }
     void ReadTwoAlignedBytes(char *inOutByteArray)
     {
-        assert((mReadingPosBits & 7) == 0);
+        assert((readable_bit_pos_ & 7) == 0);
         assert(GetPayLoadBits() >= 16);
-        //if (mReadPosBits + 16 > mWritePosBits) return ;
+        //if (curr_readable_pos + 16 > mWritePosBits) return ;
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            inOutByteArray[0] = data[(mReadingPosBits >> 3) + 1];
-            inOutByteArray[1] = data[(mReadingPosBits >> 3) + 0];
+            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 0];
         }
         else
 #endif
         {
-            inOutByteArray[0] = data[(mReadingPosBits >> 3) + 0];
-            inOutByteArray[1] = data[(mReadingPosBits >> 3) + 1];
+            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 0];
+            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 1];
         }
 
-        mReadingPosBits += 16;
+        readable_bit_pos_ += 16;
     }
 
     void WriteFourAlignedBytes(const char *inByteArray)
     {
-        assert((mWritingPosBits & 7) == 0);
+        assert((writable_bit_pos_ & 7) == 0);
         AppendBitsCouldRealloc(32);
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            data[(mWritingPosBits >> 3) + 0] = inByteArray[3];
-            data[(mWritingPosBits >> 3) + 1] = inByteArray[2];
-            data[(mWritingPosBits >> 3) + 2] = inByteArray[1];
-            data[(mWritingPosBits >> 3) + 3] = inByteArray[0];
+            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[3];
+            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[2];
+            data_[(writable_bit_pos_ >> 3) + 2] = inByteArray[1];
+            data_[(writable_bit_pos_ >> 3) + 3] = inByteArray[0];
         }
         else
 #endif
         {
-            data[(mWritingPosBits >> 3) + 0] = inByteArray[0];
-            data[(mWritingPosBits >> 3) + 1] = inByteArray[1];
-            data[(mWritingPosBits >> 3) + 2] = inByteArray[2];
-            data[(mWritingPosBits >> 3) + 3] = inByteArray[3];
+            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[0];
+            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[1];
+            data_[(writable_bit_pos_ >> 3) + 2] = inByteArray[2];
+            data_[(writable_bit_pos_ >> 3) + 3] = inByteArray[3];
         }
 
-        mWritingPosBits += 32;
+        writable_bit_pos_ += 32;
     }
     void ReadFourAlignedBytes(char *inOutByteArray)
     {
-        assert((mReadingPosBits & 7) == 0);
+        assert((readable_bit_pos_ & 7) == 0);
         assert(GetPayLoadBits() >= 32);
-        //if (mReadPosBits + 4 * 8 > mWritePosBits) return;
+        //if (curr_readable_pos + 4 * 8 > mWritePosBits) return;
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            inOutByteArray[0] = data[(mReadingPosBits >> 3) + 3];
-            inOutByteArray[1] = data[(mReadingPosBits >> 3) + 2];
-            inOutByteArray[2] = data[(mReadingPosBits >> 3) + 1];
-            inOutByteArray[3] = data[(mReadingPosBits >> 3) + 0];
+            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 3];
+            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 2];
+            inOutByteArray[2] = data_[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[3] = data_[(readable_bit_pos_ >> 3) + 0];
         }
         else
 #endif
         {
-            inOutByteArray[0] = data[(mReadingPosBits >> 3) + 0];
-            inOutByteArray[1] = data[(mReadingPosBits >> 3) + 1];
-            inOutByteArray[2] = data[(mReadingPosBits >> 3) + 2];
-            inOutByteArray[3] = data[(mReadingPosBits >> 3) + 3];
+            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 0];
+            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[2] = data_[(readable_bit_pos_ >> 3) + 2];
+            inOutByteArray[3] = data_[(readable_bit_pos_ >> 3) + 3];
         }
 
-        mReadingPosBits += 32;
+        readable_bit_pos_ += 32;
     }
 
     //!@brief text-print bits starting from @data to @mWritingPosBits
@@ -1772,9 +1790,13 @@ public:
 
         n = 8;
         y = x >> 4; if (y != 0)
-        {   n = n - 4; x = y;}
+        {
+            n = n - 4; x = y;
+        }
         y = x >> 2; if (y != 0)
-        {   n = n - 2; x = y;}
+        {
+            n = n - 2; x = y;
+        }
         y = x >> 1; if (y != 0) return n - 2;
         return (int)(n - x);
     }
@@ -1789,11 +1811,17 @@ public:
 
         n = 16;
         y = x >> 8; if (y != 0)
-        {   n = n - 8; x = y;}
+        {
+            n = n - 8; x = y;
+        }
         y = x >> 4; if (y != 0)
-        {   n = n - 4; x = y;}
+        {
+            n = n - 4; x = y;
+        }
         y = x >> 2; if (y != 0)
-        {   n = n - 2; x = y;}
+        {
+            n = n - 2; x = y;
+        }
         y = x >> 1; if (y != 0) return n - 2;
         return (int)(n - x);
     }
@@ -1808,13 +1836,21 @@ public:
 
         n = 32;
         y = x >> 16; if (y != 0)
-        {   n = n - 16; x = y;}
+        {
+            n = n - 16; x = y;
+        }
         y = x >> 8; if (y != 0)
-        {   n = n - 8; x = y;}
+        {
+            n = n - 8; x = y;
+        }
         y = x >> 4; if (y != 0)
-        {   n = n - 4; x = y;}
+        {
+            n = n - 4; x = y;
+        }
         y = x >> 2; if (y != 0)
-        {   n = n - 2; x = y;}
+        {
+            n = n - 2; x = y;
+        }
         y = x >> 1; if (y != 0) return n - 2;
         return (int)(n - x);
     }
@@ -1829,15 +1865,25 @@ public:
 
         n = 64;
         y = x >> 32; if (y != 0)
-        {   n = n - 32; x = y;}
+        {
+            n = n - 32; x = y;
+        }
         y = x >> 16; if (y != 0)
-        {   n = n - 16; x = y;}
+        {
+            n = n - 16; x = y;
+        }
         y = x >> 8; if (y != 0)
-        {   n = n - 8; x = y;}
+        {
+            n = n - 8; x = y;
+        }
         y = x >> 4; if (y != 0)
-        {   n = n - 4; x = y;}
+        {
+            n = n - 4; x = y;
+        }
         y = x >> 2; if (y != 0)
-        {   n = n - 2; x = y;}
+        {
+            n = n - 2; x = y;
+        }
         y = x >> 1; if (y != 0) return n - 2;
         return (int)(n - x);
     }
@@ -1857,7 +1903,9 @@ public:
         return isNetworkOrder;
     }
     inline static bool IsBigEndian(void)
-    {   return IsNetworkOrder();}
+    {
+        return IsNetworkOrder();
+    }
 
     //! @Brief faster than ReverseBytes() if you want to reverse byte
     //! for a variable teself internnaly like uint64 will loop 12 times 
