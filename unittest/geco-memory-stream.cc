@@ -5,7 +5,7 @@ using namespace geco::net;
 struct vec { float x; float y; float z; };
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 {
-    GecoBitsStream s8;
+    GecoBitStream s8;
 
     UInt24 uint24 = 24;
     UInt8 uint8 = 8;
@@ -90,7 +90,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.WriteBits(&particialByte, 7, false);
         }
 
-        GecoBitsStream s9;
+        GecoBitStream s9;
         s9.Write(s8);
 
         if (i == 0)
@@ -212,7 +212,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 }
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 {
-    GecoBitsStream s8;
+    GecoBitStream s8;
 
     UInt24 uint24 = 24;
     UInt8 uint8 = 8;
@@ -297,7 +297,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
             s8.WriteBits(&particialByte, 7, false);
         }
 
-        GecoBitsStream s9;
+        GecoBitStream s9;
         s9.Write(s8);
 
         if (i == 0)

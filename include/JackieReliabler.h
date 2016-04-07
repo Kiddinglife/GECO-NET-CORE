@@ -16,7 +16,7 @@ GECO_NET_BEGIN_NSPACE
 class JackieRemoteSystem;
 class JISRecvParams;
 class JackieApplication;
-class GecoBitsStream;
+class GecoBitStream;
 struct ReliableSendParams;
 
 class GECO_EXPORT JackieReliabler

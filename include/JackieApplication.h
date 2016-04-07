@@ -61,7 +61,7 @@
 
 #include "geco-export.h"
 #include "JackieReliabler.h"
-#include "geco-memory-stream.h"
+#include "geco-bit-stream.h"
 #include "JackieSimpleMutex.h"
 //#include "JackieString.h"
 #include "JACKIE_Thread.h"
@@ -98,7 +98,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
 #endif
 
     RandomSeedCreator rnr;
-    GecoBitsStream sendBitStream;
+    GecoBitStream sendBitStream;
 
     JackieGUID myGuid;
     InetAddress localIPAddrs[MAX_COUNT_LOCAL_IP_ADDR];
@@ -283,7 +283,7 @@ class GECO_EXPORT JackieApplication  //: public IServerApplication
     void ProcessOneRecvParam(JISRecvParams* recvParams);
     void IsOfflineRecvParams(JISRecvParams* recvParams,
         bool* isOfflinerecvParams);
-    void ProcessBufferedCommand(JISRecvParams* recvParams, GecoBitsStream &updateBitStream);
+    void ProcessBufferedCommand(JISRecvParams* recvParams, GecoBitStream &updateBitStream);
     void ProcessConnectionRequestCancelQ(void); /// @Done
     void ProcessAllocJISRecvParamsQ(void);
     void ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS);

@@ -672,7 +672,7 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
         for (index = 0; index < pluginListNTS.Size(); index++)
             this->pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoBitsStream bs;
+        GecoBitStream bs;
         bs.Write((MessageID)ID_CONNECTION_BANNED);
         bs.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
         bs.WriteMini(myGuid);
@@ -853,20 +853,20 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoBitsStream reader((UInt8*)recvParams->data, recvParams->bytesRead);
+        GecoBitStream reader((UInt8*)recvParams->data, recvParams->bytesRead);
         MessageID msgid;
-        reader.Read(msgid);
+        reader.ReadUInt8(msgid);
         std::cout << "client receives msg with " << "msgid " << (int)msgid;
         if ((MessageID)recvParams->data[0] == ID_INCOMPATIBLE_PROTOCOL_VERSION)
         {
             MessageID update_protocol_version;
-            reader.Read(update_protocol_version);
+            reader.ReadUInt8(update_protocol_version);
             std::cout << "update_protocol_version " << (int)update_protocol_version;
         }
         reader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
         JackieGUID guid;
-        reader.ReadMini(guid);
+        reader.ReadMiniGUID(guid);
         std::cout << "guid " << guid.g;
 
         ConnectionRequest *connectionRequest;
@@ -923,7 +923,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
         }
 
-        GecoBitsStream fromClientReader((UInt8*)recvParams->data, recvParams->bytesRead);
+        GecoBitStream fromClientReader((UInt8*)recvParams->data, recvParams->bytesRead);
         fromClientReader.ReadSkipBytes(sizeof(MessageID));
         fromClientReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -941,7 +941,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             clientSecureRequiredbyServer = this->IsInSecurityExceptionList(recvParams->senderINetAddress) == false;
 
             UInt32 cookie;
-            fromClientReader.ReadMini(cookie);
+            fromClientReader.ReadMiniUInt32(cookie);
             if (this->serverCookie->Verify(&recvParams->senderINetAddress.address, sizeof(recvParams->senderINetAddress.address), cookie) == false)
             {
                 std::cout << "Server NOT verifies Cookie" << cookie << " from client of " << recvParams->senderINetAddress.ToString();
@@ -949,7 +949,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             }
             std::cout << "Server verified Cookie from client !";
 
-            fromClientReader.Read(clientSecureConnectionEnabled);
+            fromClientReader.ReadBoolean(clientSecureConnectionEnabled);
             if (clientSecureRequiredbyServer && !clientSecureConnectionEnabled)
             {
                 std::cout << "Fail, This client doesn't enable security connection, but server says this client is needing secure connect";
@@ -964,13 +964,13 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 #endif // ENABLE_SECURE_HAND_SHAKE
 
         InetAddress recvivedBoundAddrFromClient;
-        fromClientReader.ReadMini(recvivedBoundAddrFromClient);
+        fromClientReader.ReadMiniInetAddress(recvivedBoundAddrFromClient);
         std::cout << "serverReadMini(server_bound_addr) " << recvivedBoundAddrFromClient.ToString();
         UInt16 mtu;
-        fromClientReader.ReadMini(mtu);
+        fromClientReader.ReadMiniUInt16(mtu);
         std::cout << "server ReadMini(mtu) " << mtu;
         JackieGUID guid;
-        fromClientReader.ReadMini(guid);
+        fromClientReader.ReadMiniGUID(guid);
         std::cout << "server ReadMini(client guid) " << guid.g;
 
         int outcome;
@@ -1033,7 +1033,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             std::cout << " sever allowed new connection for this client";
         }
 
-        GecoBitsStream toClientReplay2Writer;
+        GecoBitStream toClientReplay2Writer;
         toClientReplay2Writer.Write(ID_OPEN_CONNECTION_REPLY_2);
         toClientReplay2Writer.Write((const unsigned char*)OFFLINE_MESSAGE_DATA_ID,
             sizeof(OFFLINE_MESSAGE_DATA_ID));
@@ -1069,7 +1069,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         else if (outcome != 0)
         {
             std::cout << "Server return ID_ALREADY_CONNECTED to client";
-            GecoBitsStream toClientAlreadyConnectedWriter;
+            GecoBitStream toClientAlreadyConnectedWriter;
             toClientAlreadyConnectedWriter.Write(ID_ALREADY_CONNECTED);
             toClientAlreadyConnectedWriter.Write((const unsigned char*)OFFLINE_MESSAGE_DATA_ID,
                 sizeof(OFFLINE_MESSAGE_DATA_ID));
@@ -1087,7 +1087,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         /// start to handle new connection from client
         else if (outcome == 0)
         {
-            GecoBitsStream toClientWriter;
+            GecoBitStream toClientWriter;
 
             // no more incoming conn accepted
             if (!CanAcceptIncomingConnection())
@@ -1192,7 +1192,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoBitsStream writer;
+        GecoBitStream writer;
         unsigned char remote_system_protcol = (unsigned char)recvParams->data[sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)];
 
         // see if the protocol is up-to-date
@@ -1299,20 +1299,20 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoBitsStream fromServerReader((UInt8*)recvParams->data, recvParams->bytesRead);
+        GecoBitStream fromServerReader((UInt8*)recvParams->data, recvParams->bytesRead);
         fromServerReader.ReadSkipBytes(sizeof(MessageID));
         fromServerReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
         JackieGUID serverGuid;
-        fromServerReader.ReadMini(serverGuid);
+        fromServerReader.ReadMiniGUID(serverGuid);
 
         bool serverRequiresSecureConn;
-        fromServerReader.ReadMini(serverRequiresSecureConn);
+        fromServerReader.ReadMiniBoolean(serverRequiresSecureConn);
 
         UInt32 cookie;
         if (serverRequiresSecureConn)
         {
-            fromServerReader.ReadMini(cookie);
+            fromServerReader.ReadMiniUInt32(cookie);
         }
 
         ConnectionRequest *connectionRequest;
@@ -1327,7 +1327,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                 connReqQLock.Unlock();
 
                 /// prepare out data to server
-                GecoBitsStream toServerWriter;
+                GecoBitStream toServerWriter;
                 toServerWriter.Write((MessageID)ID_OPEN_CONNECTION_REQUEST_2);
                 toServerWriter.Write((const unsigned char*)OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -1409,7 +1409,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
 
                 // echo MTU
                 UInt16 mtu;
-                fromServerReader.ReadMini(mtu);
+                fromServerReader.ReadMiniUInt16(mtu);
                 toServerWriter.WriteMini(mtu);
                 std::cout << "client WriteMini(mtu)" << mtu << " to server";
 
@@ -1453,13 +1453,13 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
         bool clientSecureRequiredbyServer = false;
         InetAddress ourOwnBoundAddEchoFromServer;
 
-        GecoBitsStream bs((unsigned char*)recvParams->data, recvParams->bytesRead);
+        GecoBitStream bs((unsigned char*)recvParams->data, recvParams->bytesRead);
         bs.ReadSkipBytes(sizeof(MessageID));
         bs.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
-        bs.ReadMini(guid);
-        bs.ReadMini(ourOwnBoundAddEchoFromServer);
-        bs.ReadMini(mtu);
-        bs.ReadMini(clientSecureRequiredbyServer);
+        bs.ReadMiniGUID(guid);
+        bs.ReadMiniInetAddress(ourOwnBoundAddEchoFromServer);
+        bs.ReadMiniUInt16(mtu);
+        bs.ReadMiniBoolean(clientSecureRequiredbyServer);
 
 
 #if ENABLE_SECURE_HAND_SHAKE==1
@@ -1572,7 +1572,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                         if (connReq->timeout != 0)
                             free_rs->reliabilityLayer.SetTimeoutTime(connReq->timeout);
 
-                        GecoBitsStream temp;
+                        GecoBitStream temp;
                         temp.Write(ID_CONNECTION_REQUEST);
                         temp.WriteMini(guid);
                         temp.WriteMini(GetTimeMS());
@@ -1766,7 +1766,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS, TimeMS& timeMS
                 connReq->requestsMade++;
                 connReq->nextRequestTime = timeMS + connReq->connAttemptIntervalMS;
 
-                GecoBitsStream bitStream;
+                GecoBitStream bitStream;
                 bitStream.Write(ID_OPEN_CONNECTION_REQUEST_1);
                 bitStream.Write(OFFLINE_MESSAGE_DATA_ID,
                     sizeof(OFFLINE_MESSAGE_DATA_ID));
