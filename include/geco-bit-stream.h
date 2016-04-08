@@ -35,7 +35,7 @@ using namespace geco::ultils;
 
 GECO_NET_BEGIN_NSPACE
 
-class UInt24;
+classUInt24;
 class GecoString;
 class GecoWString;
 
@@ -79,11 +79,11 @@ class GecoWString;
 //! (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
 class GECO_EXPORT GecoBitStream
 {
-    private:
+private:
     typedef UInt32 BitSize;
     typedef UInt32 ByteSize;
 
-    private:
+private:
     BitSize allocated_bits_size_;
     BitSize writable_bit_pos_;
     BitSize readable_bit_pos_;
@@ -98,7 +98,7 @@ class GECO_EXPORT GecoBitStream
     bool is_read_only_;
     UInt8 statck_buffer_[GECO_STREAM_STACK_ALLOC_BYTES];
 
-    public:
+public:
     GECO_STATIC_FACTORY_DELC(GecoBitStream);
 
     //! @param [in] [ BitSize initialBytesAllocate]:
@@ -142,13 +142,13 @@ class GECO_EXPORT GecoBitStream
     {
         return readable_bit_pos_;
     }
-    inline UInt8* UInt8Data() const
+    inline UInt8* UbyteData() const
     {
         return data_;
     }
-    inline Int8* Int8Data() const
+    inline char* ByteData() const
     {
-        return (Int8*)data_;
+        return (char*)data_;
     }
     inline void Int8Data(Int8* val)
     {
@@ -260,13 +260,9 @@ class GECO_EXPORT GecoBitStream
     //! @brief Read an array of raw data or casted stream of byte.
     //! @notice The array is raw data. 
     //! @warnning no automatic endian conversion with this function AND read bit pos is not aligned
-    void ReadUChars(UInt8* output, const unsigned int numberOfBytes)
+    void ReadBytes(UInt8* output, const UInt32 bytes2read)
     {
-        ReadBits(output, BYTES_TO_BITS(numberOfBytes));
-    }
-    void ReadChars(Int8* output, const unsigned int numberOfBytes)
-    {
-        ReadBits((UInt8*)output, BYTES_TO_BITS(numberOfBytes));
+        ReadBits(output, BYTES_TO_BITS(bytes2read));
     }
 
     //! @func   ReadBits
@@ -284,7 +280,6 @@ class GECO_EXPORT GecoBitStream
     //! 2.use False to read this stream to another stream 
     //! @author mengdi[Jackie]
     void ReadBits(UInt8 *dest, BitSize bitsRead, bool alignRight = true);
-
 
     //! @brief Read any integral type from a bitstream.  
     //! Define DO_NOT_SWAP_ENDIAN if you DO NOT need endian swapping.
@@ -381,7 +376,7 @@ class GECO_EXPORT GecoBitStream
         ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), true);
 #endif
     }
-    inline void ReadInt32(Int64 &dest)
+    inline void ReadInt64(Int64 &dest)
     {
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
@@ -417,7 +412,7 @@ class GECO_EXPORT GecoBitStream
             // Unhide the IP address, done to prevent routers from changing it
             dest.address.addr4.sin_addr.s_addr = ~binaryAddress;
             ReadBits((UInt8*)& dest.address.addr4.sin_port,
-                BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
+                    BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
             dest.debugPort = ntohs(dest.address.addr4.sin_port);
         }
         else
@@ -461,7 +456,7 @@ class GECO_EXPORT GecoBitStream
     {
         // GecoString::Read(varString, this);
     }
-    inline bool ReadWCharStr(wchar_t *&varString)
+    inline void ReadWCharStr(wchar_t *&varString)
     {
         //return GecoWString::Deserialize(varString, this);
     }
@@ -472,25 +467,67 @@ class GECO_EXPORT GecoBitStream
     //! var will be updated.  Otherwise it will retain the current value.
     //! ReadDelta is only valid from a previous call to WriteDelta
     //! @param[in] outTemplateVar The value to read
-    template <class IntegralType>
-    inline void ReadChangedValue(IntegralType &dest)
+    inline void ReadUInt8Changed(UInt8 &dest)
     {
         bool dataWritten;
-        Read(dataWritten);
-        if (dataWritten) Read(dest);
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadUInt8(dest);
     }
-
-    //! @brief Read a bool from a bitstream.
-    //! @param[in] outTemplateVar The value to read
-    inline void ReadChangedValue(bool &dest)
+    inline void ReadInt8Changed(Int8 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadInt8(dest);
+    }
+    inline void ReadUInt16Changed(UInt16 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadUInt16(dest);
+    }
+    inline void ReadInt16Changed(Int16 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadInt16(dest);
+    }
+    inline void ReadUInt32Changed(UInt32 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadUInt32(dest);
+    }
+    inline void ReadInt32Changed(Int32 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadInt32(dest);
+    }
+    inline void ReadUInt64Changed(UInt64 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadUInt64 (dest);
+    }
+    inline void ReadInt64Changed(Int64 &dest)
+    {
+        bool dataWritten;
+        ReadBoolean(dataWritten);
+        if (dataWritten) ReadInt64(dest);
+    }
+    inline void ReadBooleanChanged(bool &dest)
     {
         ReadBoolean(dest);
     }
 
-    //! @Brief Assume the input source points to a compressed native type. 
-    //! Decompress and read it.
-    void ReadIntegerBits(UInt8* dest, const BitSize bits2Read, bool isUnsigned);
-
+    //! decompress the written bytes and read them to dest, the uint is char or uchar,
+    //! because mini write methods need a type to compress data
+    //! WriteMiniBytes(raw_data) will intenally call WriteMiniUChar() to compress each byte and write them to stream
+    void ReadMiniBits(UInt8* dest, const BitSize bits2Read, bool isUnsigned);
+    void ReadMiniBytes(UInt8* dest, const ByteSize bytes2read, bool isUnsigned)
+    {
+        ReadMiniBits(dest, bytes2read, isUnsigned);
+    }
     //! @method ReadMini
     //! @access public 
     //! @returns void
@@ -505,7 +542,7 @@ class GECO_EXPORT GecoBitStream
 
     inline void ReadMiniUInt8(UInt8 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt8)), true);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt8)), true);
     }
     inline void ReadMiniInt8(Int8 &dest)
     {
@@ -513,27 +550,27 @@ class GECO_EXPORT GecoBitStream
     }
     inline void ReadMiniUInt16(UInt16 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt16)), true);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt16)), true);
     }
     inline void ReadMiniInt16(Int16 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int16)), false);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int16)), false);
     }
     inline void ReadMiniUInt32(UInt32 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), true);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), true);
     }
     inline void ReadMiniInt32(Int32 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), false);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), false);
     }
     inline void ReadMiniUInt64(UInt64 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), true);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), true);
     }
     inline void ReadMiniInt64(Int64 &dest)
     {
-        ReadIntegerBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), false);
+        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), false);
     }
     inline void ReadMiniBoolean(bool &dest)
     {
@@ -571,10 +608,6 @@ class GECO_EXPORT GecoBitStream
     inline void ReadMiniGUID(JackieGUID &dest)
     {
         ReadMiniUInt64(dest.g);
-    }
-    inline void ReadMiniBoolean(bool &dest)
-    {
-        ReadBoolean(dest);
     }
     //! For values between -1 and 1
     inline void ReadMiniFloat(float &dest)
@@ -638,7 +671,6 @@ class GECO_EXPORT GecoBitStream
             for (int i = 0; i < len; ++i)
             {
                 ReadMiniUInt8(*(outTemplateVar + i));
-
             }
         }
         else
@@ -659,8 +691,7 @@ class GECO_EXPORT GecoBitStream
             UInt8 charr;
             for (int i = 0; i < len; ++i)
             {
-                ReadMiniInt8(*(outTemplateVar + i));
-
+                ReadMiniInt8(*(Int8*)(outTemplateVar + i));
             }
         }
         else
@@ -668,7 +699,6 @@ class GECO_EXPORT GecoBitStream
             // GecoString::ReadMini(outTemplateVar, this, false);
         }
     }
-
 
     //! @method ReadMiniChanged
     //! @access public 
@@ -690,7 +720,7 @@ class GECO_EXPORT GecoBitStream
         bool dataWritten;
         ReadMiniBoolean(dataWritten);
         if (dataWritten)
-            ReadMiniUInt8(dest);
+        ReadMiniUInt8(dest);
     }
 
     //! @brief Read a bool from a bitstream.
@@ -700,12 +730,11 @@ class GECO_EXPORT GecoBitStream
         ReadMiniBoolean(dest);
     }
 
-
     void ReadUInt8Range(
-        UInt8 &value,
-        const UInt8 minimum,
-        const UInt8 maximum,
-        bool allowOutsideRange = false)
+            UInt8 &value,
+            const UInt8 minimum,
+            const UInt8 maximum,
+            bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         UInt8 diff = maximum - minimum;
@@ -734,10 +763,10 @@ class GECO_EXPORT GecoBitStream
     }
 
     void ReadInt8Range(
-        Int8 &value,
-        const Int8 minimum,
-        const Int8 maximum,
-        bool allowOutsideRange = false)
+            Int8 &value,
+            const Int8 minimum,
+            const Int8 maximum,
+            bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         Int8 diff = maximum - minimum;
@@ -766,10 +795,10 @@ class GECO_EXPORT GecoBitStream
     }
 
     void ReadUInt16Range(
-        UInt16 &value,
-        const UInt16 minimum,
-        const UInt16 maximum,
-        bool allowOutsideRange = false)
+            UInt16 &value,
+            const UInt16 minimum,
+            const UInt16 maximum,
+            bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         UInt16 diff = maximum - minimum;
@@ -797,10 +826,10 @@ class GECO_EXPORT GecoBitStream
         value += minimum;
     }
     void ReadUInt16Range(
-        Int16 &value,
-        const Int16 minimum,
-        const Int16 maximum,
-        bool allowOutsideRange = false)
+            Int16 &value,
+            const Int16 minimum,
+            const Int16 maximum,
+            bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         Int16 diff = maximum - minimum;
@@ -862,11 +891,11 @@ class GECO_EXPORT GecoBitStream
     //! we do nothing for little endian.
     //! @see
     void ReadIntegerRange(
-        UInt8 &value,
-        const UInt8 minimum,
-        const UInt8 maximum,
-        const int requiredBits,
-        bool allowOutsideRange)
+            UInt8 &value,
+            const UInt8 minimum,
+            const UInt8 maximum,
+            const int requiredBits,
+            bool allowOutsideRange)
     {
         assert(maximum >= minimum);
 
@@ -917,7 +946,7 @@ class GECO_EXPORT GecoBitStream
     //! @param[in] maxBytesRead Maximum number of bytes to read
     //! @return true on success, false on failure.
     void ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read,
-        const ByteSize maxBytes2Read);
+            const ByteSize maxBytes2Read);
 
     //! @method ReadAlignedBytesAlloc
     //! @access public 
@@ -930,7 +959,6 @@ class GECO_EXPORT GecoBitStream
     void ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read);
 
     // @brief return 1 if the next data read is a 1, 0 if it is a 0
-    //!@access public 
     inline UInt32 ReadBit(void)
     {
         UInt32 result = ((data_[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0) ? 1 : 0;
@@ -969,7 +997,7 @@ class GECO_EXPORT GecoBitStream
     void ReadVector(FloatingType &x, FloatingType &y, FloatingType &z)
     {
         float magnitude;
-        Read(magnitude);
+        ReadMiniFloat(magnitude);
 
         if (magnitude > 0.00001f)
         {
@@ -995,35 +1023,8 @@ class GECO_EXPORT GecoBitStream
     //! @param[in] z z
     //! @return void
     //! @notice FloatingType for this function must be a float or double
-    template <class FloatingType>
-    bool ReadNormQuat(FloatingType &w, FloatingType &x, FloatingType &y, FloatingType &z)
-    {
-        bool cwNeg = false, cxNeg = false, cyNeg = false, czNeg = false;
-        Read(cwNeg);
-        Read(cxNeg);
-        Read(cyNeg);
-        Read(czNeg);
-
-        UInt16 cx, cy, cz;
-        ReadMini(cx);
-        ReadMini(cy);
-        ReadMini(cz);
-
-        // Calculate w from x,y,z
-        x = (FloatingType)(cx / 65535.0);
-        y = (FloatingType)(cy / 65535.0);
-        z = (FloatingType)(cz / 65535.0);
-
-        if (cxNeg) x = -x;
-        if (cyNeg) y = -y;
-        if (czNeg) z = -z;
-
-        float difference = 1.0f - x*x - y*y - z*z;
-        if (difference < 0.0f) difference = 0.0f;
-
-        w = (FloatingType)(sqrt(difference));
-        if (cwNeg) w = -w;
-    }
+    void ReadNormQuat(float &w, float &x, float &y, float &z);
+    void ReadNormQuat(double &w, double &x, double &y, double &z);
 
     //! @brief Read an orthogonal matrix from a quaternion, 
     //! reading 3 components of the quaternion in 2 bytes each and
@@ -1034,9 +1035,9 @@ class GECO_EXPORT GecoBitStream
     //!@notice FloatingType for this function must be a float or double
     template <class FloatingType>
     void ReadOrthMatrix(
-        FloatingType &m00, FloatingType &m01, FloatingType &m02,
-        FloatingType &m10, FloatingType &m11, FloatingType &m12,
-        FloatingType &m20, FloatingType &m21, FloatingType &m22)
+            FloatingType &m00, FloatingType &m01, FloatingType &m02,
+            FloatingType &m10, FloatingType &m11, FloatingType &m12,
+            FloatingType &m20, FloatingType &m21, FloatingType &m22)
     {
         float qw, qx, qy, qz;
         ReadNormQuat(qw, qx, qy, qz);
@@ -1093,24 +1094,16 @@ class GECO_EXPORT GecoBitStream
     //! @Author mengdi[Jackie]
     void WriteBits(const UInt8* src, BitSize bits2Write, bool rightAligned = true);
 
-    //! @func Write
-    //! @access  public  
     //! @brief write an array or raw data in bytes.
     //! NOT do endian swapp.
-    //! default is right aligned[true]
-    //! @author mengdi[Jackie]
-    inline void Write(const Int8* src, const ByteSize bytes2Write)
+    inline void WriteBytes(const Int8* src, const ByteSize bytes2Write)
     {
         WriteBits((UInt8*)src, BYTES_TO_BITS(bytes2Write), true);
     }
-    inline void Write(const UInt8* src, const ByteSize bytes2Write)
+    inline void WriteUBytes(const UInt8* src, const ByteSize bytes2Write)
     {
         WriteBits(src, BYTES_TO_BITS(bytes2Write), true);
     }
-
-    //! @brief Write one JackieBits to another.
-    //! @param[in] [bits2Write] bits to write
-    //! @param[in] [JackieBits] the JackieBits to copy from
     void Write(GecoBitStream *jackieBits, BitSize bits2Write);
     inline void Write(GecoBitStream &jackieBits, BitSize bits2Write)
     {
@@ -1124,66 +1117,20 @@ class GECO_EXPORT GecoBitStream
     {
         Write(&jackieBits);
     }
-
-    //! @method WritePtr
-    //! @access public 
-    //! @returns void
-    //! @param [in] IntergralType * src pointing to the value to write
-    //! @brief  
-    //! write the dereferenced pointer to any integral type to a bitstream.  
-    //! Undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
-    template <class IntergralType>
-    void WritePtr(IntergralType *src)
-    {
-        if (sizeof(IntergralType) == 1)
-            WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
-        else
-        {
-#ifndef DO_NOT_SWAP_ENDIAN
-            if (DoEndianSwap())
-            {
-                UInt8 output[sizeof(IntergralType)];
-                ReverseBytes((UInt8*)src, output, sizeof(IntergralType));
-                WriteBits((UInt8*)output, BYTES_TO_BITS(sizeof(IntergralType)), true);
-            }
-            else
-#endif
-                WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
-        }
-    }
-
-    //! @func WriteBitZero 
-    //! @access  public  
-    //! @notice @mReadOnly must be false
-    //! @author mengdi[Jackie]
     inline void WriteBitZero(void)
     {
-        assert(is_read_only_ == false);
-
-        //AppendBitsCouldRealloc(1);
-        //BitSize shit = 8 - (mWritingPosBits & 7);
-        //data[mWritingPosBits >> 3] = ((data[mWritingPosBits >> 3] >> shit) << shit);
-        //mWritingPosBits++;
-
         AppendBitsCouldRealloc(1);
-        //! New bytes need to be zeroed
+        //@pre the unwritten bytes are all initialized to zeros
         if ((writable_bit_pos_ & 7) == 0) data_[writable_bit_pos_ >> 3] = 0;
         writable_bit_pos_++;
     }
-
-    //! @func WriteBitOne 
-    //! @access  public  
-    //! @notice @mReadOnly must be false
-    //! @author mengdi[Jackie]
     inline void WriteBitOne(void)
     {
-        assert(is_read_only_ == false);
         AppendBitsCouldRealloc(1);
-
         // Write bit 1
         BitSize shift = writable_bit_pos_ & 7;
         shift == 0 ? data_[writable_bit_pos_ >> 3] = 0x80 :
-            data_[writable_bit_pos_ >> 3] |= 0x80 >> shift;
+        data_[writable_bit_pos_ >> 3] |= 0x80 >> shift;
         writable_bit_pos_++;
     }
 
@@ -1222,7 +1169,7 @@ class GECO_EXPORT GecoBitStream
     //! @param[in] maxBytesWrite max bytes to write
     //! @notice Won't write beyond maxBytesWrite
     void WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write,
-        const ByteSize maxBytes2Write);
+            const ByteSize maxBytes2Write);
 
     //! @func Write 
     //! @brief write a float into 2 bytes, spanning the range, 
@@ -1244,57 +1191,110 @@ class GECO_EXPORT GecoBitStream
     //! @return void
     //! @notice will swap endian internally 
     //! if DO_NOT_SWAP_ENDIAN not defined
-    //! @author mengdi[Jackie]
-    template <class IntergralType>
-    void Write(const IntergralType &src)
+    void WriteUInt8(const UInt8 &src)
     {
-        if (sizeof(IntergralType) == 1)
-        {
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(IntergralType)), true);
-        }
-        else
-        {
-#ifndef DO_NOT_SWAP_ENDIAN
-            if (DoEndianSwap())
-            {
-                UInt8 output[sizeof(IntergralType)];
-                ReverseBytes((UInt8*)&src, output, sizeof(IntergralType));
-                WriteBits(output, BYTES_TO_BITS(sizeof(IntergralType)), true);
-            }
-            else
-#endif
-                WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(IntergralType)), true);
-        }
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt8)), true);
     }
 
-    //! @func Write 
-    //! @access  public  
-    //! @brief Write a bool to a bitstream.
-    //! @param [in] [const bool & src] The value to write
-    //! @return [bool] true succeed, false failed
-    //! @author mengdi[Jackie]
-    template <>
-    inline void Write(const bool &src)
+    void WriteInt8(const Int8 &src)
+    {
+        if (sizeof(Int8) == 1)
+        {
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt8)), true);
+        }
+    }
+    void WriteUInt16(const UInt16 &src)
+    {
+#ifndef DO_NOT_SWAP_ENDIAN
+        if (DoEndianSwap())
+        {
+            UInt8 output[sizeof(UInt16)];
+            ReverseBytes((UInt8*)&src, output, sizeof(UInt16));
+            WriteBits(output, BYTES_TO_BITS(sizeof(UInt16)), true);
+        }
+        else
+#endif
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt16)), true);
+    }
+    void WriteInt16(const Int16 &src)
+    {
+#ifndef DO_NOT_SWAP_ENDIAN
+        if (DoEndianSwap())
+        {
+            UInt8 output[sizeof(Int16)];
+            ReverseBytes((UInt8*)&src, output, sizeof(Int16));
+            WriteBits(output, BYTES_TO_BITS(sizeof(Int16)), true);
+        }
+        else
+#endif
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int16)), true);
+    }
+    void WriteUInt32(const UInt32 &src)
+    {
+#ifndef DO_NOT_SWAP_ENDIAN
+        if (DoEndianSwap())
+        {
+            UInt8 output[sizeof(UInt32)];
+            ReverseBytes((UInt8*)&src, output, sizeof(UInt32));
+            WriteBits(output, BYTES_TO_BITS(sizeof(UInt32)), true);
+        }
+        else
+#endif
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt32)), true);
+    }
+    void WriteInt32(const Int32 &src)
+    {
+#ifndef DO_NOT_SWAP_ENDIAN
+        if (DoEndianSwap())
+        {
+            UInt8 output[sizeof(Int32)];
+            ReverseBytes((UInt8*)&src, output, sizeof(Int32));
+            WriteBits(output, BYTES_TO_BITS(sizeof(Int32)), true);
+        }
+        else
+#endif
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int32)), true);
+    }
+    void WriteUInt64(const UInt64 &src)
+    {
+#ifndef DO_NOT_SWAP_ENDIAN
+        if (DoEndianSwap())
+        {
+            UInt8 output[sizeof(UInt64)];
+            ReverseBytes((UInt8*)&src, output, sizeof(UInt64));
+            WriteBits(output, BYTES_TO_BITS(sizeof(UInt64)), true);
+        }
+        else
+#endif
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt64)), true);
+    }
+    void WriteInt64(const Int64 &src)
+    {
+#ifndef DO_NOT_SWAP_ENDIAN
+        if (DoEndianSwap())
+        {
+            UInt8 output[sizeof(Int64)];
+            ReverseBytes((UInt8*)&src, output, sizeof(Int64));
+            WriteBits(output, BYTES_TO_BITS(sizeof(Int64)), true);
+        }
+        else
+#endif
+        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int64)), true);
+    }
+
+    inline void WriteBoolean(const bool &src)
     {
         if (src == true)
-            WriteBitOne();
+        WriteBitOne();
         else
-            WriteBitZero();
+        WriteBitZero();
     }
 
-    //! @func Write 
-    //! @brief write a InetAddress to stream
-    //! @access  public  
-    //! @param [in] [const InetAddress & src]  
-    //! @return [bool]  true succeed, false failed
-    //! @remark
-    //! @notice  will not endian swap the address or port
-    //! @author mengdi[Jackie]
-    template <>
-    inline void Write(const InetAddress &src)
+    // notice  will not endian swap the address or port
+    inline void WriteInetAddress(const InetAddress &src)
     {
         UInt8 version = src.GetIPVersion();
-        Write(version);
+        WriteUInt8(version);
 
         if (version == 4)
         {
@@ -1304,7 +1304,7 @@ class GECO_EXPORT GecoBitStream
             UInt16 p = addr.GetPortNetworkOrder();
             // Don't endian swap the address or port
             WriteBits((UInt8*)&binaryAddress,
-                BYTES_TO_BITS(sizeof(binaryAddress)), true);
+                    BYTES_TO_BITS(sizeof(binaryAddress)), true);
             WriteBits((UInt8*)&p, BYTES_TO_BITS(sizeof(p)), true);
         }
         else
@@ -1312,96 +1312,56 @@ class GECO_EXPORT GecoBitStream
 #if NET_SUPPORT_IPV6 == 1
             // Don't endian swap
             WriteBits((UInt8*)&src.address.addr6,
-                BYTES_TO_BITS(sizeof(src.address.addr6)), true);
+                    BYTES_TO_BITS(sizeof(src.address.addr6)), true);
 #endif
         }
     }
 
-    //! @func Write 
-    //! @brief write three bytes into stream
-    //! @access  public  
-    //! @param [in] [const UInt24 & inTemplateVar]  
-    //! @return [void]  true succeed, false failed
-    //! @remark
-    //! @notice will align write-position to byte-boundary internally
-    //! @see  AlignWritePosBits2ByteBoundary()
-    //! @author mengdi[Jackie]
-    template <>
-    inline void Write(const UInt24 &inTemplateVar)
+    inline void WriteUInt24(const UInt24 &inTemplateVar)
     {
-        //AlignWritePosBits2ByteBoundary();
-        //AppendBitsCouldRealloc(24);
-
         if (!IsBigEndian())
         {
             WriteBits((UInt8 *)&inTemplateVar.val, 24, false);
-            //WriteBits(&((UInt8 *)&inTemplateVar.val)[0], 8, false);
-            //WriteBits(&((UInt8 *)&inTemplateVar.val)[1], 8, false);
-            //WriteBits(&((UInt8 *)&inTemplateVar.val)[2], 8, false);
-            //data[(mWritingPosBits >> 3) + 0] = ((UInt8 *)&inTemplateVar.val)[0];
-            //data[(mWritingPosBits >> 3) + 1] = ((UInt8 *)&inTemplateVar.val)[1];
-            //data[(mWritingPosBits >> 3) + 2] = ((UInt8 *)&inTemplateVar.val)[2];
         }
         else
         {
             ReverseBytes((UInt8 *)&inTemplateVar.val, 3);
             WriteBits((UInt8 *)&inTemplateVar.val, 24, false);
-            //WriteBits(&((UInt8 *)&inTemplateVar.val)[3], 8, false);
-            //WriteBits(&((UInt8 *)&inTemplateVar.val)[2], 8, false);
-            //WriteBits(&((UInt8 *)&inTemplateVar.val)[1], 8, false);
-            //data[(mWritingPosBits >> 3) + 0] = ((UInt8 *)&inTemplateVar.val)[3];
-            //data[(mWritingPosBits >> 3) + 1] = ((UInt8 *)&inTemplateVar.val)[2];
-            //data[(mWritingPosBits >> 3) + 2] = ((UInt8 *)&inTemplateVar.val)[1];
         }
-
-        //mWritingPosBits += 24;
     }
 
-    //! @func Write 
-    //! @access  public  
-    //! @param [in] [const JackieGUID & inTemplateVar]  
-    //! @return void
-    //! @author mengdi[Jackie]
-    template <>
-    inline void Write(const JackieGUID &inTemplateVar)
+    inline void WriteGUID(const JackieGUID &inTemplateVar)
     {
-        Write(inTemplateVar.g);
+        WriteUInt64(inTemplateVar.g);
     }
 
-    template <>
-    inline void Write(const GecoString &src)
+    inline void WriteGecoString(const GecoString &src)
     {
         //src.Write(this);
     }
-    //template <>
-    //inline void WriteFrom(const RakWString &src)
-    //{
-    //	src.Serialize(this);
-    //}
-    template <>
-    inline void Write(const char * const &inStringVar)
+    inline void WriteGecoWString(const GecoWString &src)
+    {
+        //src.Serialize(this);
+    }
+    inline void WriteCharStr(const char * const &inStringVar)
     {
         // JackieString::Write(inStringVar, this);
     }
-    template <>
-    inline void Write(const wchar_t * const &inStringVar)
+    inline void WriteWCharStr(const wchar_t * const &inStringVar)
     {
         //JackieWString::Serialize(inStringVar, this);
     }
-    template <>
-    inline void Write(const UInt8 * const &src)
+    inline void WriteCharStr(const UInt8 * const &src)
     {
-        Write((const char*)src);
+        WriteCharStr((const char*)src);
     }
-    template <>
-    inline void Write(char * const &src)
+    inline void WriteCharStr(char * const &src)
     {
-        Write((const char*)src);
+        WriteCharStr((const char*)src);
     }
-    template <>
-    inline void Write(UInt8 * const &src)
+    inline void WriteCharStr(UInt8 * const &src)
     {
-        Write((const char*)src);
+        WriteCharStr((const char*)src);
     }
 
     //! @func WriteChanged 
@@ -1413,22 +1373,110 @@ class GECO_EXPORT GecoBitStream
     //! @notice 
     //! If the current value is different from the last value
     //! the current value will be written.  Otherwise, a single bit will be written
-    //! @author mengdi[Jackie]
-    template <class templateType>
-    inline void WriteChangedValue(const templateType &latestVal,
-        const templateType &lastVal)
+    inline void WriteUInt8Changed(const UInt8 &latestVal,
+            const UInt8 &lastVal)
     {
         if (latestVal == lastVal)
         {
-            Write(false);
+            WriteBoolean(false);
         }
         else
         {
-            Write(true);
-            Write(latestVal);
+            WriteBoolean(true);
+            WriteUInt8(latestVal);
         }
     }
-
+    inline void WriteInt8Changed(const Int8 &latestVal,
+            const Int8 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteInt8(latestVal);
+        }
+    }
+    inline void WriteUInt16Changed(const UInt16 &latestVal,
+            const UInt16 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteUInt16(latestVal);
+        }
+    }
+    inline void WriteInt16Changed(const Int16 &latestVal,
+            const Int16 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteInt16(latestVal);
+        }
+    }
+    inline void WriteUInt32Changed(const UInt32 &latestVal,
+            const UInt32 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteUInt32(latestVal);
+        }
+    }
+    inline void WriteInt32Changed(const Int32 &latestVal,
+            const Int32 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteInt32(latestVal);
+        }
+    }
+    inline void WriteUInt64Changed(const UInt64 &latestVal,
+            const UInt64 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteUInt64(latestVal);
+        }
+    }
+    inline void WriteInt64Changed(const Int64 &latestVal,
+            const Int64 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteInt64(latestVal);
+        }
+    }
     //! @func WriteChanged 
     //! @brief write a bool delta. Same thing as just calling Write
     //! @access  public  
@@ -1436,12 +1484,11 @@ class GECO_EXPORT GecoBitStream
     //! @param [in] const bool & lastValue  
     //! @return void 
     //! @author mengdi[Jackie]
-    template <>
     inline void WriteChangedValue(const bool &currentValue,
-        const bool &lastValue)
+            const bool &lastValue)
     {
         (void)lastValue;
-        Write(currentValue);
+        WriteBoolean(currentValue);
     }
 
     //! @brief WriteDelta when you don't know what the last value is, or there is no last value.
@@ -1453,12 +1500,12 @@ class GECO_EXPORT GecoBitStream
     //! @param [in] const templateType & currentValue  
     //! @return void  
     //! @author mengdi[Jackie]
-    template <class templateType>
-    inline void WriteChangedValue(const templateType &currentValue)
-    {
-        Write(true);
-        Write(currentValue);
-    }
+    //    template <class templateType>
+    //    inline void WriteChangedValue(const templateType &currentValue)
+    //    {
+    //        WriteBoolean(true);
+    //        Write(currentValue);
+    //    }
 
     //! @func WriteMiniChanged 
     //! @brief write any integral type to a bitstream.  
@@ -1478,40 +1525,128 @@ class GECO_EXPORT GecoBitStream
     //! If you are not using DO_NOT_SWAP_ENDIAN the opposite is
     //! true for types larger than 1 byte
     //! @author mengdi[Jackie]
-    template <class templateType>
-    inline void WriteMiniChanged(const templateType&currVal,
-        const templateType &lastValue)
+    inline void WriteMiniUInt8Changed(const UInt8 &latestVal,
+            const UInt8 &lastVal)
     {
-        if (currVal == lastValue)
+        if (latestVal == lastVal)
         {
-            Write(false);
+            WriteBoolean(false);
         }
         else
         {
-            Write(true);
-            WriteMini(currVal);
+            WriteBoolean(true);
+            WriteMiniUInt8(latestVal);
+        }
+    }
+    inline void WriteMiniInt8Changed(const Int8 &latestVal,
+            const Int8 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniInt8(latestVal);
+        }
+    }
+    inline void WriteMiniUInt16Changed(const UInt16 &latestVal,
+            const UInt16 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniUInt16(latestVal);
+        }
+    }
+    inline void WriteMiniInt16Changed(const Int16 &latestVal,
+            const Int16 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniInt16(latestVal);
+        }
+    }
+    inline void WriteMiniUInt32Changed(const UInt32 &latestVal,
+            const UInt32 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniUInt32(latestVal);
+        }
+    }
+    inline void WriteMiniInt32Changed(const Int32 &latestVal,
+            const Int32 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniInt32(latestVal);
+        }
+    }
+    inline void WriteMiniUInt64Changed(const UInt64 &latestVal,
+            const UInt64 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniUInt64(latestVal);
+        }
+    }
+    inline void WriteMiniInt64Changed(const Int64 &latestVal,
+            const Int64 &lastVal)
+    {
+        if (latestVal == lastVal)
+        {
+            WriteBoolean(false);
+        }
+        else
+        {
+            WriteBoolean(true);
+            WriteMiniInt64(latestVal);
         }
     }
 
     //! @brief Write a bool delta.  Same thing as just calling Write
     //! @param[in] currentValue The current value to write
     //! @param[in] lastValue The last value to compare against
-    template <>
-    inline void WriteMiniChanged(const bool &currentValue, const bool&
-        lastValue)
+    inline void WriteMiniBooleanChanged(const bool currentValue, const bool lastValue)
     {
         (void)lastValue;
-        Write(currentValue);
+        WriteBoolean(currentValue);
     }
 
     //! @brief Same as WriteMiniChanged() 
     //! when we have an unknown second parameter
-    template <class templateType>
-    inline void WriteMiniChanged(const templateType &currentValue)
-    {
-        Write(true);
-        WriteMini(currentValue);
-    }
+//    template <class templateType>
+//    inline void WriteMiniChanged(const templateType &currentValue)
+//    {
+//        WriteBoolean(true);
+//        WriteMini(currentValue);
+//    }
 
     //! @func WriteMini 
     //! @access  public  
@@ -1535,11 +1670,11 @@ class GECO_EXPORT GecoBitStream
     //! increment from value of highest index ((bits2Write >> 3) - 1)
     //! for big endian, the high bytes are located in lma and so @currByte should 
     //! increment from value of lowest index (0)
-    //! ÔÚ×Ö½ÚÄÚ²¿£¬Ò»¸ö×Ö½ÚµÄ¶þ½øÖÆÅÅÐò£¬²»´æÔÚ´óÐ¡¶ËÎÊÌâ¡£
-    //! ¾ÍºÍÆ½³£ÊéÐ´µÄÒ»Ñù£¬ÏÈÐ´¸ßÎ»£¬¼´µÍµØÖ·´æ´¢¸ßÎ»¡£
-    //! Èçchar a=0x12.´æ´¢´ÓµÍÎ»µ½¸ßÎ»¾ÍÎª0001 0010
+    //! ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½ÚµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò£¬²ï¿½ï¿½ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½â¡£
+    //! ï¿½Íºï¿½Æ½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½Ö·ï¿½æ´¢ï¿½ï¿½Î»ï¿½ï¿½
+    //! ï¿½ï¿½char a=0x12.ï¿½æ´¢ï¿½Óµï¿½Î»ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½Îª0001 0010
     //! @author mengdi[Jackie]
-    void WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned);
+    void WriteMiniBits(const UInt8* src, const BitSize bits2Write, const bool isUnsigned);
 
     //! @func WriteMini 
     //! @brief Write any integral type to a bitstream,
@@ -1555,17 +1690,43 @@ class GECO_EXPORT GecoBitStream
     //! we write low bits and reassenble the value in receiver endpoint
     //! based on its endian, so no need to do endian swap here
     //! @author mengdi[Jackie]
-    template <bool isUnsigned = unsigned_integral, class IntergralType>
-    inline void WriteMini(const IntergralType &src)
+    inline void WriteMiniUInt8(const UInt8 &src)
     {
-        WriteMini((UInt8*)&src, sizeof(IntergralType) << 3, isUnsigned);
+        WriteMiniBits((UInt8*)&src, sizeof(UInt8) << 3, true);
+    }
+    inline void WriteMiniInt8(const Int8 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(Int8) << 3, false);
+    }
+    inline void WriteMiniUInt16(const UInt16 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(UInt16) << 3, true);
+    }
+    inline void WriteMiniInt16(const Int16 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(Int16) << 3, false);
+    }
+    inline void WriteMiniUInt32(const UInt32 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(UInt32) << 3, true);
+    }
+    inline void WriteMiniInt32(const Int32 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(Int32) << 3, false);
+    }
+    inline void WriteMiniUInt64(const UInt64 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(UInt64) << 3, true);
+    }
+    inline void WriteMiniInt64(const Int64 &src)
+    {
+        WriteMiniBits((UInt8*)&src, sizeof(Int64) << 3, false);
     }
 
-    template <> inline void WriteMini(const InetAddress &src)
+    inline void WriteMiniInetAddress(const InetAddress &src)
     {
-        //Write(src);
         UInt8 version = src.GetIPVersion();
-        WriteMini<unsigned_integral>(version);
+        WriteMiniUInt8(version);
 
         if (version == 4)
         {
@@ -1573,84 +1734,76 @@ class GECO_EXPORT GecoBitStream
             InetAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
-            WriteMini<unsigned_integral>(binaryAddress);
-            WriteMini<unsigned_integral>(p);
+            WriteMiniUInt32(binaryAddress);
+            WriteMiniUInt16(p);
         }
         else
         {
 #if NET_SUPPORT_IPV6 == 1
             UInt32 binaryAddress = src.address.addr6;
-            WriteMini<unsigned_integral>(binaryAddress);
+            WriteMiniUInt32(binaryAddress);
 #endif
         }
     }
-    template <> inline void WriteMini(const JackieGUID &src)
+    inline void WriteMiniGUID(const JackieGUID &src)
     {
-        WriteMini<unsigned_integral>(src.g);
+        WriteMiniUInt64(src.g);
     }
-    template <> inline void WriteMini(const UInt24 &var)
+    inline void WriteMiniUInt24(const UInt24 &var)
     {
-        WriteMini<unsigned_integral>(var.val);
-        //Write(var);
+        WriteUInt32(var.val);
     }
-    template <> inline void WriteMini(const bool &src)
+    inline void WriteMiniBoolean(const bool &src)
     {
-        Write(src);
+        WriteBoolean(src);
     }
 
-    inline void WriteMini(const float &src)
+    inline void WriteMiniFloat(const float &src)
     {
         assert(src > -1.01f && src < 1.01f);
         float varCopy = src;
         if (varCopy < -1.0f) varCopy = -1.0f;
         if (varCopy > 1.0f) varCopy = 1.0f;
-        WriteMini<unsigned_integral>((UInt16)((varCopy + 1.0f)*32767.5f));
+        WriteMiniUInt16((UInt16)((varCopy + 1.0f)*32767.5f));
     }
-    template <> //!@notice For values between -1 and 1
-    inline void WriteMini(const double &src)
+    //!@notice For values between -1 and 1
+    inline void WriteMiniDouble(const double &src)
     {
         assert(src > -1.01f && src < 1.01f);
         double varCopy = src;
         if (varCopy < -1.0f) varCopy = -1.0f;
         if (varCopy > 1.0f) varCopy = 1.0f;
-        WriteMini<unsigned_integral>((UInt32)((varCopy + 1.0)*2147483648.0));
+        WriteMiniUInt32((UInt32)((varCopy + 1.0)*2147483648.0));
     }
 
     //! Compress the string
-    template <>
-    inline void WriteMini(const GecoString &src)
+    inline void WriteMiniGecoString(const GecoString &src)
     {
         // src.WriteMini(this, 0, false);
     }
-    //template <>
-    //inline void WriteMini(const JackieWString &src)
-    //{
-    //	src.Serialize(this);
-    //}
-    template <>
-    inline void WriteMini(const char * const &inStringVar)
+    inline void WriteMiniGecoWString(const GecoWString &src)
+    {
+        //src.Serialize(this);
+    }
+    inline void WriteMiniCharStr(const char * const &inStringVar)
     {
         // JackieString::WriteMini(inStringVar, this);
     }
-    template <>
-    inline void WriteMini(const wchar_t * const &inStringVar)
+    inline void WriteMiniWCharStr(const wchar_t * const &inStringVar)
     {
         //JackieWString::Serialize(inStringVar, this);
     }
-    template <>
     inline void WriteMini(const UInt8 * const &src)
     {
-        WriteMini((const char*)src);
+        WriteMiniCharStr((const char*)src);
     }
-    template <>
     inline void WriteMini(char * const &src)
     {
-        WriteMini((const char*)src);
+        WriteMiniCharStr((const char*)src);
     }
-    template <>
     inline void WriteMini(UInt8 * const &src)
     {
-        WriteMini((const char*)src);
+        WriteMiniCharStr((const char*)src);
     }
 
     //! @access public 
@@ -1696,10 +1849,10 @@ class GECO_EXPORT GecoBitStream
     //! if you use SerializeMini(), will also use 8 bytes because there are  no zero bits to compress
     template <class IntegerType>
     void WriteIntegerRange(
-        const IntegerType value,
-        const IntegerType mini,
-        const IntegerType max,
-        bool allowOutsideRange = false)
+            const IntegerType value,
+            const IntegerType mini,
+            const IntegerType max,
+            bool allowOutsideRange = false)
     {
         IntegerType diff = max - mini;
         int requiredBits = BYTES_TO_BITS(sizeof(IntegerType)) - GetLeadingZeroSize(diff);
@@ -1723,11 +1876,11 @@ class GECO_EXPORT GecoBitStream
     //! for little endian, we do nothing.
     template <class IntegerType>
     void WriteIntegerRange(
-        const IntegerType value,
-        const IntegerType mini,
-        const IntegerType max,
-        const int requiredBits,
-        bool allowOutsideRange = false)
+            const IntegerType value,
+            const IntegerType mini,
+            const IntegerType max,
+            const int requiredBits,
+            bool allowOutsideRange = false)
     {
         assert(max >= mini);
         assert(allowOutsideRange == true || (value >= mini && value <= max));
@@ -1736,11 +1889,11 @@ class GECO_EXPORT GecoBitStream
         {
             if (value <mini || value>max)  //!< out of range
             {
-                Write(true);
+                WriteBoolean(true);
                 WriteMini(value);
                 return;
             }
-            Write(false); //!< inside range
+            WriteBoolean(false); //!< inside range
         }
 
         IntegerType valueBeyondMini = value - mini;
@@ -1770,9 +1923,9 @@ class GECO_EXPORT GecoBitStream
     //! templateType for this function must be a float or double
     //! @see
     template <class templateType> void WriteNormVector(
-        templateType x,
-        templateType y,
-        templateType z)
+            templateType x,
+            templateType y,
+            templateType z)
     {
         assert(x <= 1.01 &&y <= 1.01 &&z <= 1.01 &&x >= -1.01 &&y >= -1.01 &&z >= -1.01);
         WriteFloatRange((float)x, -1.0f, 1.0f);
@@ -1790,17 +1943,17 @@ class GECO_EXPORT GecoBitStream
     //! templateType for this function must be a float or double
     //! @see
     template <class FloatingType> void WriteVector(
-        FloatingType x,
-        FloatingType y,
-        FloatingType z)
+            FloatingType x,
+            FloatingType y,
+            FloatingType z)
     {
         FloatingType magnitude = sqrt(x * x + y * y + z * z);
-        Write((float)magnitude);
+        WriteMiniFloat((float)magnitude);
         if (magnitude > 0.00001f)
         {
-            WriteMini((float)(x / magnitude));
-            WriteMini((float)(y / magnitude));
-            WriteMini((float)(z / magnitude));
+            WriteMiniFloat((float)(x / magnitude));
+            WriteMiniFloat((float)(y / magnitude));
+            WriteMiniFloat((float)(z / magnitude));
         }
     }
 
@@ -1813,22 +1966,36 @@ class GECO_EXPORT GecoBitStream
     //! @notice
     //! FloatingType for this function must be a float or double
     //! @see
-    template <class FloatingType> void WriteNormQuat(
-        FloatingType w,
-        FloatingType x,
-        FloatingType y,
-        FloatingType z)
+    void WriteNormQuat(
+            float& w,
+            float& x,
+            float& y,
+            float& z)
     {
-        Write((bool)(w < 0.0));
-        Write((bool)(x < 0.0));
-        Write((bool)(y < 0.0));
-        Write((bool)(z < 0.0));
-        WriteMini((UInt16)(fabs(x)*65535.0));
-        WriteMini((UInt16)(fabs(y)*65535.0));
-        WriteMini((UInt16)(fabs(z)*65535.0));
+        WriteBoolean((bool)(w < 0.0));
+        WriteBoolean((bool)(x < 0.0));
+        WriteBoolean((bool)(y < 0.0));
+        WriteBoolean((bool)(z < 0.0));
+        WriteMiniUInt16((UInt16)(fabs(x)*65535.0));
+        WriteMiniUInt16((UInt16)(fabs(y)*65535.0));
+        WriteMiniUInt16((UInt16)(fabs(z)*65535.0));
         // Leave out w and calculate it on the target
     }
-
+    void WriteNormQuat(
+            double& w,
+            double& x,
+            double& y,
+            double& z)
+    {
+        WriteBoolean((bool)(w < 0.0));
+        WriteBoolean((bool)(x < 0.0));
+        WriteBoolean((bool)(y < 0.0));
+        WriteBoolean((bool)(z < 0.0));
+        WriteMiniUInt16((UInt16)(fabs(x)*65535.0));
+        WriteMiniUInt16((UInt16)(fabs(y)*65535.0));
+        WriteMiniUInt16((UInt16)(fabs(z)*65535.0));
+        // Leave out w and calculate it on the target
+    }
     //! @method WriteOrthMatrix
     //! @access public 
     //! @returns void
@@ -1840,10 +2007,10 @@ class GECO_EXPORT GecoBitStream
     //! Use (18 bits to 6 bytes) +4 bits instead of 36
     //! FloatingType for this function must be a float or double
     //! @see WriteNormQuat()
-    template <class FloatingType> void WriteOrthMatrix(
-        FloatingType m00, FloatingType m01, FloatingType m02,
-        FloatingType m10, FloatingType m11, FloatingType m12,
-        FloatingType m20, FloatingType m21, FloatingType m22)
+    void WriteOrthMatrix(
+            float m00, float m01, float m02,
+            float m10, float m11, float m12,
+            float m20, float m21, float m22)
     {
         double qw;
         double qx;
@@ -1898,7 +2065,7 @@ class GECO_EXPORT GecoBitStream
         assert(writable_bit_pos_ > 0);
 
         _data = (UInt8*)gMallocEx(BITS_TO_BYTES(writable_bit_pos_),
-            TRACKE_MALLOC);
+                TRACKE_MALLOC);
         memcpy(_data, data_, sizeof(UInt8) * BITS_TO_BYTES(writable_bit_pos_));
         return writable_bit_pos_;
     }
