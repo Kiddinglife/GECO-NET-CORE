@@ -1,7 +1,6 @@
 ﻿#include "JackieINetSocket.h"
 #include "geco-wsa-singleton.h"
 #include "JackieApplication.h"
-//#include "EasyLog.h"
 
 GECO_NET_BEGIN_NSPACE
 const char* JISBindResultToString(JISBindResult reason)

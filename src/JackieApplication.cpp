@@ -43,19 +43,19 @@ static const UInt32 MAX_OFFLINE_DATA_LENGTH = 400;
 /// Make sure highest bit is 0, so isValid in DatagramHeaderFormat is false
 static const unsigned char OFFLINE_MESSAGE_DATA_ID[16] =
 { 0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12,
-        0x34, 0x56, 0x78 };
+0x34, 0x56, 0x78 };
 
 JackieApplication::JackieApplication() :
-        sendBitStream(MAXIMUM_MTU_SIZE
+sendBitStream(MAXIMUM_MTU_SIZE
 #if ENABLE_SECURE_HAND_SHAKE==1
-                + cat::AuthenticatedEncryption::OVERHEAD_BYTES
++ cat::AuthenticatedEncryption::OVERHEAD_BYTES
 #endif
-                )
+)
 {
 #if ENABLE_SECURE_HAND_SHAKE == 1
     // Encryption and security
     std::cout
-            << "Initializing Jackie Application security flags: using_security = false, server_handshake = null, cookie_jar = null";
+        << "Initializing Jackie Application security flags: using_security = false, server_handshake = null, cookie_jar = null";
     secureIncomingConnectionEnabled = false;
     serverHandShaker = 0;
     serverCookie = 0;
@@ -130,8 +130,8 @@ JackieApplication::~JackieApplication()
 }
 
 StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
-        UInt32 maxConn, UInt32 bindLocalSocketsCount,
-        Int32 threadPriority /*= -99999*/)
+    UInt32 maxConn, UInt32 bindLocalSocketsCount,
+    Int32 threadPriority /*= -99999*/)
 {
     if (active())
         return StartupResult::ALREADY_STARTED;
@@ -146,7 +146,7 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
 
     if (myGuid == JACKIE_NULL_GUID)
     {
-        rnr.SeedMT((UInt32) ((myGuid.g >> 32) ^ myGuid.g));
+        rnr.SeedMT((UInt32)((myGuid.g >> 32) ^ myGuid.g));
         myGuid.g = rnr.RandomMT();
     }
 
@@ -208,19 +208,19 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
         {
             berkleyBindParams.port = bindLocalSockets[index].port;
             berkleyBindParams.hostAddress =
-                    (char*) bindLocalSockets[index].hostAddress;
+                (char*)bindLocalSockets[index].hostAddress;
             berkleyBindParams.addressFamily =
-                    bindLocalSockets[index].socketFamily;
+                bindLocalSockets[index].socketFamily;
             berkleyBindParams.type = SOCK_DGRAM;
             berkleyBindParams.protocol =
-                    bindLocalSockets[index].extraSocketOptions;
+                bindLocalSockets[index].extraSocketOptions;
             berkleyBindParams.isBroadcast = true;
             berkleyBindParams.setIPHdrIncl = false;
             berkleyBindParams.doNotFragment = false;
             berkleyBindParams.pollingThreadPriority = threadPriority;
             berkleyBindParams.eventHandler = this;
             berkleyBindParams.remotePortJackieNetWasStartedOn_PS3_PS4_PSP2 =
-                    bindLocalSockets[index].remotePortWasStartedOn_PS3_PSP2;
+                bindLocalSockets[index].remotePortWasStartedOn_PS3_PSP2;
 
 #if USE_SINGLE_THREAD == 0
             /// multi-threads app can use either non-blobk or blobk socket
@@ -231,44 +231,44 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
             berkleyBindParams.isNonBlocking = true;
 #endif
 
-            bindResult = ((JISBerkley*) sock)->Bind(&berkleyBindParams,
-            TRACKE_MALLOC);
+            bindResult = ((JISBerkley*)sock)->Bind(&berkleyBindParams,
+                TRACKE_MALLOC);
 
             if (
 #if NET_SUPPORT_IPV6 ==0
-            bindLocalSockets[index].socketFamily != AF_INET
-                    ||
+                bindLocalSockets[index].socketFamily != AF_INET
+                ||
 #endif
-                    bindResult
-                            == JISBindResult_REQUIRES_NET_SUPPORT_IPV6_DEFINED)
+                bindResult
+                == JISBindResult_REQUIRES_NET_SUPPORT_IPV6_DEFINED)
             {
                 JISAllocator::DeallocJIS(sock);
                 DeallocBindedSockets();
                 std::cout
-                        << "Bind Failed (REQUIRES_NET_SUPPORT_IPV6_DEFINED) ! ";
+                    << "Bind Failed (REQUIRES_NET_SUPPORT_IPV6_DEFINED) ! ";
                 return SOCKET_FAMILY_NOT_SUPPORTED;
             }
 
             switch (bindResult)
             {
-            case JISBindResult_FAILED_BIND_SOCKET:
-                DeallocBindedSockets();
-                std::cout << "Bind Failed (FAILED_BIND_SOCKET) ! ";
-                return SOCKET_PORT_ALREADY_IN_USE;
-                break;
+                case JISBindResult_FAILED_BIND_SOCKET:
+                    DeallocBindedSockets();
+                    std::cout << "Bind Failed (FAILED_BIND_SOCKET) ! ";
+                    return SOCKET_PORT_ALREADY_IN_USE;
+                    break;
 
-            case JISBindResult_FAILED_SEND_RECV_TEST:
-                DeallocBindedSockets();
-                std::cout << "Bind Failed (FAILED_SEND_RECV_TEST) ! ";
-                return SOCKET_FAILED_TEST_SEND_RECV;
-                break;
+                case JISBindResult_FAILED_SEND_RECV_TEST:
+                    DeallocBindedSockets();
+                    std::cout << "Bind Failed (FAILED_SEND_RECV_TEST) ! ";
+                    return SOCKET_FAILED_TEST_SEND_RECV;
+                    break;
 
-            default:
-                assert(bindResult == JISBindResult_SUCCESS);
-                std::cout << "Bind [" << sock->GetBoundAddress().ToString()
+                default:
+                    assert(bindResult == JISBindResult_SUCCESS);
+                    std::cout << "Bind [" << sock->GetBoundAddress().ToString()
                         << "] Successfully";
-                sock->SetUserConnectionSocketIndex(index);
-                break;
+                    sock->SetUserConnectionSocketIndex(index);
+                    break;
             }
         }
         else
@@ -290,23 +290,23 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
             if (localIPAddrs[index] == JACKIE_NULL_ADDRESS)
                 break;
             localIPAddrs[index].SetPortHostOrder(
-                    ((JISBerkley*) bindedSockets[0])->GetBoundAddress().GetPortHostOrder());
+                ((JISBerkley*)bindedSockets[0])->GetBoundAddress().GetPortHostOrder());
         }
     }
 #endif
 
     JISRecvParamsPool = OP_NEW_ARRAY<JackieMemoryPool<JISRecvParams>>(
-            bindedSockets.Size(), TRACKE_MALLOC);
+        bindedSockets.Size(), TRACKE_MALLOC);
 #if USE_SINGLE_THREAD == 0
     deAllocRecvParamQ = OP_NEW_ARRAY < JackieSPSCQueue <
-    JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
+        JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
     allocRecvParamQ = OP_NEW_ARRAY < JackieSPSCQueue <
-    JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
+        JISRecvParams* >> (bindedSockets.Size(), TRACKE_MALLOC);
 #else
     deAllocRecvParamQ = OP_NEW_ARRAY<JackieArraryQueue<JISRecvParams*>>(
-            bindedSockets.Size(), TRACKE_MALLOC);
+        bindedSockets.Size(), TRACKE_MALLOC);
     allocRecvParamQ = OP_NEW_ARRAY<JackieArraryQueue<JISRecvParams*>>(
-            bindedSockets.Size(), TRACKE_MALLOC);
+        bindedSockets.Size(), TRACKE_MALLOC);
 #endif
 
     /// setup connections list
@@ -318,18 +318,18 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
         maxConnections = maxConn;
 
         remoteSystemList = OP_NEW_ARRAY<JackieRemoteSystem>(maxConnections,
-                TRACKE_MALLOC);
+            TRACKE_MALLOC);
 
         // All entries in activeSystemList have valid pointers all the time.
         activeSystemList = OP_NEW_ARRAY<JackieRemoteSystem*>(maxConnections,
-                TRACKE_MALLOC);
+            TRACKE_MALLOC);
 
         // decrease the collision chance by increasing the hashtable size
         index = maxConnections * RemoteEndPointLookupHashMutiple;
         remoteSystemLookup = OP_NEW_ARRAY<JackieRemoteIndex*>(index,
-                TRACKE_MALLOC);
-        memset((void**) remoteSystemLookup, 0,
-                index * sizeof(JackieRemoteIndex*));
+            TRACKE_MALLOC);
+        memset((void**)remoteSystemLookup, 0,
+            index * sizeof(JackieRemoteIndex*));
 
         for (index = 0; index < maxConnections; index++)
         {
@@ -338,10 +338,10 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
             remoteSystemList[index].systemAddress = JACKIE_NULL_ADDRESS;
             remoteSystemList[index].guid = JACKIE_NULL_GUID;
             remoteSystemList[index].myExternalSystemAddress =
-                    JACKIE_NULL_ADDRESS;
+                JACKIE_NULL_ADDRESS;
             remoteSystemList[index].connectMode = JackieRemoteSystem::NO_ACTION;
             remoteSystemList[index].MTUSize = defaultMTUSize;
-            remoteSystemList[index].remoteSystemIndex = (SystemIndex) index;
+            remoteSystemList[index].remoteSystemIndex = (SystemIndex)index;
 #ifdef _DEBUG
             remoteSystemList[index].reliabilityLayer.ApplyNetworkSimulator(_packetloss, _minExtraPing, _extraPingVariance);
 #endif
@@ -428,12 +428,12 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
 }
 
 void JackieApplication::End(UInt32 blockDuration, unsigned char orderingChannel,
-        PacketSendPriority disconnectionNotificationPriority)
+    PacketSendPriority disconnectionNotificationPriority)
 {
 }
 
 inline void JackieApplication::ReclaimOneJISRecvParams(JISRecvParams *s,
-        UInt32 index)
+    UInt32 index)
 {
     //std::cout << "Network Thread Reclaims One JISRecvParams";
     assert(deAllocRecvParamQ[index].PushTail(s) == true);
@@ -541,13 +541,13 @@ void JackieApplication::InitIPAddress(void)
     // Sort the addresses from lowest to highest
     int startingIdx = 0;
     while (startingIdx < MAX_COUNT_LOCAL_IP_ADDR - 1
-            && localIPAddrs[startingIdx] != JACKIE_NULL_ADDRESS)
+        && localIPAddrs[startingIdx] != JACKIE_NULL_ADDRESS)
     {
         int lowestIdx = startingIdx;
         for (int curIdx = startingIdx + 1;
-                curIdx < MAX_COUNT_LOCAL_IP_ADDR - 1
-                        && localIPAddrs[curIdx] != JACKIE_NULL_ADDRESS;
-                curIdx++)
+            curIdx < MAX_COUNT_LOCAL_IP_ADDR - 1
+            && localIPAddrs[curIdx] != JACKIE_NULL_ADDRESS;
+        curIdx++)
         {
             if (localIPAddrs[curIdx] < localIPAddrs[startingIdx])
             {
@@ -587,7 +587,7 @@ JackiePacket* JackieApplication::AllocPacket(UInt32 dataSize)
     } while (p == 0);
 
     //p = new ( (void*) p ) Packet; we do not need call default ctor
-    p->data = (unsigned char*) gMallocEx(dataSize, TRACKE_MALLOC);
+    p->data = (unsigned char*)gMallocEx(dataSize, TRACKE_MALLOC);
     p->length = dataSize;
     p->bitSize = BYTES_TO_BITS(dataSize);
     p->freeInternalData = true;
@@ -599,7 +599,7 @@ JackiePacket* JackieApplication::AllocPacket(UInt32 dataSize)
 
 /// default 	p->freeInternalData = false;
 JackiePacket* JackieApplication::AllocPacket(UInt32 dataSize,
-        unsigned char *data)
+    unsigned char *data)
 {
     //std::cout << "Network Thread Alloc One Packet";
     JackiePacket *p = 0;
@@ -609,7 +609,7 @@ JackiePacket* JackieApplication::AllocPacket(UInt32 dataSize,
     } while (p == 0);
 
     //p = new ( (void*) p ) Packet; no custom ctor so no need to call default ctor
-    p->data = (unsigned char*) data;
+    p->data = (unsigned char*)data;
     p->length = dataSize;
     p->bitSize = BYTES_TO_BITS(dataSize);
     p->freeInternalData = false;
@@ -642,17 +642,17 @@ inline void JackieApplication::ReclaimPacket(JackiePacket *packet)
 
 int JackieApplication::CreateRecvPollingThread(int threadPriority, UInt32 index)
 {
-    char* arg = (char*) gMallocEx(sizeof(JackieApplication*) + sizeof(index),
-            TRACKE_MALLOC);
+    char* arg = (char*)gMallocEx(sizeof(JackieApplication*) + sizeof(index),
+        TRACKE_MALLOC);
     JackieApplication* serv = this;
     memcpy(arg, &serv, sizeof(JackieApplication*));
-    memcpy(arg + sizeof(JackieApplication*), (char*) &index, sizeof(index));
+    memcpy(arg + sizeof(JackieApplication*), (char*)&index, sizeof(index));
     return JACKIE_Thread::Create(RunRecvCycleLoop, arg, threadPriority);
 }
 int JackieApplication::CreateNetworkUpdateThread(int threadPriority)
 {
     return JACKIE_Thread::Create(RunNetworkUpdateCycleLoop, this,
-            threadPriority);
+        threadPriority);
 }
 void JackieApplication::StopRecvThread()
 {
@@ -710,7 +710,7 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
             this->pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
         GecoBitStream bs;
-        bs.WriteUInt8((MessageID) ID_CONNECTION_BANNED);
+        bs.WriteUInt8((MessageID)ID_CONNECTION_BANNED);
         bs.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
         bs.WriteMiniGUID(myGuid);
 
@@ -740,24 +740,24 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
     {
         /// See if this datagram came from a connected system
         JackieRemoteSystem* remoteEndPoint = GetRemoteSystem(
-                recvParams->senderINetAddress, true, true);
+            recvParams->senderINetAddress, true, true);
         if (remoteEndPoint != 0) // if this datagram comes from connected system
         {
             remoteEndPoint->reliabilityLayer.ProcessOneConnectedRecvParams(this,
-                    recvParams, remoteEndPoint->MTUSize);
+                recvParams, remoteEndPoint->MTUSize);
         }
         else
         {
             char str[256];
             recvParams->senderINetAddress.ToString(true, str);
             std::cout << "Network Thread Says Packet from unconnected sender "
-                    << str;
+                << str;
         }
     }
 }
 
 void JackieApplication::IsOfflineRecvParams(JISRecvParams* recvParams,
-        bool* isOfflinerecvParams)
+    bool* isOfflinerecvParams)
 {
     // The reason for all this is that the reliability layer has no way to tell between offline
     // messages that arrived late for a player that is now connected,
@@ -769,133 +769,133 @@ void JackieApplication::IsOfflineRecvParams(JISRecvParams* recvParams,
     }
     else
     {
-        switch ((MessageID) recvParams->data[0])
+        switch ((MessageID)recvParams->data[0])
         {
-        case ID_UNCONNECTED_PING:
-            if (recvParams->bytesRead
+            case ID_UNCONNECTED_PING:
+                if (recvParams->bytesRead
                     >= sizeof(MessageID) + sizeof(Time)
-                            + sizeof(OFFLINE_MESSAGE_DATA_ID))
-            {
-                *isOfflinerecvParams = memcmp(
+                    + sizeof(OFFLINE_MESSAGE_DATA_ID))
+                {
+                    *isOfflinerecvParams = memcmp(
                         recvParams->data + sizeof(MessageID) + sizeof(Time),
                         OFFLINE_MESSAGE_DATA_ID,
                         sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
-            }
-            if (*isOfflinerecvParams)
-            {
-                for (index = 0; index < pluginListNTS.Size(); index++)
-                    pluginListNTS[index]->OnDirectSocketReceive(recvParams);
-                // TO-DO
-            }
-            break;
-        case ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
-            if (recvParams->bytesRead
+                }
+                if (*isOfflinerecvParams)
+                {
+                    for (index = 0; index < pluginListNTS.Size(); index++)
+                        pluginListNTS[index]->OnDirectSocketReceive(recvParams);
+                    // TO-DO
+                }
+                break;
+            case ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
+                if (recvParams->bytesRead
                     >= sizeof(MessageID) + sizeof(Time)
-                            + sizeof(OFFLINE_MESSAGE_DATA_ID))
-            {
-                *isOfflinerecvParams = memcmp(
+                    + sizeof(OFFLINE_MESSAGE_DATA_ID))
+                {
+                    *isOfflinerecvParams = memcmp(
                         recvParams->data + sizeof(MessageID) + sizeof(Time),
                         OFFLINE_MESSAGE_DATA_ID,
                         sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
-            }
-            if (*isOfflinerecvParams)
-            {
-                for (index = 0; index < pluginListNTS.Size(); index++)
-                    pluginListNTS[index]->OnDirectSocketReceive(recvParams);
-                // TO-DO
-            }
-            break;
-        case ID_UNCONNECTED_PONG:
-            if (recvParams->bytesRead
+                }
+                if (*isOfflinerecvParams)
+                {
+                    for (index = 0; index < pluginListNTS.Size(); index++)
+                        pluginListNTS[index]->OnDirectSocketReceive(recvParams);
+                    // TO-DO
+                }
+                break;
+            case ID_UNCONNECTED_PONG:
+                if (recvParams->bytesRead
                     > sizeof(MessageID) + sizeof(TimeMS) + JackieGUID::size()
-                            + sizeof(OFFLINE_MESSAGE_DATA_ID))
-            {
-                *isOfflinerecvParams = memcmp(
+                    + sizeof(OFFLINE_MESSAGE_DATA_ID))
+                {
+                    *isOfflinerecvParams = memcmp(
                         recvParams->data + sizeof(MessageID) + sizeof(Time)
-                                + JackieGUID::size(), OFFLINE_MESSAGE_DATA_ID,
+                        + JackieGUID::size(), OFFLINE_MESSAGE_DATA_ID,
                         sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
-            }
-            else
-            {
-                *isOfflinerecvParams = memcmp(
+                }
+                else
+                {
+                    *isOfflinerecvParams = memcmp(
                         recvParams->data + sizeof(MessageID) + sizeof(TimeMS)
-                                + JackieGUID::size(), OFFLINE_MESSAGE_DATA_ID,
+                        + JackieGUID::size(), OFFLINE_MESSAGE_DATA_ID,
                         sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
-            }
-            if (*isOfflinerecvParams)
-            {
+                }
+                if (*isOfflinerecvParams)
+                {
 
-                for (index = 0; index < pluginListNTS.Size(); index++)
-                    pluginListNTS[index]->OnDirectSocketReceive(recvParams);
-                ///TO-DO
-            }
-            break;
-        case ID_OUT_OF_BAND_INTERNAL:
-            if (recvParams->bytesRead
+                    for (index = 0; index < pluginListNTS.Size(); index++)
+                        pluginListNTS[index]->OnDirectSocketReceive(recvParams);
+                    ///TO-DO
+                }
+                break;
+            case ID_OUT_OF_BAND_INTERNAL:
+                if (recvParams->bytesRead
                     >= sizeof(MessageID) + JackieGUID::size()
-                            + sizeof(OFFLINE_MESSAGE_DATA_ID))
-            {
-                *isOfflinerecvParams = memcmp(
+                    + sizeof(OFFLINE_MESSAGE_DATA_ID))
+                {
+                    *isOfflinerecvParams = memcmp(
                         recvParams->data + sizeof(MessageID)
-                                + JackieGUID::size(), OFFLINE_MESSAGE_DATA_ID,
+                        + JackieGUID::size(), OFFLINE_MESSAGE_DATA_ID,
                         sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
-            }
-            if (*isOfflinerecvParams)
-            {
-                for (index = 0; index < pluginListNTS.Size(); index++)
-                    pluginListNTS[index]->OnDirectSocketReceive(recvParams);
-                // to-do
-            }
-            break;
-        case ID_OPEN_CONNECTION_REPLY_1:
-            OnConnectionReply1(recvParams, isOfflinerecvParams);
-            break;
-        case ID_OPEN_CONNECTION_REPLY_2:
-            OnConnectionReply2(recvParams, isOfflinerecvParams);
-            break;
-        case ID_OPEN_CONNECTION_REQUEST_1:
-            OnConnectionRequest1(recvParams, isOfflinerecvParams);
-            break;
-        case ID_OPEN_CONNECTION_REQUEST_2:
-            OnConnectionRequest2(recvParams, isOfflinerecvParams);
-            break;
-        case ID_CONNECTION_ATTEMPT_FAILED:
-            OnConnectionFailed(recvParams, isOfflinerecvParams);
-            break;
-        case ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS:
-            OnConnectionFailed(recvParams, isOfflinerecvParams);
-            break;
-        case ID_CONNECTION_BANNED:
-            OnConnectionFailed(recvParams, isOfflinerecvParams);
-            break;
-        case ID_ALREADY_CONNECTED:
-            OnConnectionFailed(recvParams, isOfflinerecvParams);
-            break;
-        case ID_YOU_CONNECT_TOO_OFTEN:
-            OnConnectionFailed(recvParams, isOfflinerecvParams);
-            break;
-        case ID_INCOMPATIBLE_PROTOCOL_VERSION:
-            /// msg layout: MessageID MessageID OFFLINE_MESSAGE_DATA_ID JackieGUID
-            OnConnectionFailed(recvParams, isOfflinerecvParams);
-            break;
-        default:
-            *isOfflinerecvParams = false;
-            break;
+                }
+                if (*isOfflinerecvParams)
+                {
+                    for (index = 0; index < pluginListNTS.Size(); index++)
+                        pluginListNTS[index]->OnDirectSocketReceive(recvParams);
+                    // to-do
+                }
+                break;
+            case ID_OPEN_CONNECTION_REPLY_1:
+                OnConnectionReply1(recvParams, isOfflinerecvParams);
+                break;
+            case ID_OPEN_CONNECTION_REPLY_2:
+                OnConnectionReply2(recvParams, isOfflinerecvParams);
+                break;
+            case ID_OPEN_CONNECTION_REQUEST_1:
+                OnConnectionRequest1(recvParams, isOfflinerecvParams);
+                break;
+            case ID_OPEN_CONNECTION_REQUEST_2:
+                OnConnectionRequest2(recvParams, isOfflinerecvParams);
+                break;
+            case ID_CONNECTION_ATTEMPT_FAILED:
+                OnConnectionFailed(recvParams, isOfflinerecvParams);
+                break;
+            case ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS:
+                OnConnectionFailed(recvParams, isOfflinerecvParams);
+                break;
+            case ID_CONNECTION_BANNED:
+                OnConnectionFailed(recvParams, isOfflinerecvParams);
+                break;
+            case ID_ALREADY_CONNECTED:
+                OnConnectionFailed(recvParams, isOfflinerecvParams);
+                break;
+            case ID_YOU_CONNECT_TOO_OFTEN:
+                OnConnectionFailed(recvParams, isOfflinerecvParams);
+                break;
+            case ID_INCOMPATIBLE_PROTOCOL_VERSION:
+                /// msg layout: MessageID MessageID OFFLINE_MESSAGE_DATA_ID JackieGUID
+                OnConnectionFailed(recvParams, isOfflinerecvParams);
+                break;
+            default:
+                *isOfflinerecvParams = false;
+                break;
         }
     }
 }
 
 void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
-        bool* isOfflinerecvParams)
+    bool* isOfflinerecvParams)
 {
     if (recvParams->bytesRead
-            > sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
-            && recvParams->bytesRead
+                    > sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
+                    && recvParams->bytesRead
                     <= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
-                            + JackieGUID::size())
+                    + JackieGUID::size())
     {
         *isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),
-                OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
+            OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
     }
 
     if (*isOfflinerecvParams)
@@ -903,16 +903,16 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoBitStream reader((UInt8*) recvParams->data, recvParams->bytesRead);
+        GecoBitStream reader((UInt8*)recvParams->data, recvParams->bytesRead);
         MessageID msgid;
         reader.ReadUInt8(msgid);
-        std::cout << "client receives msg with " << "msgid " << (int) msgid;
-        if ((MessageID) recvParams->data[0] == ID_INCOMPATIBLE_PROTOCOL_VERSION)
+        std::cout << "client receives msg with " << "msgid " << (int)msgid;
+        if ((MessageID)recvParams->data[0] == ID_INCOMPATIBLE_PROTOCOL_VERSION)
         {
             MessageID update_protocol_version;
             reader.ReadUInt8(update_protocol_version);
             std::cout << "update_protocol_version "
-                    << (int) update_protocol_version;
+                << (int)update_protocol_version;
         }
         reader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -928,16 +928,16 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
         {
             connectionRequest = connReqQ[index];
             if (connectionRequest->actionToTake == ConnectionRequest::CONNECT
-                    && connectionRequest->receiverAddr
-                            == recvParams->senderINetAddress)
+                && connectionRequest->receiverAddr
+                == recvParams->senderINetAddress)
             {
                 connectionAttemptCancelled = true;
                 connReqQ.RemoveAtIndex(index);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
                 std::cout
-                        << "AUDIT: Connection attempt canceled so deleting connectionRequest->client_handshake object"
-                        << connectionRequest->client_handshake;
+                    << "AUDIT: Connection attempt canceled so deleting connectionRequest->client_handshake object"
+                    << connectionRequest->client_handshake;
                 OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
 #endif // ENABLE_SECURE_HAND_SHAKE
 
@@ -951,7 +951,7 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
         {
             /// Tell user connection attempt failed
             JackiePacket* packet = AllocPacket(sizeof(unsigned char),
-                    (unsigned char*) recvParams->data);
+                (unsigned char*)recvParams->data);
             packet->systemAddress = recvParams->senderINetAddress;
             packet->guid = guid;
             assert(allocPacketQ.PushTail(packet) == true);
@@ -961,14 +961,14 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
     }
 }
 void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
-        bool* isOfflinerecvParams)
+    bool* isOfflinerecvParams)
 {
     if (recvParams->bytesRead
-            >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
-                    + JackieGUID::size())
+        >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
+        + JackieGUID::size())
     {
         *isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),
-                OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
+            OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
     }
     if (*isOfflinerecvParams)
     {
@@ -978,8 +978,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
         }
 
-        GecoBitStream fromClientReader((UInt8*) recvParams->data,
-                recvParams->bytesRead);
+        GecoBitStream fromClientReader((UInt8*)recvParams->data,
+            recvParams->bytesRead);
         fromClientReader.ReadSkipBytes(sizeof(MessageID));
         fromClientReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -995,18 +995,18 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             char str1[65];
             recvParams->senderINetAddress.ToString(false, str1);
             clientSecureRequiredbyServer = this->IsInSecurityExceptionList(
-                    recvParams->senderINetAddress) == false;
+                recvParams->senderINetAddress) == false;
 
             UInt32 cookie;
             fromClientReader.ReadMiniUInt32(cookie);
             if (this->serverCookie->Verify(
-                    &recvParams->senderINetAddress.address,
-                    sizeof(recvParams->senderINetAddress.address), cookie)
-                    == false)
+                &recvParams->senderINetAddress.address,
+                sizeof(recvParams->senderINetAddress.address), cookie)
+                == false)
             {
                 std::cout << "Server NOT verifies Cookie" << cookie
-                        << " from client of "
-                        << recvParams->senderINetAddress.ToString();
+                    << " from client of "
+                    << recvParams->senderINetAddress.ToString();
                 return;
             }
             std::cout << "Server verified Cookie from client !";
@@ -1015,15 +1015,15 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             if (clientSecureRequiredbyServer && !clientSecureConnectionEnabled)
             {
                 std::cout
-                        << "Fail, This client doesn't enable security connection, but server says this client is needing secure connect";
+                    << "Fail, This client doesn't enable security connection, but server says this client is needing secure connect";
                 return;
             }
 
             if (clientSecureConnectionEnabled)
             {
                 fromClientReader.ReadAlignedBytes(
-                        (unsigned char*) receivedChallengeFromClient,
-                        cat::EasyHandshake::CHALLENGE_BYTES);
+                    (unsigned char*)receivedChallengeFromClient,
+                    cat::EasyHandshake::CHALLENGE_BYTES);
             }
         }
 #endif // ENABLE_SECURE_HAND_SHAKE
@@ -1031,7 +1031,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         InetAddress recvivedBoundAddrFromClient;
         fromClientReader.ReadMiniInetAddress(recvivedBoundAddrFromClient);
         std::cout << "serverReadMini(server_bound_addr) "
-                << recvivedBoundAddrFromClient.ToString();
+            << recvivedBoundAddrFromClient.ToString();
         UInt16 mtu;
         fromClientReader.ReadMiniUInt16(mtu);
         std::cout << "server ReadMini(mtu) " << mtu;
@@ -1041,7 +1041,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 
         int outcome;
         JackieRemoteSystem* rsysaddr = GetRemoteSystem(
-                recvParams->senderINetAddress, true, true);
+            recvParams->senderINetAddress, true, true);
         bool usedAddr = rsysaddr != 0 && rsysaddr->isActive;
 
         JackieRemoteSystem* rsysguid = GetRemoteSystem(guid, true);
@@ -1055,8 +1055,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         if (usedAddr && usedGuid)
         {
             if (rsysaddr == rsysguid
-                    && rsysaddr->connectMode
-                            == JackieRemoteSystem::UNVERIFIED_SENDER)
+                && rsysaddr->connectMode
+                == JackieRemoteSystem::UNVERIFIED_SENDER)
             {
                 // @return ID_OPEN_CONNECTION_REPLY to client if they are the same
                 outcome = 1;
@@ -1104,7 +1104,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 
         GecoBitStream toClientReplay2Writer;
         toClientReplay2Writer.WriteUInt8(ID_OPEN_CONNECTION_REPLY_2);
-        toClientReplay2Writer.WriteUBytes(OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID));
+        toClientReplay2Writer.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
         toClientReplay2Writer.WriteMiniGUID(myGuid);
         toClientReplay2Writer.WriteMiniInetAddress(recvParams->senderINetAddress);
         toClientReplay2Writer.WriteMiniUInt16(mtu);
@@ -1120,10 +1120,10 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             if (clientSecureRequiredbyServer)
             {
                 std::cout
-                        << "AUDIT: Resending public key and answer from packetloss.  Sending ID_OPEN_CONNECTION_REPLY_2";
+                    << "AUDIT: Resending public key and answer from packetloss.  Sending ID_OPEN_CONNECTION_REPLY_2";
                 toClientReplay2Writer.WriteAlignedBytes(
-                        (const unsigned char *) rsysaddr->answer,
-                        sizeof(rsysaddr->answer));
+                    (const unsigned char *)rsysaddr->answer,
+                    sizeof(rsysaddr->answer));
             }
 #endif // ENABLE_SECURE_HAND_SHAKE
 
@@ -1142,7 +1142,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             std::cout << "Server return ID_ALREADY_CONNECTED to client";
             GecoBitStream toClientAlreadyConnectedWriter;
             toClientAlreadyConnectedWriter.WriteUInt8(ID_ALREADY_CONNECTED);
-            toClientAlreadyConnectedWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID));
+            toClientAlreadyConnectedWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
             toClientAlreadyConnectedWriter.WriteGUID(myGuid);
 
             JISSendParams bsp;
@@ -1163,9 +1163,9 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             if (!CanAcceptIncomingConnection())
             {
                 std::cout
-                        << "Server return ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS to client";
+                    << "Server return ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS to client";
                 toClientWriter.WriteUInt8(ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS);
-                toClientWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID));
+                toClientWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
                 toClientWriter.WriteMiniGUID(myGuid);
 
                 JISSendParams bsp;
@@ -1193,14 +1193,14 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                 JackieRemoteSystem* free_rs;
 
                 Add2RemoteSystemList(recvParams, free_rs,
-                        thisIPFloodsConnRequest, mtu,
-                        recvivedBoundAddrFromClient, guid,
-                        clientSecureRequiredbyServer);
+                    thisIPFloodsConnRequest, mtu,
+                    recvivedBoundAddrFromClient, guid,
+                    clientSecureRequiredbyServer);
 
                 if (thisIPFloodsConnRequest)
                 {
                     toClientWriter.WriteUInt8(ID_YOU_CONNECT_TOO_OFTEN);
-                    toClientWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID));
+                    toClientWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
                     toClientWriter.WriteMiniGUID(myGuid);
                     //SocketLayer::SendTo( rakNetSocket, (const char*) bsOut.GetData(), bsOut.GetNumberOfBytesUsed(), systemAddress, _FILE_AND_LINE_ );
 
@@ -1218,8 +1218,8 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                 if (clientSecureRequiredbyServer)
                 {
                     if (this->serverHandShaker->ProcessChallenge(
-                            receivedChallengeFromClient, free_rs->answer,
-                            free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
+                        receivedChallengeFromClient, free_rs->answer,
+                        free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
                     {
                         std::cout << "AUDIT: Challenge good!\n";
                         // Keep going to OK block
@@ -1227,15 +1227,15 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                     else
                     {
                         std::cout
-                                << "AUDIT: Challenge is BAD! Unassign this remote system";
+                            << "AUDIT: Challenge is BAD! Unassign this remote system";
                         // Unassign this remote system
                         DeRefRemoteSystem(recvParams->senderINetAddress);
                         return;
                     }
 
                     toClientReplay2Writer.WriteAlignedBytes(
-                            (const unsigned char *) free_rs->answer,
-                            sizeof(free_rs->answer));
+                        (const unsigned char *)free_rs->answer,
+                        sizeof(free_rs->answer));
                 }
 #endif // ENABLE_SECURE_HAND_SHAKE
 
@@ -1255,12 +1255,12 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
     }
 }
 void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
-        bool* isOfflinerecvParams)
+    bool* isOfflinerecvParams)
 {
-    if ((UInt32)recvParams->bytesRead >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)+ JackieGUID::size())
+    if ((UInt32)recvParams->bytesRead >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID) + JackieGUID::size())
     {
         *isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),
-                OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
+            OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
     }
     if (*isOfflinerecvParams == true)
     {
@@ -1270,16 +1270,16 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
 
         GecoBitStream writer;
         unsigned char remote_system_protcol =
-                (unsigned char) recvParams->data[sizeof(MessageID)
-                        + sizeof(OFFLINE_MESSAGE_DATA_ID)];
+            (unsigned char)recvParams->data[sizeof(MessageID)
+            + sizeof(OFFLINE_MESSAGE_DATA_ID)];
 
         // see if the protocol is up-to-date
-        if (remote_system_protcol != (MessageID) JACKIE_INET_PROTOCOL_VERSION)
+        if (remote_system_protcol != (MessageID)JACKIE_INET_PROTOCOL_VERSION)
         {
             //test_sendto(*this);
             writer.WriteUInt8(ID_INCOMPATIBLE_PROTOCOL_VERSION);
-            writer.WriteUInt8((MessageID) JACKIE_INET_PROTOCOL_VERSION);
-            writer.WriteUBytes(OFFLINE_MESSAGE_DATA_ID,sizeof(OFFLINE_MESSAGE_DATA_ID));
+            writer.WriteUInt8((MessageID)JACKIE_INET_PROTOCOL_VERSION);
+            writer.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
             writer.WriteMiniGUID(myGuid);
 
             JISSendParams data2send;
@@ -1290,7 +1290,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
             /// we do not need test 10040 error because it is only 24 bytes length
             /// impossible to exceed the max mtu
             if (recvParams->localBoundSocket->Send(&data2send, TRACKE_MALLOC)
-                    > 0)
+        > 0)
             {
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&data2send);
@@ -1300,25 +1300,25 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
         {
 #if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
             if (recvParams->localBoundSocket->IsBerkleySocket())
-                ((JISBerkley*) recvParams->localBoundSocket)->SetDoNotFragment(
-                        1);
+                ((JISBerkley*)recvParams->localBoundSocket)->SetDoNotFragment(
+                1);
 #endif
-            writer.Write(ID_OPEN_CONNECTION_REPLY_1);
-            writer.Write((unsigned char*) OFFLINE_MESSAGE_DATA_ID,
-                    sizeof(OFFLINE_MESSAGE_DATA_ID));
-            writer.WriteMini(myGuid);
+            writer.WriteUInt8(ID_OPEN_CONNECTION_REPLY_1);
+            writer.WriteUBytes((unsigned char*)OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+            writer.WriteMiniGUID(myGuid);
+
 #if ENABLE_SECURE_HAND_SHAKE==1
             if (secureIncomingConnectionEnabled)
             {
-                writer.WriteMini(true);  // HasCookie on
+                writer.WriteMiniBoolean(true);  // HasCookie on
                 std::cout
-                        << "AUDIT: server WriteMini(HasCookie On true) to client";
+                    << "AUDIT: server WriteMini(HasCookie On true) to client";
                 UInt32 cookie = serverCookie->Generate(
-                        &recvParams->senderINetAddress.address,
-                        sizeof(recvParams->senderINetAddress.address));
-                writer.WriteMini(cookie); // Write cookie
+                    &recvParams->senderINetAddress.address,
+                    sizeof(recvParams->senderINetAddress.address));
+                writer.WriteMiniUInt32(cookie); // Write cookie
                 std::cout << "AUDIT: server WriteMini(cookie " << cookie
-                        << ") to client";
+                    << ") to client";
                 // @Important !!!
                 // this is dangeous to send public key to remote because,
                 // legal client is pre-given a server public key and client uses this key to encrypt and pre-generate
@@ -1330,7 +1330,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
                 // std::cout << "AUDIT: server WriteAlignedBytes(my_public_key) to client";
             }
 #else // ENABLE_SECURE_HAND_SHAKE
-            writer.WriteMini(false);  // HasCookie off
+            writer.WriteMiniBoolean(false);  // HasCookie off
             std::cout << "AUDIT: server WriteMini(HasCookie Off false) to client";
 #endif
             // MTU. Lower MTU if it exceeds our own limit.
@@ -1338,21 +1338,21 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
             // bitStream.PadZero2LengthOf(mtuSizes[MTUSizeIndex] -
             // UDP_HEADER_SIZE);  see connect() for details
             UInt16 newClientMTU =
-                    (recvParams->bytesRead + UDP_HEADER_SIZE >= MAXIMUM_MTU_SIZE) ?
-                            MAXIMUM_MTU_SIZE :
-                            recvParams->bytesRead + UDP_HEADER_SIZE;
-            writer.WriteMini(newClientMTU);
+                (recvParams->bytesRead + UDP_HEADER_SIZE >= MAXIMUM_MTU_SIZE) ?
+            MAXIMUM_MTU_SIZE :
+                             recvParams->bytesRead + UDP_HEADER_SIZE;
+            writer.WriteMiniUInt16(newClientMTU);
             std::cout << "AUDIT: server WriteMini(newClientMTU)" << newClientMTU
-                    << " to client";
+                << " to client";
             // Pad response with zeros to MTU size
             // so the connection's MTU will be tested in both directions
             // writer.PadZero2LengthOf(newClientMTU - writer.GetWrittenBytesCount()); //this is wrong
             writer.PadZero2LengthOf(newClientMTU - UDP_HEADER_SIZE);
             std::cout << "AUDIT: server PadZero2LengthOf "
-                    << newClientMTU - UDP_HEADER_SIZE;
+                << newClientMTU - UDP_HEADER_SIZE;
 
             JISSendParams bsp;
-            bsp.data = writer.Int8Data();
+            bsp.data = writer.ByteData();
             bsp.length = writer.GetWrittenBytesSize();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
 
@@ -1365,23 +1365,23 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
 
 #if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
             if (recvParams->localBoundSocket->IsBerkleySocket())
-                ((JISBerkley*) recvParams->localBoundSocket)->SetDoNotFragment(
-                        0);
+                ((JISBerkley*)recvParams->localBoundSocket)->SetDoNotFragment(
+                0);
 #endif
         }
         //return true;
     }
 }
 void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
-        bool* isOfflinerecvParams)
+    bool* isOfflinerecvParams)
 {
     if (recvParams->bytesRead
-            >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
-                    + JackieGUID::size())
+        >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
+        + JackieGUID::size())
     {
         // isOfflinerecvParams ?
         *isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),
-                OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
+            OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
     }
     if (*isOfflinerecvParams) // only process offline msg
     {
@@ -1389,8 +1389,8 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
         for (index = 0; index < pluginListNTS.Size(); index++)
             pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
-        GecoBitStream fromServerReader((UInt8*) recvParams->data,
-                recvParams->bytesRead);
+        GecoBitStream fromServerReader((UInt8*)recvParams->data,
+            recvParams->bytesRead);
         fromServerReader.ReadSkipBytes(sizeof(MessageID));
         fromServerReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
@@ -1412,23 +1412,21 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
         {
             connectionRequest = connReqQ[index];
             if (connectionRequest->actionToTake == ConnectionRequest::CONNECT
-                    && connectionRequest->receiverAddr
-                            == recvParams->senderINetAddress)
+                && connectionRequest->receiverAddr
+                == recvParams->senderINetAddress)
             {
                 /// we can  unlock now
                 connReqQLock.Unlock();
 
                 /// prepare out data to server
                 GecoBitStream toServerWriter;
-                toServerWriter.Write((MessageID) ID_OPEN_CONNECTION_REQUEST_2);
-                toServerWriter.Write(
-                        (const unsigned char*) OFFLINE_MESSAGE_DATA_ID,
-                        sizeof(OFFLINE_MESSAGE_DATA_ID));
+                toServerWriter.WriteUInt8((MessageID)ID_OPEN_CONNECTION_REQUEST_2);
+                toServerWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
 
                 // server require secure connection
                 if (serverRequiresSecureConn)
                 {
-                    toServerWriter.WriteMini(cookie);
+                    toServerWriter.WriteMiniUInt32(cookie);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
 
@@ -1441,18 +1439,18 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                     // to be easiliy man-in-middle attacked, do not use in production environment
                     //  locally stored the received public key from server if ACCEPT_ANY_PUBLIC_KEY is enabled
                     if (connectionRequest->publicKeyMode
-                            == ACCEPT_ANY_PUBLIC_KEY)
+                        == ACCEPT_ANY_PUBLIC_KEY)
                     {
                         memcpy(connectionRequest->remote_public_key,
-                                publicKeyReceivedFromServer,
-                                cat::EasyHandshake::PUBLIC_KEY_BYTES);
+                            publicKeyReceivedFromServer,
+                            cat::EasyHandshake::PUBLIC_KEY_BYTES);
                         if (!connectionRequest->client_handshake->Initialize(
-                                publicKeyReceivedFromServer)
-                                || !connectionRequest->client_handshake->GenerateChallenge(
-                                        connectionRequest->handshakeChallenge))
+                            publicKeyReceivedFromServer)
+                            || !connectionRequest->client_handshake->GenerateChallenge(
+                            connectionRequest->handshakeChallenge))
                         {
                             std::cout
-                                    << "AUDIT: client_handshake :: server passed a bad public key with ACCEPT_ANY_PUBLIC_KEY and generate challenge failed, Caution !!! to be easiliy man-in-middle attacked, do not use in production environment";
+                                << "AUDIT: client_handshake :: server passed a bad public key with ACCEPT_ANY_PUBLIC_KEY and generate challenge failed, Caution !!! to be easiliy man-in-middle attacked, do not use in production environment";
                             return;
                         }
                     }
@@ -1472,21 +1470,21 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                     // client contains no challenge  We might still pass if we are in the security exception list
                     if (connectionRequest->client_handshake == 0)
                     {
-                        toServerWriter.WriteMini(false); //  has chanllenge off
+                        toServerWriter.WriteMiniBoolean(false); //  has chanllenge off
                     }
                     else 	// client contains  a challenge
                     {
-                        toServerWriter.WriteMini(true); // has chanllenge on
+                        toServerWriter.WriteMiniBoolean(true); // has chanllenge on
                         toServerWriter.WriteAlignedBytes(
-                                (const unsigned char*) connectionRequest->handshakeChallenge,
-                                cat::EasyHandshake::CHALLENGE_BYTES);
+                            (const unsigned char*)connectionRequest->handshakeChallenge,
+                            cat::EasyHandshake::CHALLENGE_BYTES);
                         std::cout
-                                << "AUDIT: client contains a challenge and WriteAlignedBytes(connectionRequest->handshakeChallenge) to server";
+                            << "AUDIT: client contains a challenge and WriteAlignedBytes(connectionRequest->handshakeChallenge) to server";
                     }
 #else // ENABLE_SECURE_HAND_SHAKE
                     // client contain a challenge
                     assert(connectionRequest->client_handshake == 0);
-                    toServerWriter.WriteMini(false);
+                    toServerWriter.WriteMiniBoolean(false);
 #endif
                 }
                 else 	// Server does not need security
@@ -1496,7 +1494,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                     if (connectionRequest->client_handshake != 0)
                     {
                         std::cout
-                                << "AUDIT: Security disabled by server but client expects security (indicated by client_handshake not null) so failing!";
+                            << "AUDIT: Security disabled by server but client expects security (indicated by client_handshake not null) so failing!";
                         msgid = ID_WECLI_SECURE_BUT_SRV_NO; // Attempted a connection and couldn't
                         packet = AllocPacket(sizeof(MessageID), &msgid);
                         packet->systemAddress = connectionRequest->receiverAddr;
@@ -1508,28 +1506,28 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                 }
 
                 // echo server's bound address
-                toServerWriter.WriteMini(connectionRequest->receiverAddr);
+                toServerWriter.WriteMiniInetAddress(connectionRequest->receiverAddr);
                 std::cout
-                        << "client WriteMini(connectionRequest->receiverAddr) to server";
+                    << "client WriteMini(connectionRequest->receiverAddr) to server";
 
                 // echo MTU
                 UInt16 mtu;
                 fromServerReader.ReadMiniUInt16(mtu);
-                toServerWriter.WriteMini(mtu);
+                toServerWriter.WriteMiniUInt16(mtu);
                 std::cout << "client WriteMini(mtu)" << mtu << " to server";
 
                 // echo Our guid
-                toServerWriter.WriteMini(myGuid);
+                toServerWriter.WriteMiniGUID(myGuid);
                 std::cout << "client WriteMini(myGuid) " << myGuid.g
-                        << " to server ";
+                    << " to server ";
 
                 JISSendParams outcome_data;
-                outcome_data.data = toServerWriter.Int8Data();
+                outcome_data.data = toServerWriter.ByteData();
                 outcome_data.length = toServerWriter.GetWrittenBytesSize();
                 outcome_data.receiverINetAddress =
-                        recvParams->senderINetAddress;
+                    recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&outcome_data, TRACKE_MALLOC
-                        );
+                    );
 
                 for (index = 0; index < pluginListNTS.Size(); index++)
                     pluginListNTS[index]->OnDirectSocketSend(&outcome_data);
@@ -1541,14 +1539,14 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
     }
 }
 void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
-        bool* isOfflinerecvParams)
+    bool* isOfflinerecvParams)
 {
     if (recvParams->bytesRead
-            >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
-                    + JackieGUID::size())
+        >= sizeof(MessageID) + sizeof(OFFLINE_MESSAGE_DATA_ID)
+        + JackieGUID::size())
     {
         *isOfflinerecvParams = memcmp(recvParams->data + sizeof(MessageID),
-                OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
+            OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID)) == 0;
     }
     if (*isOfflinerecvParams)
     {
@@ -1562,8 +1560,8 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
         bool clientSecureRequiredbyServer = false;
         InetAddress ourOwnBoundAddEchoFromServer;
 
-        GecoBitStream bs((unsigned char*) recvParams->data,
-                recvParams->bytesRead);
+        GecoBitStream bs((unsigned char*)recvParams->data,
+            recvParams->bytesRead);
         bs.ReadSkipBytes(sizeof(MessageID));
         bs.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
         bs.ReadMiniGUID(guid);
@@ -1574,11 +1572,11 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 #if ENABLE_SECURE_HAND_SHAKE==1
         char answer[cat::EasyHandshake::ANSWER_BYTES];
         std::cout << "AUDIT: clientSecureRequiredbyServer="
-                << (int) clientSecureRequiredbyServer;
+            << (int)clientSecureRequiredbyServer;
         if (clientSecureRequiredbyServer)
         {
             std::cout << "AUDIT: read server's answer";
-            bs.ReadAlignedBytes((unsigned char*) answer, sizeof(answer));
+            bs.ReadAlignedBytes((unsigned char*)answer, sizeof(answer));
         }
         //cat::ClientEasyHandshake *client_handshake = 0;
 #endif // ENABLE_SECURE_HAND_SHAKE == 1
@@ -1598,8 +1596,8 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                 // check if this client has secure required by server
 #if ENABLE_SECURE_HAND_SHAKE == 1
                 std::cout
-                        << "AUDIT: System address matches an entry in the requestedConnectionQueue and doSecurity="
-                        << (int) clientSecureRequiredbyServer;
+                    << "AUDIT: System address matches an entry in the requestedConnectionQueue and doSecurity="
+                    << (int)clientSecureRequiredbyServer;
                 if (clientSecureRequiredbyServer)
                 {
                     // server says you need secure actually you do not,  notify client
@@ -1608,7 +1606,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                         connReqQLock.Unlock();
 
                         std::cout
-                                << "AUDIT: Server wants us to pass its pubkey to connect() but we didn't";
+                            << "AUDIT: Server wants us to pass its pubkey to connect() but we didn't";
                         msgid = ID_WECLINOTPASS_SRVPUBKEY_WHENCONNECT;
                         packet = AllocPacket(sizeof(MessageID), &msgid);
                         //packet = AllocPacket(sizeof(MessageID) * 2);
@@ -1627,7 +1625,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                 // You might get this when already connected because of cross-connections
                 bool thisIPFloodsConnRequest = false;
                 JackieRemoteSystem* free_rs = GetRemoteSystem(
-                        recvParams->senderINetAddress, true, true);
+                    recvParams->senderINetAddress, true, true);
                 if (free_rs == 0)
                 {
                     if (connReq->socket != 0)
@@ -1636,9 +1634,9 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                             recvParams->localBoundSocket = connReq->socket;
                     }
                     Add2RemoteSystemList(recvParams, free_rs,
-                            thisIPFloodsConnRequest, mtu,
-                            ourOwnBoundAddEchoFromServer, guid,
-                            clientSecureRequiredbyServer);
+                        thisIPFloodsConnRequest, mtu,
+                        ourOwnBoundAddEchoFromServer, guid,
+                        clientSecureRequiredbyServer);
                 }
 
                 // 4/13/09 Attackers can flood ID_OPEN_CONNECTION_REQUEST and use up all available connection slots
@@ -1655,16 +1653,16 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                         if (connReq->client_handshake != 0)
                         {
                             std::cout
-                                    << "AUDIT: Client Processing Server's answer";
+                                << "AUDIT: Client Processing Server's answer";
                             if (connReq->publicKeyMode
-                                    == USE_TWO_WAY_AUTHENTICATION)
+                                == USE_TWO_WAY_AUTHENTICATION)
                             {
                                 if (!connReq->client_handshake->ProcessAnswerWithIdentity(
-                                        answer, ident,
-                                        free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
+                                    answer, ident,
+                                    free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
                                 {
                                     std::cout
-                                            << "AUDIT: Processing answer -- Invalid Answer";
+                                        << "AUDIT: Processing answer -- Invalid Answer";
                                     connReqQLock.Unlock();
                                     return;
                                 }
@@ -1673,22 +1671,22 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                             else
                             {
                                 if (!connReq->client_handshake->ProcessAnswer(
-                                        answer,
-                                        free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
+                                    answer,
+                                    free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
                                 {
                                     connReqQLock.Unlock();
                                     // notify user
                                     std::cout
-                                            << "AUDIT: AUDIT: Client id Processing answer -- Invalid Answer\nExpected public key does not match what was sent by server -- Reporting back ID_PUBLIC_KEY_MISMATCH to user";
+                                        << "AUDIT: AUDIT: Client id Processing answer -- Invalid Answer\nExpected public key does not match what was sent by server -- Reporting back ID_PUBLIC_KEY_MISMATCH to user";
                                     msgid = ID_PUBLIC_KEY_MISMATCH; // Attempted a connection and couldn't
                                     packet = AllocPacket(sizeof(MessageID),
-                                            &msgid);
+                                        &msgid);
                                     packet->systemAddress =
-                                            recvParams->senderINetAddress;
+                                        recvParams->senderINetAddress;
                                     packet->guid = myGuid;
                                     assert(
-                                            allocPacketQ.PushTail(packet)
-                                                    == true);
+                                        allocPacketQ.PushTail(packet)
+                                        == true);
                                     return;
                                 }
                             }
@@ -1697,60 +1695,60 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 
                         free_rs->weInitiateConnection = true;
                         free_rs->connectMode =
-                                JackieRemoteSystem::REQUESTED_CONNECTION;
+                            JackieRemoteSystem::REQUESTED_CONNECTION;
                         if (connReq->timeout != 0)
                             free_rs->reliabilityLayer.SetTimeoutTime(
-                                    connReq->timeout);
+                            connReq->timeout);
 
                         GecoBitStream temp;
-                        temp.Write(ID_CONNECTION_REQUEST);
-                        temp.WriteMini(guid);
-                        temp.WriteMini(GetTimeMS());
+                        temp.WriteUInt8(ID_CONNECTION_REQUEST);
+                        temp.WriteMiniGUID(guid);
+                        temp.WriteMiniUInt64(GetTimeMS());
 
 #if ENABLE_SECURE_HAND_SHAKE==1
                         if (clientSecureRequiredbyServer)
                         {
-                            temp.WriteMini(true);
+                            temp.WriteMiniBoolean(true);
                             unsigned char proof[32];
                             free_rs->reliabilityLayer.GetAuthenticatedEncryption()->GenerateProof(
-                                    proof, sizeof(proof));
+                                proof, sizeof(proof));
                             temp.WriteAlignedBytes(proof, sizeof(proof));
                             if (doIdentity)
                             {
-                                temp.WriteMini(true);
+                                temp.WriteMiniBoolean(true);
                                 temp.WriteAlignedBytes(ident, sizeof(ident));
                             }
                             else
                             {
-                                temp.WriteMini(false);
+                                temp.WriteMiniBoolean(false);
                             }
                         }
                         else
                         {
-                            temp.WriteMini(false);
+                            temp.WriteMiniBoolean(false);
                         }
 #else
-                        temp.WriteMini(false);
+                        temp.WriteMiniBoolean(false);
 #endif // ENABLE_SECURE_HAND_SHAKE
 
                         // send passwd to server
                         if (connReq->pwd != 0 && connReq->pwdLen > 0)
                         {
-                            temp.WriteAlignedBytes((UInt8*) connReq->pwd,
-                                    connReq->pwdLen);
+                            temp.WriteAlignedBytes((UInt8*)connReq->pwd,
+                                connReq->pwdLen);
                         }
 
                         ReliableSendParams sendParams;
-                        sendParams.data = temp.Int8Data();
+                        sendParams.data = temp.ByteData();
                         sendParams.bitsSize = temp.GetWrittenBitsSize();
                         sendParams.broadcast = false;
                         sendParams.sendPriority =
-                                PacketSendPriority::UNBUFFERED_IMMEDIATELY_SEND;
+                            PacketSendPriority::UNBUFFERED_IMMEDIATELY_SEND;
                         sendParams.orderingChannel = 0;
                         sendParams.currentTime = recvParams->timeRead;
                         sendParams.useCallerDataAllocation = false;
                         sendParams.packetReliability =
-                                PacketReliability::RELIABLE_NOT_ACK_RECEIPT_OF_PACKET;
+                            PacketReliability::RELIABLE_NOT_ACK_RECEIPT_OF_PACKET;
                         sendParams.receipt = 0;
                         SendImmediate(sendParams);
                     }
@@ -1771,7 +1769,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                 for (unsigned int k = 0; k < connReqQ.Size(); k++)
                 {
                     if (connReqQ[k]->receiverAddr
-                            == recvParams->senderINetAddress)
+                        == recvParams->senderINetAddress)
                     {
                         connReqQ.RemoveAtIndex(k);
                         //break;
@@ -1781,8 +1779,8 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 
 #if ENABLE_SECURE_HAND_SHAKE == 1
                 std::cout
-                        << "AUDIT: clients is deleting client_handshake object"
-                        << connReq->client_handshake;
+                    << "AUDIT: clients is deleting client_handshake object"
+                    << connReq->client_handshake;
                 OP_DELETE(connReq->client_handshake, TRACKE_MALLOC);
 #endif // ENABLE_SECURE_HAND_SHAKE
                 OP_DELETE(connReq, TRACKE_MALLOC);
@@ -1824,8 +1822,8 @@ void JackieApplication::ProcessConnectionRequestCancelQ(void)
             {
 #if ENABLE_SECURE_HAND_SHAKE == 1
                 std::cout << "AUDIT: Deleting requested Connection Queue" << i
-                        << " client_handshake "
-                        << connReqQ[i]->client_handshake;
+                    << " client_handshake "
+                    << connReqQ[i]->client_handshake;
                 OP_DELETE(connReqQ[i]->client_handshake, TRACKE_MALLOC);
 #endif
                 OP_DELETE(connReqQ[i], TRACKE_MALLOC);
@@ -1839,7 +1837,7 @@ void JackieApplication::ProcessConnectionRequestCancelQ(void)
 }
 
 void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
-        TimeMS& timeMS)
+    TimeMS& timeMS)
 {
     //DEBUG << "Network Thread Process ConnectionRequestQ";
 
@@ -1854,7 +1852,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
     if (timeUS == 0)
     {
         timeUS = Get64BitsTimeUS();
-        timeMS = (TimeMS) (timeUS / 1000);
+        timeMS = (TimeMS)(timeUS / 1000);
     }
 
     ConnectionRequest *connReq = 0;
@@ -1866,7 +1864,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
         if (connReq->nextRequestTime < timeMS)
         {
             std::cout << "nextRequestTime = " << connReq->nextRequestTime
-                    << "timeMS = " << timeMS;
+                << "timeMS = " << timeMS;
             /// reach the max try times
             if (connReq->requestsMade == connReq->connAttemptTimes + 1)
             {
@@ -1885,10 +1883,10 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
 
 #if ENABLE_SECURE_HAND_SHAKE==1
                 std::cout
-                        << "AUDIT: Connection attempt FAILED so deleting connectionRequest->client_handshake object "
-                        << connReq->client_handshake;
+                    << "AUDIT: Connection attempt FAILED so deleting connectionRequest->client_handshake object "
+                    << connReq->client_handshake;
                 OP_DELETE(connReq->client_handshake,
-                TRACKE_MALLOC);
+                    TRACKE_MALLOC);
 #endif
                 OP_DELETE(connReq, TRACKE_MALLOC);
 
@@ -1901,39 +1899,37 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
 
                 /// more times try to request connection, less mtu used
                 int MTUSizeIndex = connReq->requestsMade
-                        / (connReq->connAttemptTimes / mtuSizesCount);
+                    / (connReq->connAttemptTimes / mtuSizesCount);
                 if (MTUSizeIndex >= mtuSizesCount)
                     MTUSizeIndex = mtuSizesCount - 1;
 
                 connReq->requestsMade++;
                 connReq->nextRequestTime = timeMS
-                        + connReq->connAttemptIntervalMS;
+                    + connReq->connAttemptIntervalMS;
 
                 GecoBitStream bitStream;
-                bitStream.Write(ID_OPEN_CONNECTION_REQUEST_1);
-                bitStream.Write(OFFLINE_MESSAGE_DATA_ID,
-                        sizeof(OFFLINE_MESSAGE_DATA_ID));
-                bitStream.Write((MessageID) JACKIE_INET_PROTOCOL_VERSION);
-                bitStream.PadZero2LengthOf(
-                        mtuSizes[MTUSizeIndex] - UDP_HEADER_SIZE);
+                bitStream.WriteUInt8(ID_OPEN_CONNECTION_REQUEST_1);
+                bitStream.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+                bitStream.WriteUInt8((MessageID)JACKIE_INET_PROTOCOL_VERSION);
+                bitStream.PadZero2LengthOf(mtuSizes[MTUSizeIndex] - UDP_HEADER_SIZE);
                 //bitStream.PadZero2LengthOf(3000 -
                 //	UDP_HEADER_SIZE); //will trigger 10040 recvfrom
 
                 connReq->receiverAddr.FixForIPVersion(
-                        connReq->socket->GetBoundAddress());
+                    connReq->socket->GetBoundAddress());
 
                 JISSendParams jsp;
-                jsp.data = bitStream.Int8Data();
+                jsp.data = bitStream.ByteData();
                 jsp.length = bitStream.GetWrittenBytesSize();
                 jsp.receiverINetAddress = connReq->receiverAddr;
 
 #if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
                 if (connReq->socket->IsBerkleySocket())
-                    ((JISBerkley*) connReq->socket)->SetDoNotFragment(1);
+                    ((JISBerkley*)connReq->socket)->SetDoNotFragment(1);
 #endif
                 Time sendToStart = GetTimeMS();
                 if (connReq->socket->Send(&jsp, TRACKE_MALLOC) < 0
-                        && jsp.bytesWritten == 10040)
+                    && jsp.bytesWritten == 10040)
                 {
                     // MessageId: WSAEMSGSIZE
                     // MessageText:
@@ -1941,8 +1937,8 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
                     // buffer or some other network limit, or the buffer used to receive a datagram
                     // into was smaller than the datagram itself.
                     std::cout << "Send return 10040 error!!!";
-                    connReq->requestsMade = (unsigned char) ((MTUSizeIndex + 1)
-                            * (connReq->connAttemptTimes / mtuSizesCount));
+                    connReq->requestsMade = (unsigned char)((MTUSizeIndex + 1)
+                        * (connReq->connAttemptTimes / mtuSizesCount));
                     connReq->nextRequestTime = timeMS;
                 }
                 else
@@ -1953,18 +1949,18 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
                         std::cout << "> 100";
                         /// Drop to lowest MTU
                         int lowestMtuIndex = connReq->connAttemptTimes
-                                / mtuSizesCount * (mtuSizesCount - 1);
+                            / mtuSizesCount * (mtuSizesCount - 1);
                         if (lowestMtuIndex > connReq->requestsMade)
                         {
                             connReq->requestsMade =
-                                    (unsigned char) lowestMtuIndex;
+                                (unsigned char)lowestMtuIndex;
                             connReq->nextRequestTime = timeMS;
                         }
                         else
                         {
                             connReq->requestsMade =
-                                    (unsigned char) (connReq->connAttemptTimes
-                                            + 1);
+                                (unsigned char)(connReq->connAttemptTimes
+                                + 1);
                         }
                     }
                     //}
@@ -1972,7 +1968,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
                     /// set back  the SetDoNotFragment to allowed fragment
 #if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
                     if (connReq->socket->IsBerkleySocket())
-                        ((JISBerkley*) connReq->socket)->SetDoNotFragment(0);
+                        ((JISBerkley*)connReq->socket)->SetDoNotFragment(0);
 #endif
                 }
             }
@@ -1998,76 +1994,76 @@ void JackieApplication::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
 
         switch (cmd->commandID)
         {
-        case Command::BCS_SEND:
-            std::cout << "BCS_SEND";
-            /// GetTime is a very slow call so do it once and as late as possible
-            if (timeUS == 0)
-            {
-                timeUS = Get64BitsTimeUS();
-                timeMS = (TimeMS) (timeUS / (TimeUS) 1000);
-            }
-            /// send data stored in this bc right now
-            if (SendRightNow(timeUS, true, cmd) == false)
-                gFreeEx(cmd->data, TRACKE_MALLOC);
-            /// Set the new connection state AFTER we call sendImmediate in case we are
-            /// setting it to a disconnection state, which does not allow further sends
-            if (cmd->repStatus != JackieRemoteSystem::NO_ACTION)
-            {
-                remoteEndPoint = GetRemoteSystem(cmd->systemIdentifier, true,
+            case Command::BCS_SEND:
+                std::cout << "BCS_SEND";
+                /// GetTime is a very slow call so do it once and as late as possible
+                if (timeUS == 0)
+                {
+                    timeUS = Get64BitsTimeUS();
+                    timeMS = (TimeMS)(timeUS / (TimeUS)1000);
+                }
+                /// send data stored in this bc right now
+                if (SendRightNow(timeUS, true, cmd) == false)
+                    gFreeEx(cmd->data, TRACKE_MALLOC);
+                /// Set the new connection state AFTER we call sendImmediate in case we are
+                /// setting it to a disconnection state, which does not allow further sends
+                if (cmd->repStatus != JackieRemoteSystem::NO_ACTION)
+                {
+                    remoteEndPoint = GetRemoteSystem(cmd->systemIdentifier, true,
                         true);
+                    if (remoteEndPoint != 0)
+                        remoteEndPoint->connectMode = cmd->repStatus;
+                }
+                break;
+            case Command::BCS_CLOSE_CONNECTION:
+                std::cout << "BCS_CLOSE_CONNECTION";
+                CloseConnectionInternally(false, true, cmd);
+                break;
+            case Command::BCS_CHANGE_SYSTEM_ADDRESS: //re-rout
+                remoteEndPoint = GetRemoteSystem(cmd->systemIdentifier, true, true);
                 if (remoteEndPoint != 0)
-                    remoteEndPoint->connectMode = cmd->repStatus;
-            }
-            break;
-        case Command::BCS_CLOSE_CONNECTION:
-            std::cout << "BCS_CLOSE_CONNECTION";
-            CloseConnectionInternally(false, true, cmd);
-            break;
-        case Command::BCS_CHANGE_SYSTEM_ADDRESS: //re-rout
-            remoteEndPoint = GetRemoteSystem(cmd->systemIdentifier, true, true);
-            if (remoteEndPoint != 0)
-            {
-                Int32 existingSystemIndex = GetRemoteSystemIndex(
+                {
+                    Int32 existingSystemIndex = GetRemoteSystemIndex(
                         remoteEndPoint->systemAddress);
-                RefRemoteEndPoint(cmd->systemIdentifier.systemAddress,
+                    RefRemoteEndPoint(cmd->systemIdentifier.systemAddress,
                         existingSystemIndex);
-            }
-            break;
-        case Command::BCS_GET_SOCKET:
-            std::cout << "BCS_GET_SOCKET";
-            break;
-        case Command::BCS_ADD_2_BANNED_LIST:
-            AddToBanList(cmd->arrayparams,
-                    *((TimeMS*) (cmd->arrayparams + strlen(cmd->arrayparams) + 1)));
-            std::cout << "BCS_ADD_2_BANNED_LIST";
-            break;
-        case Command::BCS_CONEECT:
-        {
-            char* passwd = cmd->data;
-            cmd->data += strlen(passwd) + 1;
-            UInt8 passwdlength = *(UInt32*) cmd->data;
-            cmd->data += sizeof(passwdlength);
-            JackieSHSKey* jackiePublicKey = *(JackieSHSKey**) cmd->data;
-            cmd->data += sizeof(jackiePublicKey);
-            UInt8 ConnectionSocketIndex = *(UInt32*) cmd->data;
-            cmd->data += sizeof(ConnectionSocketIndex);
-            UInt8 attemptTimes = *(UInt32*) cmd->data;
-            cmd->data += sizeof(attemptTimes);
-            UInt16 AttemptIntervalMS = *(UInt32*) cmd->data;
-            cmd->data += sizeof(AttemptIntervalMS);
-            TimeMS timeout = *(UInt32*) cmd->data;
-            cmd->data += sizeof(timeout);
-            UInt32 extraData = *(UInt32*) cmd->data;
-            Connect_(cmd->systemIdentifier.systemAddress.ToString(),
+                }
+                break;
+            case Command::BCS_GET_SOCKET:
+                std::cout << "BCS_GET_SOCKET";
+                break;
+            case Command::BCS_ADD_2_BANNED_LIST:
+                AddToBanList(cmd->arrayparams,
+                    *((TimeMS*)(cmd->arrayparams + strlen(cmd->arrayparams) + 1)));
+                std::cout << "BCS_ADD_2_BANNED_LIST";
+                break;
+            case Command::BCS_CONEECT:
+            {
+                char* passwd = cmd->data;
+                cmd->data += strlen(passwd) + 1;
+                UInt8 passwdlength = *(UInt32*)cmd->data;
+                cmd->data += sizeof(passwdlength);
+                JackieSHSKey* jackiePublicKey = *(JackieSHSKey**)cmd->data;
+                cmd->data += sizeof(jackiePublicKey);
+                UInt8 ConnectionSocketIndex = *(UInt32*)cmd->data;
+                cmd->data += sizeof(ConnectionSocketIndex);
+                UInt8 attemptTimes = *(UInt32*)cmd->data;
+                cmd->data += sizeof(attemptTimes);
+                UInt16 AttemptIntervalMS = *(UInt32*)cmd->data;
+                cmd->data += sizeof(AttemptIntervalMS);
+                TimeMS timeout = *(UInt32*)cmd->data;
+                cmd->data += sizeof(timeout);
+                UInt32 extraData = *(UInt32*)cmd->data;
+                Connect_(cmd->systemIdentifier.systemAddress.ToString(),
                     cmd->systemIdentifier.systemAddress.GetPortHostOrder(),
                     passwd, passwdlength, jackiePublicKey,
                     ConnectionSocketIndex, attemptTimes, AttemptIntervalMS,
                     timeout, extraData);
-        }
+            }
             break;
-        default:
-            std::cout << "Not Found Matched BufferedCommand";
-            break;
+            default:
+                std::cout << "Not Found Matched BufferedCommand";
+                break;
         }
 
         std::cout << "Network Thread Reclaims One Command";
@@ -2118,11 +2114,11 @@ void JackieApplication::AdjustTimestamp(JackiePacket*& incomePacket) const
 {
     //std::cout << "@TO-DO AdjustTimestamp()";
 
-    if ((unsigned char) incomePacket->data[0] == ID_TIMESTAMP)
+    if ((unsigned char)incomePacket->data[0] == ID_TIMESTAMP)
     {
         if (incomePacket->length >= sizeof(char) + sizeof(Time))
         {
-            char* data = (char*) &incomePacket->data[sizeof(char)];
+            char* data = (char*)&incomePacket->data[sizeof(char)];
             //#ifdef _DEBUG
             //				RakAssert(IsActive());
             //				RakAssert(data);
@@ -2141,14 +2137,14 @@ void JackieApplication::AdjustTimestamp(JackiePacket*& incomePacket) const
 }
 
 const JackieGUID& JackieApplication::GetGuidFromSystemAddress(
-        const InetAddress input) const
+    const InetAddress input) const
 {
     if (input == JACKIE_NULL_ADDRESS)
         return myGuid;
 
-    if (input.systemIndex != (SystemIndex) -1
-            && input.systemIndex < maxConnections
-            && remoteSystemList[input.systemIndex].systemAddress == input)
+    if (input.systemIndex != (SystemIndex)-1
+        && input.systemIndex < maxConnections
+        && remoteSystemList[input.systemIndex].systemAddress == input)
         return remoteSystemList[input.systemIndex].guid;
 
     for (unsigned int i = 0; i < maxConnections; i++)
@@ -2156,7 +2152,7 @@ const JackieGUID& JackieApplication::GetGuidFromSystemAddress(
         if (remoteSystemList[i].systemAddress == input)
         {
             // Set the systemIndex so future lookups will be fast
-            remoteSystemList[i].guid.systemIndex = (SystemIndex) i;
+            remoteSystemList[i].guid.systemIndex = (SystemIndex)i;
             return remoteSystemList[i].guid;
         }
     }
@@ -2164,7 +2160,7 @@ const JackieGUID& JackieApplication::GetGuidFromSystemAddress(
 }
 
 JackieRemoteSystem* JackieApplication::GetRemoteSystem(const InetAddress& sa,
-        bool neededBySendThread, bool onlyWantActiveEndPoint) const
+    bool neededBySendThread, bool onlyWantActiveEndPoint) const
 {
     if (sa == JACKIE_NULL_ADDRESS)
         return 0;
@@ -2206,25 +2202,25 @@ JackieRemoteSystem* JackieApplication::GetRemoteSystem(const InetAddress& sa,
     return 0;
 }
 JackieRemoteSystem* JackieApplication::GetRemoteSystem(
-        const JackieAddressGuidWrapper& senderWrapper, bool neededBySendThread,
-        bool onlyWantActiveEndPoint) const
+    const JackieAddressGuidWrapper& senderWrapper, bool neededBySendThread,
+    bool onlyWantActiveEndPoint) const
 {
     if (senderWrapper.guid != JACKIE_NULL_GUID)
         return GetRemoteSystem(senderWrapper.guid, onlyWantActiveEndPoint);
     else
         return GetRemoteSystem(senderWrapper.systemAddress, neededBySendThread,
-                onlyWantActiveEndPoint);
+        onlyWantActiveEndPoint);
 }
 JackieRemoteSystem* JackieApplication::GetRemoteSystem(
-        const JackieGUID& senderGUID, bool onlyWantActiveEndPoint) const
+    const JackieGUID& senderGUID, bool onlyWantActiveEndPoint) const
 {
     if (senderGUID == JACKIE_NULL_GUID)
         return 0;
     for (UInt32 i = 0; i < maxConnections; i++)
     {
         if (remoteSystemList[i].guid == senderGUID
-                && (onlyWantActiveEndPoint == false
-                        || remoteSystemList[i].isActive))
+            && (onlyWantActiveEndPoint == false
+            || remoteSystemList[i].isActive))
         {
             return remoteSystemList + i;
         }
@@ -2232,7 +2228,7 @@ JackieRemoteSystem* JackieApplication::GetRemoteSystem(
     return 0;
 }
 JackieRemoteSystem* JackieApplication::GetRemoteSystem(
-        const InetAddress& sa) const
+    const InetAddress& sa) const
 {
     Int32 index = GetRemoteSystemIndex(sa);
     if (index == -1)
@@ -2243,7 +2239,7 @@ Int32 JackieApplication::GetRemoteSystemIndex(const InetAddress &sa) const
 {
     UInt32 hashindex = InetAddress::ToHashCode(sa);
     hashindex = hashindex
-            % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
+        % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
     JackieRemoteIndex* curr = remoteSystemLookup[hashindex];
     while (curr != 0)
     {
@@ -2258,7 +2254,7 @@ void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
 {
 #ifdef _DEBUG
     for (int remoteSystemIndex = 0;
-            remoteSystemIndex < maxConnections; ++remoteSystemIndex)
+        remoteSystemIndex < maxConnections; ++remoteSystemIndex)
     {
         if (remoteSystemList[remoteSystemIndex].isActive)
         {
@@ -2274,7 +2270,7 @@ void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
     {
         // The system might be active if rerouting
         assert(remoteSystemList[index].isActive, false)
-        ;
+            ;
         // Remove the reference if the reference is pointing to this inactive system
         if (GetRemoteSystem(old) == remote)
         {
@@ -2287,7 +2283,7 @@ void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
 
     UInt32 hashindex = InetAddress::ToHashCode(sa);
     hashindex = hashindex
-            % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
+        % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
 
     JackieRemoteIndex *rsi = 0;
     do
@@ -2318,7 +2314,7 @@ void JackieApplication::DeRefRemoteSystem(const InetAddress &sa)
 {
     UInt32 hashindex = InetAddress::ToHashCode(sa);
     hashindex = hashindex
-            % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
+        % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
 
     JackieRemoteIndex *cur = remoteSystemLookup[hashindex];
     JackieRemoteIndex *last = 0;
@@ -2345,15 +2341,15 @@ void JackieApplication::DeRefRemoteSystem(const InetAddress &sa)
 
 //@TO-DO
 bool JackieApplication::SendRightNow(TimeUS currentTime, bool useCallerAlloc,
-        Command* bufferedCommand)
+    Command* bufferedCommand)
 {
     std::cout << "@TO-DO::SendRightNow()";
     return true;
 }
 //@TO-DO
 void JackieApplication::CloseConnectionInternally(
-        bool sendDisconnectionNotification, bool performImmediate,
-        Command* bufferedCommand)
+    bool sendDisconnectionNotification, bool performImmediate,
+    Command* bufferedCommand)
 {
     std::cout << "@TO-DO::CloseConnectionInternally()";
 }
@@ -2389,64 +2385,64 @@ void JackieApplication::PacketGoThroughPluginCBs(JackiePacket*& incomePacket)
     UInt32 i;
     for (i = 0; i < pluginListTS.Size(); i++)
     {
-        switch ((MessageID) incomePacket->data[0])
+        switch ((MessageID)incomePacket->data[0])
         {
-        case ID_DISCONNECTION_NOTIFICATION:
-            pluginListTS[i]->OnClosedConnection(incomePacket->systemAddress,
+            case ID_DISCONNECTION_NOTIFICATION:
+                pluginListTS[i]->OnClosedConnection(incomePacket->systemAddress,
                     incomePacket->guid, LCR_DISCONNECTION_NOTIFICATION);
-            break;
-        case ID_CONNECTION_LOST:
-            pluginListTS[i]->OnClosedConnection(incomePacket->systemAddress,
+                break;
+            case ID_CONNECTION_LOST:
+                pluginListTS[i]->OnClosedConnection(incomePacket->systemAddress,
                     incomePacket->guid, LCR_CONNECTION_LOST);
-            break;
-        case ID_NEW_INCOMING_CONNECTION:
-            pluginListTS[i]->OnNewConnection(incomePacket->systemAddress,
+                break;
+            case ID_NEW_INCOMING_CONNECTION:
+                pluginListTS[i]->OnNewConnection(incomePacket->systemAddress,
                     incomePacket->guid, true);
-            break;
-        case ID_CONNECTION_REQUEST_ACCEPTED:
-            pluginListTS[i]->OnNewConnection(incomePacket->systemAddress,
+                break;
+            case ID_CONNECTION_REQUEST_ACCEPTED:
+                pluginListTS[i]->OnNewConnection(incomePacket->systemAddress,
                     incomePacket->guid, false);
-            break;
-        case ID_CONNECTION_ATTEMPT_FAILED:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_CONNECTION_ATTEMPT_FAILED:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_CONNECTION_ATTEMPT_FAILED);
-            break;
-        case ID_WECLINOTPASS_SRVPUBKEY_WHENCONNECT:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_WECLINOTPASS_SRVPUBKEY_WHENCONNECT:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_REMOTE_SYSTEM_REQUIRES_PUBLIC_KEY);
-            break;
-        case ID_WECLI_SECURE_BUT_SRV_NO:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_WECLI_SECURE_BUT_SRV_NO:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_OUR_SYSTEM_REQUIRES_SECURITY);
-            break;
-        case ID_PUBLIC_KEY_MISMATCH:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_PUBLIC_KEY_MISMATCH:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_PUBLIC_KEY_MISMATCH);
-            break;
-        case ID_ALREADY_CONNECTED:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_ALREADY_CONNECTED:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_ALREADY_CONNECTED);
-            break;
-        case ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_NO_FREE_INCOMING_CONNECTIONS);
-            break;
-        case ID_CONNECTION_BANNED:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_CONNECTION_BANNED:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_CONNECTION_BANNED);
-            break;
-        case ID_INVALID_PASSWORD:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_INVALID_PASSWORD:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_INVALID_PASSWORD);
-            break;
-        case ID_INCOMPATIBLE_PROTOCOL_VERSION:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_INCOMPATIBLE_PROTOCOL_VERSION:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_INCOMPATIBLE_PROTOCOL);
-            break;
-        case ID_YOU_CONNECT_TOO_OFTEN:
-            pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_YOU_CONNECT_TOO_OFTEN:
+                pluginListTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_IP_RECENTLY_CONNECTED);
-            break;
+                break;
         }
     }
 
@@ -2454,62 +2450,62 @@ void JackieApplication::PacketGoThroughPluginCBs(JackiePacket*& incomePacket)
     {
         switch (incomePacket->data[0])
         {
-        case ID_DISCONNECTION_NOTIFICATION:
-            pluginListNTS[i]->OnClosedConnection(incomePacket->systemAddress,
+            case ID_DISCONNECTION_NOTIFICATION:
+                pluginListNTS[i]->OnClosedConnection(incomePacket->systemAddress,
                     incomePacket->guid, LCR_DISCONNECTION_NOTIFICATION);
-            break;
-        case ID_CONNECTION_LOST:
-            pluginListNTS[i]->OnClosedConnection(incomePacket->systemAddress,
+                break;
+            case ID_CONNECTION_LOST:
+                pluginListNTS[i]->OnClosedConnection(incomePacket->systemAddress,
                     incomePacket->guid, LCR_CONNECTION_LOST);
-            break;
-        case ID_NEW_INCOMING_CONNECTION:
-            pluginListNTS[i]->OnNewConnection(incomePacket->systemAddress,
+                break;
+            case ID_NEW_INCOMING_CONNECTION:
+                pluginListNTS[i]->OnNewConnection(incomePacket->systemAddress,
                     incomePacket->guid, true);
-            break;
-        case ID_CONNECTION_REQUEST_ACCEPTED:
-            pluginListNTS[i]->OnNewConnection(incomePacket->systemAddress,
+                break;
+            case ID_CONNECTION_REQUEST_ACCEPTED:
+                pluginListNTS[i]->OnNewConnection(incomePacket->systemAddress,
                     incomePacket->guid, false);
-            break;
-        case ID_CONNECTION_ATTEMPT_FAILED:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_CONNECTION_ATTEMPT_FAILED:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_CONNECTION_ATTEMPT_FAILED);
-            break;
-        case ID_WECLINOTPASS_SRVPUBKEY_WHENCONNECT:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_WECLINOTPASS_SRVPUBKEY_WHENCONNECT:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_REMOTE_SYSTEM_REQUIRES_PUBLIC_KEY);
-            break;
-        case ID_WECLI_SECURE_BUT_SRV_NO:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_WECLI_SECURE_BUT_SRV_NO:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_OUR_SYSTEM_REQUIRES_SECURITY);
-            break;
-        case ID_PUBLIC_KEY_MISMATCH:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_PUBLIC_KEY_MISMATCH:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_PUBLIC_KEY_MISMATCH);
-            break;
-        case ID_ALREADY_CONNECTED:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_ALREADY_CONNECTED:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_ALREADY_CONNECTED);
-            break;
-        case ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_NO_FREE_INCOMING_CONNECTIONS);
-            break;
-        case ID_CONNECTION_BANNED:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_CONNECTION_BANNED:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_CONNECTION_BANNED);
-            break;
-        case ID_INVALID_PASSWORD:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_INVALID_PASSWORD:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_INVALID_PASSWORD);
-            break;
-        case ID_INCOMPATIBLE_PROTOCOL_VERSION:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_INCOMPATIBLE_PROTOCOL_VERSION:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_INCOMPATIBLE_PROTOCOL);
-            break;
-        case ID_YOU_CONNECT_TOO_OFTEN:
-            pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
+                break;
+            case ID_YOU_CONNECT_TOO_OFTEN:
+                pluginListNTS[i]->OnFailedConnectionAttempt(incomePacket,
                     CAFR_IP_RECENTLY_CONNECTED);
-            break;
+                break;
         }
     }
 
@@ -2673,7 +2669,7 @@ void JackieApplication::RunRecvCycleOnce(UInt32 index)
     //TIMED_FUNC();
     ReclaimAllJISRecvParams(index);
     JISRecvParams* recvParams = AllocJISRecvParams(index);
-    int result = ((JISBerkley*) bindedSockets[index])->RecvFrom(recvParams);
+    int result = ((JISBerkley*)bindedSockets[index])->RecvFrom(recvParams);
     if (result > 0)
     {
         assert(allocRecvParamQ[index].PushTail(recvParams) == true);
@@ -2684,7 +2680,7 @@ void JackieApplication::RunRecvCycleOnce(UInt32 index)
         }
 #if USE_SINGLE_THREAD == 0
         if (allocRecvParamQ[index].Size() >=
-                allocRecvParamQ->AllocationSize() / 2) quitAndDataEvents.TriggerEvent();
+            allocRecvParamQ->AllocationSize() / 2) quitAndDataEvents.TriggerEvent();
 #endif
     }
     else
@@ -2700,7 +2696,7 @@ void JackieApplication::RunRecvCycleOnce(UInt32 index)
         if (recvParams->bytesRead == 10040)
         {
             std::cout
-                    << "recvfrom() return 10040 error, the remote send a bigger datagram than our  max mtu";
+                << "recvfrom() return 10040 error, the remote send a bigger datagram than our  max mtu";
         }
         JISRecvParamsPool[index].Reclaim(recvParams);
     }
@@ -2708,8 +2704,8 @@ void JackieApplication::RunRecvCycleOnce(UInt32 index)
 
 JACKIE_THREAD_DECLARATION(geco::net::RunRecvCycleLoop)
 {
-    JackieApplication *serv = *(JackieApplication**) arguments;
-    UInt32 index = *((UInt32*) ((char*) arguments + sizeof(JackieApplication*)));
+    JackieApplication *serv = *(JackieApplication**)arguments;
+    UInt32 index = *((UInt32*)((char*)arguments + sizeof(JackieApplication*)));
 
     serv->isRecvPollingThreadActive.Increment();
 
@@ -2727,7 +2723,7 @@ JACKIE_THREAD_DECLARATION(geco::net::RunRecvCycleLoop)
 
 JACKIE_THREAD_DECLARATION(geco::net::RunNetworkUpdateCycleLoop)
 {
-    JackieApplication *serv = (JackieApplication*) arguments;
+    JackieApplication *serv = (JackieApplication*)arguments;
     serv->isNetworkUpdateThreadActive = true;
 
     std::cout << "Network thread is running in backend....";
@@ -2782,11 +2778,11 @@ UInt64 JackieApplication::CreateUniqueRandness(void)
             JackieSleep(1);
             thisTime = Get64BitsTimeUS();
             diff = thisTime - lastTime;
-            diffByte ^= (unsigned char) ((diff & 15) << (index * 2)); ///0xF = 1111 = 15
+            diffByte ^= (unsigned char)((diff & 15) << (index * 2)); ///0xF = 1111 = 15
             if (index == 3)
-                diffByte ^= (unsigned char) ((diff & 15) >> 2);
+                diffByte ^= (unsigned char)((diff & 15) >> 2);
         }
-        ((unsigned char*) &g)[4 + j] ^= diffByte;
+        ((unsigned char*)&g)[4 + j] ^= diffByte;
     }
     return g;
 }
@@ -2794,26 +2790,26 @@ UInt64 JackieApplication::CreateUniqueRandness(void)
 void JackieApplication::CancelConnectionRequest(const InetAddress& target)
 {
     std::cout << "User Thread Cancel Connection Request To "
-            << target.ToString();
+        << target.ToString();
     connReqCancelQLock.Lock();
     assert(connReqCancelQ.PushTail(target) == true);
     connReqCancelQLock.Unlock();
 }
 
 void JackieApplication::Connect_(const char* host, UInt16 port,
-        const char *passwd /*= 0*/, UInt8 passwdLength /*= 0*/,
-        JackieSHSKey *jackiePublicKey /*= 0*/, UInt8 localSocketIndex /*= 0*/,
-        UInt8 attemptTimes /*= 6*/, UInt16 attemptIntervalMS /*= 100000*/,
-        TimeMS timeout /*= 0*/, UInt32 extraData /*= 0*/)
+    const char *passwd /*= 0*/, UInt8 passwdLength /*= 0*/,
+    JackieSHSKey *jackiePublicKey /*= 0*/, UInt8 localSocketIndex /*= 0*/,
+    UInt8 attemptTimes /*= 6*/, UInt16 attemptIntervalMS /*= 100000*/,
+    TimeMS timeout /*= 0*/, UInt32 extraData /*= 0*/)
 {
     Command* conn_cmd = AllocCommand();
     conn_cmd->commandID = Command::BCS_CONEECT;
     conn_cmd->systemIdentifier.systemAddress.FromString(host, port);
-    conn_cmd->data = (char*) gMallocEx(
-            strlen(passwd) + 1 + sizeof(passwdLength) + sizeof(JackieSHSKey *)
-                    + sizeof(localSocketIndex) + sizeof(attemptTimes)
-                    + sizeof(attemptIntervalMS) + sizeof(timeout)
-                    + sizeof(extraData), TRACKE_MALLOC);
+    conn_cmd->data = (char*)gMallocEx(
+        strlen(passwd) + 1 + sizeof(passwdLength) + sizeof(JackieSHSKey *)
+        + sizeof(localSocketIndex) + sizeof(attemptTimes)
+        + sizeof(attemptIntervalMS) + sizeof(timeout)
+        + sizeof(extraData), TRACKE_MALLOC);
 
     memcpy(conn_cmd->data, passwd, strlen(passwd) + 1);
     conn_cmd->data += strlen(passwd) + 1;
@@ -2841,11 +2837,11 @@ void JackieApplication::Connect_(const char* host, UInt16 port,
 }
 
 ConnectionAttemptResult JackieApplication::Connect(const char* host,
-        UInt16 port, const char *passwd /*= 0*/, UInt8 passwdLength /*= 0*/,
-        JackieSHSKey *jackiePublicKey /*= 0*/,
-        UInt8 ConnectionSocketIndex /*= 0*/, UInt8 attemptTimes /*= 6*/,
-        UInt16 AttemptIntervalMS /*= 100000*/, TimeMS timeout /*= 0*/,
-        UInt32 extraData /*= 0*/)
+    UInt16 port, const char *passwd /*= 0*/, UInt8 passwdLength /*= 0*/,
+    JackieSHSKey *jackiePublicKey /*= 0*/,
+    UInt8 ConnectionSocketIndex /*= 0*/, UInt8 attemptTimes /*= 6*/,
+    UInt16 AttemptIntervalMS /*= 100000*/, TimeMS timeout /*= 0*/,
+    UInt32 extraData /*= 0*/)
 {
     std::cout << "User Thread start to Connect() to " << host << ":" << port;
 
@@ -2874,7 +2870,7 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
     for (UInt32 i = 0; i < bindedSockets.Size(); i++)
     {
         if (bindedSockets[i]->GetUserConnectionSocketIndex()
-                == ConnectionSocketIndex)
+            == ConnectionSocketIndex)
             found = true;
     }
 
@@ -2886,8 +2882,8 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
 
     InetAddress addr;
     bool ret =
-            addr.FromString(host, port,
-                    bindedSockets[ConnectionSocketIndex]->GetBoundAddress().GetIPVersion());
+        addr.FromString(host, port,
+        bindedSockets[ConnectionSocketIndex]->GetBoundAddress().GetIPVersion());
     if (!ret || addr == JACKIE_NULL_ADDRESS)
         return CANNOT_RESOLVE_DOMAIN_NAME;
 
@@ -2940,92 +2936,92 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
 
 #if ENABLE_SECURE_HAND_SHAKE==1
 bool JackieApplication::GenerateConnectionRequestChallenge(
-        ConnectionRequest *connectionRequest, JackieSHSKey *jackiePublicKey)
+    ConnectionRequest *connectionRequest, JackieSHSKey *jackiePublicKey)
 {
     if (jackiePublicKey == 0)
         return true;
 
     switch (jackiePublicKey->publicKeyMode)
     {
-    default:
-    case SecureConnectionMode::INSECURE_CONNECTION:
-        break;
+        default:
+        case SecureConnectionMode::INSECURE_CONNECTION:
+            break;
 
-    case SecureConnectionMode::ACCEPT_ANY_PUBLIC_KEY:
-        CAT_OBJCLR(connectionRequest->remote_public_key);
-        connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(
+        case SecureConnectionMode::ACCEPT_ANY_PUBLIC_KEY:
+            CAT_OBJCLR(connectionRequest->remote_public_key);
+            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(
                 TRACKE_MALLOC);
-        connectionRequest->publicKeyMode =
+            connectionRequest->publicKeyMode =
                 SecureConnectionMode::ACCEPT_ANY_PUBLIC_KEY;
-        break;
+            break;
 
-    case SecureConnectionMode::USE_TWO_WAY_AUTHENTICATION:
-        if (jackiePublicKey->myPublicKey == 0
+        case SecureConnectionMode::USE_TWO_WAY_AUTHENTICATION:
+            if (jackiePublicKey->myPublicKey == 0
                 || jackiePublicKey->myPrivateKey == 0
                 || jackiePublicKey->remoteServerPublicKey == 0)
-        {
-            return false;
-        }
+            {
+                return false;
+            }
 
-        // init client_handshake
-        connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(
+            // init client_handshake
+            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(
                 TRACKE_MALLOC);
-        // copy server pk
-        memcpy(connectionRequest->remote_public_key,
+            // copy server pk
+            memcpy(connectionRequest->remote_public_key,
                 jackiePublicKey->remoteServerPublicKey,
                 cat::EasyHandshake::PUBLIC_KEY_BYTES);
-        if (!connectionRequest->client_handshake->Initialize(
+            if (!connectionRequest->client_handshake->Initialize(
                 jackiePublicKey->remoteServerPublicKey)
                 || !connectionRequest->client_handshake->SetIdentity(
-                        jackiePublicKey->myPublicKey,
-                        jackiePublicKey->myPrivateKey)
+                jackiePublicKey->myPublicKey,
+                jackiePublicKey->myPrivateKey)
                 || !connectionRequest->client_handshake->GenerateChallenge(
-                        connectionRequest->handshakeChallenge))
-        {
-            std::cout
+                connectionRequest->handshakeChallenge))
+            {
+                std::cout
                     << "AUDIT: Failure initializing new client_handshake object with identity for this connection Request";
-            OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
-            connectionRequest->client_handshake = 0;
-            return false;
-        }
+                OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
+                connectionRequest->client_handshake = 0;
+                return false;
+            }
 
-        std::cout
+            std::cout
                 << "AUDIT: Success initializing new client handshake object with identity for this connection Request -- pre-generated challenge\n";
 
-        connectionRequest->publicKeyMode =
+            connectionRequest->publicKeyMode =
                 SecureConnectionMode::USE_TWO_WAY_AUTHENTICATION;
-        break;
+            break;
 
-    case SecureConnectionMode::USE_KNOWN_PUBLIC_KEY:
-        if (jackiePublicKey->remoteServerPublicKey == 0)
-            return false;
+        case SecureConnectionMode::USE_KNOWN_PUBLIC_KEY:
+            if (jackiePublicKey->remoteServerPublicKey == 0)
+                return false;
 
-        connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(
+            connectionRequest->client_handshake = OP_NEW<cat::ClientEasyHandshake>(
                 TRACKE_MALLOC);
 
-        //copy server pk to conn req
-        memcpy(connectionRequest->remote_public_key,
+            //copy server pk to conn req
+            memcpy(connectionRequest->remote_public_key,
                 jackiePublicKey->remoteServerPublicKey,
                 cat::EasyHandshake::PUBLIC_KEY_BYTES);
 
-        if (!connectionRequest->client_handshake->Initialize(
+            if (!connectionRequest->client_handshake->Initialize(
                 jackiePublicKey->remoteServerPublicKey)
                 || !connectionRequest->client_handshake->GenerateChallenge(
-                        connectionRequest->handshakeChallenge))
-        {
-            std::cout
+                connectionRequest->handshakeChallenge))
+            {
+                std::cout
                     << "AUDIT: Failure initializing new client_handshake object for this RequestedConnectionStruct\n";
-            OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
-            connectionRequest->client_handshake = 0;
-            return false;
-        }
+                OP_DELETE(connectionRequest->client_handshake, TRACKE_MALLOC);
+                connectionRequest->client_handshake = 0;
+                return false;
+            }
 
-        std::cout
+            std::cout
                 << "AUDIT: Success initializing new client handshake object for this Requested Connection -- pre-generated challenge\n";
 
-        connectionRequest->publicKeyMode =
+            connectionRequest->publicKeyMode =
                 SecureConnectionMode::USE_KNOWN_PUBLIC_KEY;
-        break;
+            break;
     }
 
     return true;
@@ -3041,9 +3037,9 @@ UInt32 JackieApplication::GetIncomingConnectionsCount(void) const
     for (unsigned int i = 0; i < activeSystemListSize; i++)
     {
         if ((activeSystemList[i])->isActive
-                && (activeSystemList[i])->connectMode
-                        == JackieRemoteSystem::CONNECTED
-                && (activeSystemList[i])->weInitiateConnection == false)
+            && (activeSystemList[i])->connectMode
+            == JackieRemoteSystem::CONNECTED
+            && (activeSystemList[i])->weInitiateConnection == false)
         {
             income_cnnections++;
         }
@@ -3057,14 +3053,14 @@ void JackieApplication::AddToActiveSystemList(UInt32 index2use)
 }
 
 bool JackieApplication::IsLoopbackAddress(
-        const JackieAddressGuidWrapper &systemIdentifier, bool matchPort) const
+    const JackieAddressGuidWrapper &systemIdentifier, bool matchPort) const
 {
     if (systemIdentifier.guid != JACKIE_NULL_GUID)
         return systemIdentifier.guid == myGuid;
 
     for (int i = 0;
-            i < MAX_COUNT_LOCAL_IP_ADDR
-                    && localIPAddrs[i] != JACKIE_NULL_ADDRESS; i++)
+        i < MAX_COUNT_LOCAL_IP_ADDR
+        && localIPAddrs[i] != JACKIE_NULL_ADDRESS; i++)
     {
         if (matchPort)
         {
@@ -3074,20 +3070,20 @@ bool JackieApplication::IsLoopbackAddress(
         else
         {
             if (localIPAddrs[i].EqualsExcludingPort(
-                    systemIdentifier.systemAddress))
+                systemIdentifier.systemAddress))
                 return true;
         }
     }
 
     return (matchPort == true
-            && systemIdentifier.systemAddress == firstExternalID)
-            || (matchPort == false
-                    && systemIdentifier.systemAddress.EqualsExcludingPort(
-                            firstExternalID));
+        && systemIdentifier.systemAddress == firstExternalID)
+        || (matchPort == false
+        && systemIdentifier.systemAddress.EqualsExcludingPort(
+        firstExternalID));
 }
 
 bool JackieApplication::EnableSecureIncomingConnections(const char *public_key,
-        const char *private_key, bool requireClientPublicKey)
+    const char *private_key, bool requireClientPublicKey)
 {
 #if ENABLE_SECURE_HAND_SHAKE==1
     if (endThreads == false)
@@ -3116,7 +3112,7 @@ bool JackieApplication::EnableSecureIncomingConnections(const char *public_key,
     if (serverHandShaker->Initialize(public_key, private_key))
     {
         std::cout
-                << "AUDIT: Successfully initialized, filling cookie jar with goodies, storing public key and setting using security flag to true";
+            << "AUDIT: Successfully initialized, filling cookie jar with goodies, storing public key and setting using security flag to true";
 
         serverHandShaker->FillCookieJar(serverCookie);
         memcpy(my_public_key, public_key, sizeof(my_public_key));
@@ -3125,7 +3121,7 @@ bool JackieApplication::EnableSecureIncomingConnections(const char *public_key,
     }
 
     std::cout
-            << "AUDIT: Failure to initialize so deleting server handshake and cookie jar; also setting secureIncomingConnectionEnabled flag = false";
+        << "AUDIT: Failure to initialize so deleting server handshake and cookie jar; also setting secureIncomingConnectionEnabled flag = false";
 
     OP_DELETE(serverHandShaker, TRACKE_MALLOC);
     OP_DELETE(serverCookie, TRACKE_MALLOC);
@@ -3146,14 +3142,14 @@ bool JackieApplication::IsInSecurityExceptionList(InetAddress& jackieAddr)
     /// memcmp recvParams->senderINetAddress.address.addr4.sin_addr
     /// more efficient
     std::cout
-            << " JackieApplication::IsInSecurityExceptionList::need implement";
+        << " JackieApplication::IsInSecurityExceptionList::need implement";
     return false;
 }
 
 void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
-        JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu,
-        InetAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
-        bool clientSecureRequiredbyServer)
+    JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu,
+    InetAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
+    bool clientSecureRequiredbyServer)
 {
     TimeMS time = ::GetTimeMS();
     if (limitConnFrequencyOfSameClient)
@@ -3163,10 +3159,10 @@ void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
             for (unsigned i = 0; i < maxConnections; i++)
             {
                 if (remoteSystemList[i].isActive == true
-                        && remoteSystemList[i].systemAddress.EqualsExcludingPort(
-                                recvParams->senderINetAddress)
-                        && time >= remoteSystemList[i].connectionTime
-                        && time - remoteSystemList[i].connectionTime < 100)
+                    && remoteSystemList[i].systemAddress.EqualsExcludingPort(
+                    recvParams->senderINetAddress)
+                    && time >= remoteSystemList[i].connectionTime
+                    && time - remoteSystemList[i].connectionTime < 100)
                 {
                     thisIPFloodsConnRequest = true;
                     //ValidateRemoteSystemLookup();
@@ -3178,7 +3174,7 @@ void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
 
     // make sure we are using the same port on what we received
     recvivedBoundAddrFromClient.SetPortNetworkOrder(
-            recvParams->localBoundSocket->GetBoundAddress().GetPortNetworkOrder());
+        recvParams->localBoundSocket->GetBoundAddress().GetPortNetworkOrder());
 
     // AssignSystemAddressToRemoteSystemList
     for (unsigned index2use = 0; index2use < maxConnections; index2use++)
@@ -3201,14 +3197,14 @@ void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
 
             // Reserve this reliability layer for ourselves.
             free_rs->reliabilityLayer.Reset(true, free_rs->MTUSize,
-                    clientSecureRequiredbyServer);
+                clientSecureRequiredbyServer);
             free_rs->reliabilityLayer.SetSplitMessageProgressInterval(
-                    splitMessageProgressInterval);
+                splitMessageProgressInterval);
             free_rs->reliabilityLayer.SetUnreliableTimeout(unreliableTimeout);
             free_rs->reliabilityLayer.SetTimeoutTime(defaultTimeoutTime);
             AddToActiveSystemList(index2use);
             if (recvParams->localBoundSocket->GetBoundAddress()
-                    == recvivedBoundAddrFromClient)
+                == recvivedBoundAddrFromClient)
             {
                 free_rs->socket2use = recvParams->localBoundSocket;
             }
@@ -3226,13 +3222,13 @@ void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
                 // If so, force binding on it so we reply on the same IP address as they sent to.
                 int foundIndex = -1;
                 for (unsigned int ipListIndex = 0;
-                        ipListIndex < MAX_COUNT_LOCAL_IP_ADDR; ipListIndex++)
+                    ipListIndex < MAX_COUNT_LOCAL_IP_ADDR; ipListIndex++)
                 {
                     if (localIPAddrs[ipListIndex] == JACKIE_NULL_ADDRESS)
                         break;
 
                     if (recvivedBoundAddrFromClient.EqualsExcludingPort(
-                            localIPAddrs[ipListIndex]))
+                        localIPAddrs[ipListIndex]))
                     {
                         foundIndex = ipListIndex;
                         break;
@@ -3256,15 +3252,15 @@ void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
                     // Force binding
                     unsigned int socketListIndex;
                     for (socketListIndex = 0;
-                            socketListIndex < bindedSockets.Size();
-                            socketListIndex++)
+                        socketListIndex < bindedSockets.Size();
+                        socketListIndex++)
                     {
                         if (bindedSockets[socketListIndex]->GetBoundAddress()
-                                == recvivedBoundAddrFromClient)
+                            == recvivedBoundAddrFromClient)
                         {
                             // Force binding with existing socket
                             free_rs->socket2use =
-                                    bindedSockets[socketListIndex];
+                                bindedSockets[socketListIndex];
                             break;
                         }
                     }
@@ -3273,14 +3269,14 @@ void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
                     {
                         // this hsould not happen !!
                         std::cout
-                                << "remote client have no right socket to assign!!!";
+                            << "remote client have no right socket to assign!!!";
                     }
 
                 }
             } // server_bound_addr != recv incomeing socket
 
             // setup remoteClient varaibles
-            for (unsigned j = 0; j < (unsigned) PING_TIMES_ARRAY_SIZE; j++)
+            for (unsigned j = 0; j < (unsigned)PING_TIMES_ARRAY_SIZE; j++)
             {
                 free_rs->pingAndClockDifferential[j].pingTime = 65535;
                 free_rs->pingAndClockDifferential[j].clockDifferential = 0;
@@ -3321,35 +3317,35 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
     UInt32 remoteSystemIndex;
     if (sendParams.receiverAdress.systemAddress != JACKIE_NULL_ADDRESS)
         remoteSystemIndex = GetRemoteSystemIndexGeneral(
-                sendParams.receiverAdress.systemAddress, true);
+        sendParams.receiverAdress.systemAddress, true);
     else if (sendParams.receiverAdress.guid != JACKIE_NULL_GUID)
         remoteSystemIndex = GetRemoteSystemIndexGeneral(
-                sendParams.receiverAdress.guid);
+        sendParams.receiverAdress.guid);
     else
-        remoteSystemIndex = (unsigned int) -1;
+        remoteSystemIndex = (unsigned int)-1;
 
     // 03/06/06 - If broadcast is false, use the optimized version of GetIndexFromSystemAddress
     if (sendParams.broadcast == false)
     {
         // not found
-        if (remoteSystemIndex == (unsigned int) -1)
+        if (remoteSystemIndex == (unsigned int)-1)
         {
             return false;
         }
 
 #if USE_STACK_ALLOCA ==1
-        sendList = (unsigned *) alloca(sizeof(unsigned));
+        sendList = (unsigned *)alloca(sizeof(unsigned));
 #else
         sendList = (unsigned *)gMallocEx(sizeof(unsigned), TRACKE_MALLOC);
 #endif
 
         if (remoteSystemList[remoteSystemIndex].isActive
-                && remoteSystemList[remoteSystemIndex].connectMode
-                        != JackieRemoteSystem::DISCONNECT_ASAP
-                && remoteSystemList[remoteSystemIndex].connectMode
-                        != JackieRemoteSystem::DISCONNECT_ASAP_SILENTLY
-                && remoteSystemList[remoteSystemIndex].connectMode
-                        != JackieRemoteSystem::DISCONNECT_ON_NO_ACK)
+            && remoteSystemList[remoteSystemIndex].connectMode
+            != JackieRemoteSystem::DISCONNECT_ASAP
+            && remoteSystemList[remoteSystemIndex].connectMode
+            != JackieRemoteSystem::DISCONNECT_ASAP_SILENTLY
+            && remoteSystemList[remoteSystemIndex].connectMode
+            != JackieRemoteSystem::DISCONNECT_ON_NO_ACK)
         {
             sendList[0] = remoteSystemIndex;
             sendListSize = 1;
@@ -3359,20 +3355,20 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
     else
     {
 #if USE_STACK_ALLOCA==1
-        sendList = (unsigned *) alloca(sizeof(unsigned));
+        sendList = (unsigned *)alloca(sizeof(unsigned));
 #else
         sendList = (unsigned *)gMallocEx(sizeof(unsigned), TRACKE_MALLOC);
 #endif
         unsigned int idx;
         for (idx = 0; idx < maxConnections; idx++)
         {
-            if (remoteSystemIndex != (unsigned int) -1
-                    && idx == remoteSystemIndex)
+            if (remoteSystemIndex != (unsigned int)-1
+                && idx == remoteSystemIndex)
                 continue;
 
             if (remoteSystemList[idx].isActive
-                    && remoteSystemList[idx].systemAddress
-                            != JACKIE_NULL_ADDRESS)
+                && remoteSystemList[idx].systemAddress
+                != JACKIE_NULL_ADDRESS)
                 sendList[sendListSize++] = idx;
         }
     }
@@ -3392,29 +3388,29 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
         // Send may split the packet and thus deallocate data.
         // Don't assume data is valid if we use the callerAllocationData
         useData = sendParams.useCallerDataAllocation
-                && callerDataAllocationUsed == false
-                && sendListIndex + 1 == sendListSize;
+            && callerDataAllocationUsed == false
+            && sendListIndex + 1 == sendListSize;
         sendParams.useCallerDataAllocation = (useData == false);
         sendParams.mtu = remoteSystemList[sendList[sendListIndex]].MTUSize;
         remoteSystemList[sendList[sendListIndex]].reliabilityLayer.Send(
-                sendParams);
+            sendParams);
         if (useData)
             callerDataAllocationUsed = true;
 
         // update lastReliableSend
         if (sendParams.packetReliability == RELIABLE_NOT_ACK_RECEIPT_OF_PACKET
-                || sendParams.packetReliability
-                        == RELIABLE_ORDERED_NOT_ACK_RECEIPT_OF_PACKET
-                || sendParams.packetReliability
-                        == RELIABLE_SEQUENCED_NOT_ACK_RECEIPT_OF_PACKET
-                || sendParams.packetReliability
-                        == RELIABLE_ACK_RECEIPT_OF_PACKET
-                || sendParams.packetReliability
-                        == RELIABLE_ORDERED_ACK_RECEIPT_OF_PACKET
-                        /*||reliability==RELIABLE_SEQUENCED_WITH_ACK_RECEIPT*/)
+            || sendParams.packetReliability
+            == RELIABLE_ORDERED_NOT_ACK_RECEIPT_OF_PACKET
+            || sendParams.packetReliability
+            == RELIABLE_SEQUENCED_NOT_ACK_RECEIPT_OF_PACKET
+            || sendParams.packetReliability
+            == RELIABLE_ACK_RECEIPT_OF_PACKET
+            || sendParams.packetReliability
+            == RELIABLE_ORDERED_ACK_RECEIPT_OF_PACKET
+            /*||reliability==RELIABLE_SEQUENCED_WITH_ACK_RECEIPT*/)
         {
             remoteSystemList[sendList[sendListIndex]].lastReliableSend =
-                    (TimeMS) (sendParams.currentTime / 1000);
+                (TimeMS)(sendParams.currentTime / 1000);
         }
     }
 
@@ -3427,18 +3423,18 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
 }
 
 Int32 JackieApplication::GetRemoteSystemIndexGeneral(
-        const InetAddress& systemAddress,
-        bool calledFromNetworkThread /*= false*/) const
+    const InetAddress& systemAddress,
+    bool calledFromNetworkThread /*= false*/) const
 {
     if (systemAddress == JACKIE_NULL_ADDRESS)
         return -1;
 
-    if (systemAddress.systemIndex != (SystemIndex) -1
-            && systemAddress.systemIndex > -1
-            && systemAddress.systemIndex < maxConnections
-            && remoteSystemList[systemAddress.systemIndex].systemAddress
-                    == systemAddress
-            && remoteSystemList[systemAddress.systemIndex].isActive)
+    if (systemAddress.systemIndex != (SystemIndex)-1
+        && systemAddress.systemIndex > -1
+        && systemAddress.systemIndex < maxConnections
+        && remoteSystemList[systemAddress.systemIndex].systemAddress
+        == systemAddress
+        && remoteSystemList[systemAddress.systemIndex].isActive)
         return systemAddress.systemIndex;
 
     if (calledFromNetworkThread)
@@ -3452,7 +3448,7 @@ Int32 JackieApplication::GetRemoteSystemIndexGeneral(
         for (i = 0; i < maxConnections; i++)
         {
             if (remoteSystemList[i].systemAddress == systemAddress
-                    && remoteSystemList[i].isActive)
+                && remoteSystemList[i].isActive)
             {
                 remoteSystemList[i].systemAddress.systemIndex = i;
                 return i;
@@ -3471,7 +3467,7 @@ Int32 JackieApplication::GetRemoteSystemIndexGeneral(
 }
 
 Int32 JackieApplication::GetRemoteSystemIndexGeneral(const JackieGUID& input,
-        bool calledFromNetworkThread /*NOT USED*/) const
+    bool calledFromNetworkThread /*NOT USED*/) const
 {
     if (input == JACKIE_NULL_GUID)
         return -1;
@@ -3479,9 +3475,9 @@ Int32 JackieApplication::GetRemoteSystemIndexGeneral(const JackieGUID& input,
     if (input == myGuid)
         return -1;
 
-    if (input.systemIndex != (SystemIndex) -1 && input.systemIndex >= 0
-            && input.systemIndex < maxConnections
-            && remoteSystemList[input.systemIndex].guid == input)
+    if (input.systemIndex != (SystemIndex)-1 && input.systemIndex >= 0
+        && input.systemIndex < maxConnections
+        && remoteSystemList[input.systemIndex].guid == input)
         return input.systemIndex;
 
     for (SystemIndex i = 0; i < maxConnections; i++)
@@ -3494,7 +3490,7 @@ Int32 JackieApplication::GetRemoteSystemIndexGeneral(const JackieGUID& input,
         }
     }
 
-    return (unsigned int) -1;
+    return (unsigned int)-1;
 }
 
 bool JackieApplication::IsBanned(InetAddress& senderINetAddress)
@@ -3511,7 +3507,7 @@ bool JackieApplication::IsBanned(InetAddress& senderINetAddress)
     {
         // timeout and flag it as unused
         if (banList[index]->timeout > 0
-                && banList[index]->timeout <= GetTimeMS())
+            && banList[index]->timeout <= GetTimeMS())
         {
             // remove this expired ban
             Banned* tmp = banList[index];
@@ -3534,7 +3530,7 @@ bool JackieApplication::IsBanned(InetAddress& senderINetAddress)
                 else
                 {
                     if (banList[index]->IP[characterIndex] == 0
-                            || IP[characterIndex] == 0)
+                        || IP[characterIndex] == 0)
                     {
                         // End of one of the strings
                         break;
@@ -3560,7 +3556,7 @@ bool JackieApplication::IsBanned(InetAddress& senderINetAddress)
 }
 
 void JackieApplication::AddToBanList(const char IP[32],
-        TimeMS milliseconds /*= 0*/)
+    TimeMS milliseconds /*= 0*/)
 {
     std::cout << "AddToBanList " << IP << ", " << milliseconds;
     if (IP == 0 || IP[0] == 0 || strlen(IP) > 32)
@@ -3575,7 +3571,7 @@ void JackieApplication::AddToBanList(const char IP[32],
         if (strcmp(IP, banList[index]->IP) == 0)
         {
             std::cout << IP
-                    << " Already in the ban list.  Just update the time and times";
+                << " Already in the ban list.  Just update the time and times";
             // Already in the ban list.  Just update the time and banned times
             banList[index]->bannedTImes++;
             if (milliseconds == 0)
@@ -3599,7 +3595,7 @@ void JackieApplication::AddToBanList(const char IP[32],
 }
 
 void JackieApplication::SetBannedRemoteSystem(const char IP[32],
-        TimeMS milliseconds /*= 0*/)
+    TimeMS milliseconds /*= 0*/)
 {
     Command* c = AllocCommand();
     c->commandID = Command::BCS_ADD_2_BANNED_LIST;

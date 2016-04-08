@@ -1,10 +1,6 @@
 #ifndef __INCLUDE_GECO_BITS_STREAM_H
 #define __INCLUDE_GECO_BITS_STREAM_H
 
-#if defined(_WIN32)
-#include "geco-wins-includes.h"
-#endif
-
 #include <cstdio>
 #include <stdlib.h>
 #include <memory>
@@ -12,6 +8,10 @@
 #include <cstring>
 #include <cmath>
 #include <cassert>
+
+#if defined(_WIN32)
+#include "geco-wins-includes.h"
+#endif
 
 #include "geco-export.h"
 #include "geco-namesapces.h"
@@ -35,7 +35,7 @@ using namespace geco::ultils;
 
 GECO_NET_BEGIN_NSPACE
 
-classUInt24;
+class UInt24;
 class GecoString;
 class GecoWString;
 
@@ -79,11 +79,11 @@ class GecoWString;
 //! (8+7)>>3 = 15/8 = 1 ( also is the number of written bytes)
 class GECO_EXPORT GecoBitStream
 {
-private:
+    private:
     typedef UInt32 BitSize;
     typedef UInt32 ByteSize;
 
-private:
+    private:
     BitSize allocated_bits_size_;
     BitSize writable_bit_pos_;
     BitSize readable_bit_pos_;
@@ -98,7 +98,7 @@ private:
     bool is_read_only_;
     UInt8 statck_buffer_[GECO_STREAM_STACK_ALLOC_BYTES];
 
-public:
+    public:
     GECO_STATIC_FACTORY_DELC(GecoBitStream);
 
     //! @param [in] [ BitSize initialBytesAllocate]:
@@ -412,7 +412,7 @@ public:
             // Unhide the IP address, done to prevent routers from changing it
             dest.address.addr4.sin_addr.s_addr = ~binaryAddress;
             ReadBits((UInt8*)& dest.address.addr4.sin_port,
-                    BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
+                BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
             dest.debugPort = ntohs(dest.address.addr4.sin_port);
         }
         else
@@ -507,7 +507,7 @@ public:
     {
         bool dataWritten;
         ReadBoolean(dataWritten);
-        if (dataWritten) ReadUInt64 (dest);
+        if (dataWritten) ReadUInt64(dest);
     }
     inline void ReadInt64Changed(Int64 &dest)
     {
@@ -720,7 +720,7 @@ public:
         bool dataWritten;
         ReadMiniBoolean(dataWritten);
         if (dataWritten)
-        ReadMiniUInt8(dest);
+            ReadMiniUInt8(dest);
     }
 
     //! @brief Read a bool from a bitstream.
@@ -731,10 +731,10 @@ public:
     }
 
     void ReadUInt8Range(
-            UInt8 &value,
-            const UInt8 minimum,
-            const UInt8 maximum,
-            bool allowOutsideRange = false)
+        UInt8 &value,
+        const UInt8 minimum,
+        const UInt8 maximum,
+        bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         UInt8 diff = maximum - minimum;
@@ -763,10 +763,10 @@ public:
     }
 
     void ReadInt8Range(
-            Int8 &value,
-            const Int8 minimum,
-            const Int8 maximum,
-            bool allowOutsideRange = false)
+        Int8 &value,
+        const Int8 minimum,
+        const Int8 maximum,
+        bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         Int8 diff = maximum - minimum;
@@ -795,10 +795,10 @@ public:
     }
 
     void ReadUInt16Range(
-            UInt16 &value,
-            const UInt16 minimum,
-            const UInt16 maximum,
-            bool allowOutsideRange = false)
+        UInt16 &value,
+        const UInt16 minimum,
+        const UInt16 maximum,
+        bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         UInt16 diff = maximum - minimum;
@@ -826,10 +826,10 @@ public:
         value += minimum;
     }
     void ReadUInt16Range(
-            Int16 &value,
-            const Int16 minimum,
-            const Int16 maximum,
-            bool allowOutsideRange = false)
+        Int16 &value,
+        const Int16 minimum,
+        const Int16 maximum,
+        bool allowOutsideRange = false)
     {
         //! get the high byte bits size
         Int16 diff = maximum - minimum;
@@ -891,11 +891,11 @@ public:
     //! we do nothing for little endian.
     //! @see
     void ReadIntegerRange(
-            UInt8 &value,
-            const UInt8 minimum,
-            const UInt8 maximum,
-            const int requiredBits,
-            bool allowOutsideRange)
+        UInt8 &value,
+        const UInt8 minimum,
+        const UInt8 maximum,
+        const int requiredBits,
+        bool allowOutsideRange)
     {
         assert(maximum >= minimum);
 
@@ -946,7 +946,7 @@ public:
     //! @param[in] maxBytesRead Maximum number of bytes to read
     //! @return true on success, false on failure.
     void ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read,
-            const ByteSize maxBytes2Read);
+        const ByteSize maxBytes2Read);
 
     //! @method ReadAlignedBytesAlloc
     //! @access public 
@@ -1035,9 +1035,9 @@ public:
     //!@notice FloatingType for this function must be a float or double
     template <class FloatingType>
     void ReadOrthMatrix(
-            FloatingType &m00, FloatingType &m01, FloatingType &m02,
-            FloatingType &m10, FloatingType &m11, FloatingType &m12,
-            FloatingType &m20, FloatingType &m21, FloatingType &m22)
+        FloatingType &m00, FloatingType &m01, FloatingType &m02,
+        FloatingType &m10, FloatingType &m11, FloatingType &m12,
+        FloatingType &m20, FloatingType &m21, FloatingType &m22)
     {
         float qw, qx, qy, qz;
         ReadNormQuat(qw, qx, qy, qz);
@@ -1130,7 +1130,7 @@ public:
         // Write bit 1
         BitSize shift = writable_bit_pos_ & 7;
         shift == 0 ? data_[writable_bit_pos_ >> 3] = 0x80 :
-        data_[writable_bit_pos_ >> 3] |= 0x80 >> shift;
+            data_[writable_bit_pos_ >> 3] |= 0x80 >> shift;
         writable_bit_pos_++;
     }
 
@@ -1169,7 +1169,7 @@ public:
     //! @param[in] maxBytesWrite max bytes to write
     //! @notice Won't write beyond maxBytesWrite
     void WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write,
-            const ByteSize maxBytes2Write);
+        const ByteSize maxBytes2Write);
 
     //! @func Write 
     //! @brief write a float into 2 bytes, spanning the range, 
@@ -1214,7 +1214,7 @@ public:
         }
         else
 #endif
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt16)), true);
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt16)), true);
     }
     void WriteInt16(const Int16 &src)
     {
@@ -1227,7 +1227,7 @@ public:
         }
         else
 #endif
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int16)), true);
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int16)), true);
     }
     void WriteUInt32(const UInt32 &src)
     {
@@ -1240,7 +1240,7 @@ public:
         }
         else
 #endif
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt32)), true);
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt32)), true);
     }
     void WriteInt32(const Int32 &src)
     {
@@ -1253,7 +1253,7 @@ public:
         }
         else
 #endif
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int32)), true);
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int32)), true);
     }
     void WriteUInt64(const UInt64 &src)
     {
@@ -1266,7 +1266,7 @@ public:
         }
         else
 #endif
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt64)), true);
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt64)), true);
     }
     void WriteInt64(const Int64 &src)
     {
@@ -1279,15 +1279,15 @@ public:
         }
         else
 #endif
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int64)), true);
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int64)), true);
     }
 
     inline void WriteBoolean(const bool &src)
     {
         if (src == true)
-        WriteBitOne();
+            WriteBitOne();
         else
-        WriteBitZero();
+            WriteBitZero();
     }
 
     // notice  will not endian swap the address or port
@@ -1304,7 +1304,7 @@ public:
             UInt16 p = addr.GetPortNetworkOrder();
             // Don't endian swap the address or port
             WriteBits((UInt8*)&binaryAddress,
-                    BYTES_TO_BITS(sizeof(binaryAddress)), true);
+                BYTES_TO_BITS(sizeof(binaryAddress)), true);
             WriteBits((UInt8*)&p, BYTES_TO_BITS(sizeof(p)), true);
         }
         else
@@ -1312,7 +1312,7 @@ public:
 #if NET_SUPPORT_IPV6 == 1
             // Don't endian swap
             WriteBits((UInt8*)&src.address.addr6,
-                    BYTES_TO_BITS(sizeof(src.address.addr6)), true);
+                BYTES_TO_BITS(sizeof(src.address.addr6)), true);
 #endif
         }
     }
@@ -1374,7 +1374,7 @@ public:
     //! If the current value is different from the last value
     //! the current value will be written.  Otherwise, a single bit will be written
     inline void WriteUInt8Changed(const UInt8 &latestVal,
-            const UInt8 &lastVal)
+        const UInt8 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1387,7 +1387,7 @@ public:
         }
     }
     inline void WriteInt8Changed(const Int8 &latestVal,
-            const Int8 &lastVal)
+        const Int8 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1400,7 +1400,7 @@ public:
         }
     }
     inline void WriteUInt16Changed(const UInt16 &latestVal,
-            const UInt16 &lastVal)
+        const UInt16 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1413,7 +1413,7 @@ public:
         }
     }
     inline void WriteInt16Changed(const Int16 &latestVal,
-            const Int16 &lastVal)
+        const Int16 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1426,7 +1426,7 @@ public:
         }
     }
     inline void WriteUInt32Changed(const UInt32 &latestVal,
-            const UInt32 &lastVal)
+        const UInt32 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1439,7 +1439,7 @@ public:
         }
     }
     inline void WriteInt32Changed(const Int32 &latestVal,
-            const Int32 &lastVal)
+        const Int32 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1452,7 +1452,7 @@ public:
         }
     }
     inline void WriteUInt64Changed(const UInt64 &latestVal,
-            const UInt64 &lastVal)
+        const UInt64 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1465,7 +1465,7 @@ public:
         }
     }
     inline void WriteInt64Changed(const Int64 &latestVal,
-            const Int64 &lastVal)
+        const Int64 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1485,7 +1485,7 @@ public:
     //! @return void 
     //! @author mengdi[Jackie]
     inline void WriteChangedValue(const bool &currentValue,
-            const bool &lastValue)
+        const bool &lastValue)
     {
         (void)lastValue;
         WriteBoolean(currentValue);
@@ -1526,7 +1526,7 @@ public:
     //! true for types larger than 1 byte
     //! @author mengdi[Jackie]
     inline void WriteMiniUInt8Changed(const UInt8 &latestVal,
-            const UInt8 &lastVal)
+        const UInt8 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1539,7 +1539,7 @@ public:
         }
     }
     inline void WriteMiniInt8Changed(const Int8 &latestVal,
-            const Int8 &lastVal)
+        const Int8 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1552,7 +1552,7 @@ public:
         }
     }
     inline void WriteMiniUInt16Changed(const UInt16 &latestVal,
-            const UInt16 &lastVal)
+        const UInt16 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1565,7 +1565,7 @@ public:
         }
     }
     inline void WriteMiniInt16Changed(const Int16 &latestVal,
-            const Int16 &lastVal)
+        const Int16 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1578,7 +1578,7 @@ public:
         }
     }
     inline void WriteMiniUInt32Changed(const UInt32 &latestVal,
-            const UInt32 &lastVal)
+        const UInt32 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1591,7 +1591,7 @@ public:
         }
     }
     inline void WriteMiniInt32Changed(const Int32 &latestVal,
-            const Int32 &lastVal)
+        const Int32 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1604,7 +1604,7 @@ public:
         }
     }
     inline void WriteMiniUInt64Changed(const UInt64 &latestVal,
-            const UInt64 &lastVal)
+        const UInt64 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1617,7 +1617,7 @@ public:
         }
     }
     inline void WriteMiniInt64Changed(const Int64 &latestVal,
-            const Int64 &lastVal)
+        const Int64 &lastVal)
     {
         if (latestVal == lastVal)
         {
@@ -1641,12 +1641,12 @@ public:
 
     //! @brief Same as WriteMiniChanged() 
     //! when we have an unknown second parameter
-//    template <class templateType>
-//    inline void WriteMiniChanged(const templateType &currentValue)
-//    {
-//        WriteBoolean(true);
-//        WriteMini(currentValue);
-//    }
+    //    template <class templateType>
+    //    inline void WriteMiniChanged(const templateType &currentValue)
+    //    {
+    //        WriteBoolean(true);
+    //        WriteMini(currentValue);
+    //    }
 
     //! @func WriteMini 
     //! @access  public  
@@ -1849,10 +1849,10 @@ public:
     //! if you use SerializeMini(), will also use 8 bytes because there are  no zero bits to compress
     template <class IntegerType>
     void WriteIntegerRange(
-            const IntegerType value,
-            const IntegerType mini,
-            const IntegerType max,
-            bool allowOutsideRange = false)
+        const IntegerType value,
+        const IntegerType mini,
+        const IntegerType max,
+        bool allowOutsideRange = false)
     {
         IntegerType diff = max - mini;
         int requiredBits = BYTES_TO_BITS(sizeof(IntegerType)) - GetLeadingZeroSize(diff);
@@ -1876,11 +1876,11 @@ public:
     //! for little endian, we do nothing.
     template <class IntegerType>
     void WriteIntegerRange(
-            const IntegerType value,
-            const IntegerType mini,
-            const IntegerType max,
-            const int requiredBits,
-            bool allowOutsideRange = false)
+        const IntegerType value,
+        const IntegerType mini,
+        const IntegerType max,
+        const int requiredBits,
+        bool allowOutsideRange = false)
     {
         assert(max >= mini);
         assert(allowOutsideRange == true || (value >= mini && value <= max));
@@ -1923,9 +1923,9 @@ public:
     //! templateType for this function must be a float or double
     //! @see
     template <class templateType> void WriteNormVector(
-            templateType x,
-            templateType y,
-            templateType z)
+        templateType x,
+        templateType y,
+        templateType z)
     {
         assert(x <= 1.01 &&y <= 1.01 &&z <= 1.01 &&x >= -1.01 &&y >= -1.01 &&z >= -1.01);
         WriteFloatRange((float)x, -1.0f, 1.0f);
@@ -1943,9 +1943,9 @@ public:
     //! templateType for this function must be a float or double
     //! @see
     template <class FloatingType> void WriteVector(
-            FloatingType x,
-            FloatingType y,
-            FloatingType z)
+        FloatingType x,
+        FloatingType y,
+        FloatingType z)
     {
         FloatingType magnitude = sqrt(x * x + y * y + z * z);
         WriteMiniFloat((float)magnitude);
@@ -1967,10 +1967,10 @@ public:
     //! FloatingType for this function must be a float or double
     //! @see
     void WriteNormQuat(
-            float& w,
-            float& x,
-            float& y,
-            float& z)
+        float& w,
+        float& x,
+        float& y,
+        float& z)
     {
         WriteBoolean((bool)(w < 0.0));
         WriteBoolean((bool)(x < 0.0));
@@ -1982,10 +1982,10 @@ public:
         // Leave out w and calculate it on the target
     }
     void WriteNormQuat(
-            double& w,
-            double& x,
-            double& y,
-            double& z)
+        double& w,
+        double& x,
+        double& y,
+        double& z)
     {
         WriteBoolean((bool)(w < 0.0));
         WriteBoolean((bool)(x < 0.0));
@@ -2008,9 +2008,9 @@ public:
     //! FloatingType for this function must be a float or double
     //! @see WriteNormQuat()
     void WriteOrthMatrix(
-            float m00, float m01, float m02,
-            float m10, float m11, float m12,
-            float m20, float m21, float m22)
+        float m00, float m01, float m02,
+        float m10, float m11, float m12,
+        float m20, float m21, float m22)
     {
         double qw;
         double qx;
@@ -2065,7 +2065,7 @@ public:
         assert(writable_bit_pos_ > 0);
 
         _data = (UInt8*)gMallocEx(BITS_TO_BYTES(writable_bit_pos_),
-                TRACKE_MALLOC);
+            TRACKE_MALLOC);
         memcpy(_data, data_, sizeof(UInt8) * BITS_TO_BYTES(writable_bit_pos_));
         return writable_bit_pos_;
     }
