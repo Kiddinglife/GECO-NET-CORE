@@ -49,7 +49,7 @@
 // Redefine if you want to disable or change the target for debug RAKNET_DEBUG_PRINTF
 #ifndef debug
 #ifdef _DEBUG
-#define debug printf_s
+#define debug printf
 #else 
 #define debug(msg)
 #endif

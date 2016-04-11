@@ -169,7 +169,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\unittest\geco-memory-stream.cc" />
+    <ClCompile Include="..\..\..\unittest\geco-bit-stream.cc" />
     <ClCompile Include="..\..\..\unittest\test-1.cc" />
     <ClCompile Include="..\..\..\unittest\test-main.cc" />
   </ItemGroup>

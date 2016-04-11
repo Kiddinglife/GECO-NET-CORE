@@ -20,16 +20,17 @@
 #include "geco-net-config.h"
 #include "geco-basic-type.h"
 #include "geco-net-type.h"
-//#include "JackieString.h"
+//#include "GecoString.h"
 
 // MSWin uses _copysign, others use copysign...
 #ifndef _WIN32
 #define _copysign copysign
 #endif
 
-#define unsigned_integral true
-#define signed_integral false
+
 #define geco_debug debug
+#define UnSignedInteger true
+#define SignedInteger false
 
 using namespace geco::ultils;
 
@@ -80,339 +81,637 @@ class GecoWString;
 class GECO_EXPORT GecoBitStream
 {
     private:
-    typedef UInt32 BitSize;
-    typedef UInt32 ByteSize;
-
-    private:
     BitSize allocated_bits_size_;
     BitSize writable_bit_pos_;
     BitSize readable_bit_pos_;
-    UInt8 *data_;
-
-    //! true if @data is pointint to heap-memory pointer, 
-    //! false if it is stack-memory  pointer
+    UInt8 *data;
+    /// true if @data is pointint to heap-memory pointer, 
+    /// false if it is stack-memory  pointer
     bool can_free_;
-
-    //! true if writting not allowed in which case all write functions will not work
-    //! false if writting is allowed mainly used for reading receive_params
+    /// true if writting not allowed in which case all write functions will not work
+    /// false if writting is allowed 
     bool is_read_only_;
     UInt8 statck_buffer_[GECO_STREAM_STACK_ALLOC_BYTES];
 
     public:
     GECO_STATIC_FACTORY_DELC(GecoBitStream);
 
-    //! @param [in] [ BitSize initialBytesAllocate]:
-    //! the number of bytes to pre-allocate.
-    //! @Remarks:
-    //! Create the JackieBits, with some number of bytes to immediately
-    //! allocate. There is no benefit to calling this, unless you know exactly
-    //! how many bytes you need and it is greater than 256.
+    /// @Param [in] [ BitSize initialBytesAllocate]:
+    /// the number of bytes to pre-allocate.
+    /// @Remarks:
+    /// Create the JackieBits, with some number of bytes to immediately
+    /// allocate. There is no benefit to calling this, unless you know exactly
+    /// how many bytes you need and it is greater than 256.
+    /// @Author mengdi[Jackie]
     GecoBitStream(const BitSize initialBytesAllocate);
 
-    //! @brief  Initialize by setting the @data to a predefined pointer.
-    //! @access  public  
-    //! @param [in] [UInt8 * src]  
-    //! @param [in] [const  ByteSize len]  unit of byte
-    //! @param [in] [bool copy]  
-    //! true to make an deep copy of the @src . 
-    //! false to just save a pointer to the @src.
-    //! @remarks
-    //! 99% of the time you will use this function to read Packet:;data, 
-    //! in which case you should write something as follows:
-    //! JackieStream js(packet->data, packet->length, false);
+    /// @brief  Initialize by setting the @data to a predefined pointer.
+    /// @access  public  
+    /// @param [in] [UInt8 * src]  
+    /// @param [in] [const  ByteSize len]  unit of byte
+    /// @param [in] [bool copy]  
+    /// true to make an deep copy of the @src . 
+    /// false to just save a pointer to the @src.
+    /// @remarks
+    /// 99% of the time you will use this function to read Packet:;data, 
+    /// in which case you should write something as follows:
+    /// JACKIE_INET::JackieStream js(packet->data, packet->length, false);
+    /// @author mengdi[Jackie]
     GecoBitStream(UInt8* src, const ByteSize len, bool copy = false);
 
-    //! DEFAULT CTOR
+    /// DEFAULT CTOR
     GecoBitStream();
 
-    //! realloc and free are more efficient than delete and new  
-    //! because it will not call ctor and dtor
+    /// realloc and free are more efficient than delete and new  
+    /// because it will not call ctor and dtor
     ~GecoBitStream();
 
-    //! Getters and Setters
-    inline BitSize writable_bit_position() const
-    {
-        return writable_bit_pos_;
-    }
-    inline BitSize writable_byte_position() const
-    {
-        return BITS_TO_BYTES(writable_bit_pos_);
-    }
-    inline BitSize readable_bit_position() const
-    {
-        return readable_bit_pos_;
-    }
-    inline UInt8* UbyteData() const
-    {
-        return data_;
-    }
-    inline char* ByteData() const
-    {
-        return (char*)data_;
-    }
-    inline void Int8Data(Int8* val)
-    {
-        data_ = (UInt8*)val;
-        is_read_only_ = true;
-    }
-    inline void UInt8Data(UInt8* val)
-    {
-        data_ = val;
-        is_read_only_ = true;
-    }
-    inline void writable_byte_position(BitSize val)
-    {
-        writable_bit_pos_ = val;
-    }
-    inline void readable_bit_position(BitSize val)
-    {
-        readable_bit_pos_ = val;
-    }
-    inline void allocated_bits_size(BitSize val)
-    {
-        allocated_bits_size_ = val;
-    }
+    /// Getters and Setters
+    BitSize WritePosBits() const { return writable_bit_pos_; }
+    BitSize WritePosByte() const { return BITS_TO_BYTES(writable_bit_pos_); }
+    BitSize ReadPosBits() const { return readable_bit_pos_; }
+    UInt8* Data() const { return data; }
+    Int8* ByteData() const { return (Int8*)data; }
+    void Data(UInt8* val){ data = val; is_read_only_ = true; }
+    void WritePosBits(BitSize val) { writable_bit_pos_ = val; }
+    void ReadPosBits(BitSize val) { readable_bit_pos_ = val; }
+    void BitsAllocSize(BitSize val) { allocated_bits_size_ = val; }
 
-    //! @brief  Resets stream for reuse.
-    //! @Access  public  
-    //! @Notice
-    //! Do NOT reallocate memory because JackieStream is used
-    //! to serialize/deserialize a buffer. Reallocation is a dangerous 
-    //! operation (may result in leaks).
-    inline void Reset(void)
-    {
-        writable_bit_pos_ = readable_bit_pos_ = 0;
-    }
+    /// @Brief  Resets for reuse.
+    /// @Access  public  
+    /// @Notice
+    /// Do NOT reallocate memory because JackieStream is used
+    /// to serialize/deserialize a buffer. Reallocation is a dangerous 
+    /// operation (may result in leaks).
+    /// @author mengdi[Jackie]
+    inline void Reset(void) { writable_bit_pos_ = readable_bit_pos_ = 0; }
 
-    //!@brief Sets the read pointer back to the beginning of your data.
-    //! @access public
-    //! @author mengdi[Jackie]
-    inline void ResetReadableBitPosition(void)
+    ///@brief Sets the read pointer back to the beginning of your data.
+    /// @access public
+    /// @author mengdi[Jackie]
+    inline void ResetReadPosBits(void)
     {
         readable_bit_pos_ = 0;
     }
 
-    //! @brief Sets the write pointer back to the beginning of your data.
-    //! @access public
-    inline void ResetWritableBitPosition(void)
+    /// @brief Sets the write pointer back to the beginning of your data.
+    /// @access public
+    /// @author mengdi[Jackie]
+    inline void ResetWritePosBits(void)
     {
         writable_bit_pos_ = 0;
     }
 
-    //! @brief this is good to call when you are done with reading the stream to make
-    //! sure you didn't leave any data left over void
-    //! should hit if reads didn't match writes
-    //! @access public
+    /// @brief this is good to call when you are done with the stream to make
+    /// sure you didn't leave any data left over void
+    /// should hit if reads didn't match writes
+    /// @access public
+    /// @author mengdi[Jackie]
     inline void AssertStreamEmpty(void)
     {
         assert(readable_bit_pos_ == writable_bit_pos_);
     }
 
-    //! @brief payload are actually the remaining readable bits.
-    //! @access public 
+    ///@brief payload are actually the unread bits
+    /// @access public 
     inline BitSize GetPayLoadBits(void) const
     {
         return writable_bit_pos_ - readable_bit_pos_;
     }
 
-    //!@brief the number of bytes needed to hold all the written bits.
-    //! @access public 
-    //!@notice
-    //! particial byte is also accounted and the bit at index of mWritePosBits is exclusive.
-    //! if mWritingPosBits =12, will need 2 bytes to hold 12 written bits (6 bits unused),
-    //! if mWritingPosBits = 8, will need 1 byte to hold 8 written bits (0 bits unused).
-    inline ByteSize GetWrittenBytesSize(void) const
+    ///@brief the number of bytes needed to  hold all the written bits 
+    /// @access public 
+    ///@notice
+    /// particial byte is also accounted and the bit at index @param 
+    /// mWritePosBits is exclusive). 
+    /// if mWritingPosBits =12, will need 2 bytes to hold 12 written bits (6 bits wasted)
+    /// if mWritingPosBits = 8, will need 1 byte to hold 8 written bits (0 bits wasted)
+    /// @author mengdi[Jackie]
+    inline ByteSize GetWrittenBytesCount(void) const
     {
         return BITS_TO_BYTES(writable_bit_pos_);
     }
 
-    //! @brief get the number of written bits
-    //! will return same value to that of WritePosBits()
-    //! @access public
-    //! @author mengdi[Jackie]
-    inline BitSize GetWrittenBitsSize(void) const
+    /// @brief get the number of written bits
+    /// will return same value to that of WritePosBits()
+    /// @access public
+    /// @author mengdi[Jackie]
+    inline BitSize GetWrittenBitsCount(void) const { return writable_bit_pos_; }
+
+    /// @method SerializeFloat16
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// writeBitstream true to write from your data to this bitstream. 
+    /// False to read from this bitstream and write to your data
+    /// @param [in] float & inOutFloat  The float to write
+    /// @param [in] float floatMin Predetermined minimum value of f
+    /// @param [in] float floatMax Predetermined maximum value of f
+    /// @brief Serialize a float into 2 bytes, spanning the range 
+    /// between @param floatMin and @param floatMax
+    inline void SerializeFloatRange16Bits(bool writeBitstream, float &inOutFloat,
+        float floatMin, float floatMax)
     {
-        return writable_bit_pos_;
+        if (writeBitstream)
+            WriteFloatRange(inOutFloat, floatMin, floatMax);
+        else
+            ReadFloatRange(inOutFloat, floatMin, floatMax);
+    }
+    //inline void SerializeDouble32Bits(bool writeBitstream, double &inOutFloat,
+    //	double floatMin, double floatMax)
+    //{
+    //	if (writeBitstream)
+    //		Write(inOutFloat, floatMin, floatMax);
+    //	else
+    //		Read(inOutFloat, floatMin, floatMax);
+    //}
+
+    /// @method Serialize
+    /// @access public 
+    /// @brief  
+    /// bidirectional serialize/deserialize an array or casted stream or raw data.  
+    /// This does NOT do endian swapping.
+    /// @param[in] writeBitstream 
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param[in] inOutByteArray a byte buffer
+    /// @param[in] numberOfBytes the size of @a input in bytes
+    /// @return void
+    inline void Serialize(bool writeBitstream, Int8* inOutByteArray,
+        const UInt32 numberOfBytes)
+    {
+        if (writeBitstream)
+            Write(inOutByteArray, numberOfBytes);
+        else
+            Read(inOutByteArray, numberOfBytes);
     }
 
-    //! @access public 
-    //! @returns void
-    //! @param [in] void
-    //! @brief align the next read to a byte boundary.  
-    //! @notice
-    //! this can be used to 'waste' bits to byte align for efficiency reasons It
-    //! can also be used to force coalesced bitstreams to start on byte
-    //! boundaries so so WriteAlignedBits and ReadAlignedBits both
-    //! calculate the same offset when aligning.
-    inline void AlignReadableBitPosition(void)
+    /// @method Serialize
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.
+    /// false to read from this bitstream and write to your data
+    /// @param [in] templateType & inOutTemplateVar The value to write
+    /// @brief bidirectional serialize/deserialize any integral type to/from a bitstream.
+    /// undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    /// for float and double,  use SerializeMini()
+    template <class templateType>
+    inline void Serialize(bool writeBitstream,
+        templateType &inOutTemplateVar)
     {
-        // 8 - ( (8-1)&7 +1 ) = 0 no change which is right
-        // 8 - ( (7-1)&7 +1 ) = 1, then 7+1 = 8 which is also right
+        if (writeBitstream)
+            Write(inOutTemplateVar);
+        else
+            Read(inOutTemplateVar);
+    }
+
+    /// @method SerializeChangedValue
+    /// @access public 
+    /// @param[in] writeBitstream 
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param[in] inOutCurrentValue The current value to write
+    /// @param[in] lastValue The last value to compare against.  
+    /// only used if @a writeBitstream is true.
+    /// @return void
+    /// @brief Bidirectional serialize/deserialize any integral type to/from a bitstream. 
+    /// @notice 
+    /// If the current value is different from the last value
+    /// the current value will be written. Otherwise, a single bit will be written
+    template <class IntegralType>
+    inline void SerializeChangedValue(bool writeBitstream, IntegralType &inOutCurrentValue, const IntegralType &lastValue)
+    {
+        if (writeBitstream)
+            WriteChangedValue(inOutCurrentValue, lastValue);
+        else
+            ReadChangedValue(inOutCurrentValue);
+    }
+
+    /// @method SerializeChangedValue
+    /// @access public 
+    /// @param[in] inOutCurrentValue The current value to write
+    /// @return void
+    /// @brief  when you don't know what the last value is, or there is no last value.
+    /// @param[in] writeBitstream
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    template <class IntegralType>
+    inline void SerializeChangedValue(bool writeBitstream, IntegralType &Value)
+    {
+        if (writeBitstream)
+            WriteChangedValue(Value);
+        else
+            ReadChangedValue(Value);
+    }
+
+
+    /// @method SerializeMini
+    /// @access public 
+    /// @returns void
+    /// @template BasicType all integral types plus all floating types
+    /// @param [in] bool writeBitstream
+    /// @param [in] templateType & inOutTemplateVar
+    /// @brief  
+    /// bidirectional serialize/deserialize any basic type to/from a bitstream.
+    /// undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    /// @notice in case of floating type, 
+    /// for floating-point part, this is lossy, using 2 bytes for a float and 4 for a double.
+    /// the range must be between -1 and +1. For non-floating-point part, 
+    /// this is lossless, but only has benefit if you use less than half the bits of the type.
+    /// if you are not using DO_NOT_SWAP_ENDIAN the opposite is true for types 
+    /// larger than 1 byte
+    template <class BasicType>
+    inline void SerializeMini(bool writeBitstream, BasicType &inOutTemplateVar)
+    {
+        if (writeBitstream)
+            WriteMini(inOutTemplateVar);
+        else
+            ReadMini(inOutTemplateVar);
+    }
+
+    /// @method SerializeMini
+    /// @access public 
+    /// @returns void
+    /// @template BasicType all integral types plus all floating types
+    /// @param[in] writeBitstream true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param[in] currValue The current value to be written or to be read
+    /// @param[in] lastValue The last value to compare against to be written  
+    /// Only used if @param writeBitstream is true.
+    /// @brief 
+    /// Bidirectional serialize/deserialize any integral type to/from a bitstream.  
+    /// If the current value is different from the last value
+    /// the current value will be written.  Otherwise, a single bit will be written
+    /// @notice
+    /// For floating point, this is lossy, using 2 bytes for a float and 4 for a double.  
+    /// The range must be between -1 and +1.
+    /// For non-floating point, this is lossless, but only has benefit if you use less than
+    /// half the bits of the type.  If you are not using DO_NOT_SWAP_ENDIAN the 
+    /// opposite is true for types larger than 1 byte
+    template <class BasicType>
+    inline void SerializeMiniChangedValue(bool writeBitstream,
+        BasicType &currValue, const BasicType &lastValue)
+    {
+        if (writeBitstream)
+            WriteMiniChanged(currValue, lastValue);
+        else
+            ReadMiniChanged(currValue);
+    }
+
+    template <class BasicType>
+    inline void SerializeMiniChangedValue(bool writeBitstream,
+        BasicType &currValue)
+    {
+        if (writeBitstream)
+            WriteMiniChanged(currValue);
+        else
+            ReadMiniChanged(currValue);
+    }
+
+    /// @method SerializeCasted
+    /// @access public 
+    /// @returns void
+    /// @template serializationType all integral types plus all floating types dest type
+    /// @template sourceType all integral types plus all floating types src type
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param [in] sourceType & value
+    /// @brief Serialize one type casted to another (smaller) type, to save bandwidth
+    /// serializationType should be uint8, uint16, uint24, or uint32
+    /// @use
+    /// would use 1 byte to write what would otherwise be an integer(4 or 8 bytes)
+    /// int num=53; SerializeCasted<uint8>(true, num); 
+    /// uint8 val; SerializeCasted<uint8>(false, val);
+    template <class serializationType, class sourceType >
+    void SerializeCasted(bool writeBitstream, sourceType &value)
+    {
+        if (writeBitstream)
+            WriteCasted<serializationType>(value);
+        else
+            ReadCasted<serializationType>(value);
+    }
+
+    /// @method SerializeIntegerRange
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream 
+    /// true to write from your data to this bitstream.
+    /// false to read from this bitstream and write to your data
+    /// @param [in] templateType & value  Integer value to write, 
+    /// which should be between @paramminimum and @param maximum
+    /// @param [in] const templateType minimum best to use global const
+    /// @param [in] const templateType maximum best to use global const
+    /// @param [in] bool allowOutsideRange
+    /// If true, all sends will take an extra bit, however value can deviate
+    /// from outside @param minimum and @param maximum.
+    /// If false, will assert if the value deviates
+    /// @brief Given the minimum and maximum values for an integer type,
+    /// figure out the minimum number of bits to represent the range
+    /// Then serialize only those bits, smaller the difference is, less bits to use,
+    /// no matter how big the max or mini is, best to send and recv huge numbers,
+    /// like 666666666, SerializeMini() will not work well in such case,
+    /// @notice
+    /// A static is used so that the required number of bits for
+    /// (maximum - minimum) is only calculated once.This does require that
+    /// @param minimum and @param maximum are fixed values for a 
+    /// given line of code  for the life of the program
+    /// @use 
+    /// const uint64 MAX_VALUE = 1000000000;
+    /// const uint64 Mini_VALUE = 999999900;
+    /// uint64 currVal = 999999966; 
+    /// SerializeIntegerRange(true, currVal, MAX_VALUE, Mini_VALUE);
+    /// uint64 Val;
+    /// SerializeIntegerRange(fals, Val, MAX_VALUE, Mini_VALUE);
+    /// the sample above will use 7 bits (128) instead of 8 bytes
+    /// if you use SerializeMini(), will also use 8 bytes for no all zero byte to compress 
+    template <class IntegerType>
+    void SerializeIntegerRange(bool writeBitstream,
+        IntegerType &value,
+        const IntegerType minimum,
+        const IntegerType maximum,
+        bool allowOutsideRange = false)
+    {
+        //int requiredBits = BYTES_TO_BITS(sizeof(templateType)) -
+        //	GetLeadingZeroSize(templateType(maximum - minimum));
+        //SerializeBitsIntegerRange(writeBitstream,
+        //	value,
+        //	minimum,
+        //	maximum,
+        //	requiredBits,
+        //	allowOutsideRange);
+        if (writeBitstream)
+            WriteIntegerRange(value, minimum, maximum, allowOutsideRange);
+        else
+            ReadIntegerRange(value, minimum, maximum, allowOutsideRange);
+    }
+    /// \param[in] requiredBits Primarily for internal use, called from above function() after calculating number of bits needed to represent maximum-minimum
+    //template <class templateType>
+    //bool SerializeIntegerRange(bool writeBitstream, templateType &value, const templateType minimum, const templateType maximum, const int requiredBits, bool allowOutsideRange = false)
+    //{
+    //	if (writeBitstream)
+    //		WriteIntegerRange(value, minimum, maximum,
+    //		requiredBits, allowOutsideRange);
+    //	else
+    //		ReadIntegerRange(value, minimum, maximum, 
+    //		requiredBits, allowOutsideRange);
+    //}
+
+    /// @method SerializeNormVector
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param [in] templateType & x
+    /// @param [in] templateType & y
+    /// @param [in] templateType & z
+    /// @brief bidirectional serialize/deserialize a normalized 3D vector,
+    /// using (at most) 4 bytes + 3 bits instead of 12-24 bytes. 
+    /// will further compress y or z axis aligned vectors.
+    /// Accurate to 1/32767.5.
+    /// @notice
+    /// templateType for this function must be a float or double
+    template <class templateType>
+    void SerializeNormVector(bool writeBitstream,
+        templateType &x, templateType &y, templateType &z)
+    {
+        if (writeBitstream)
+            WriteNormVector(x, y, z);
+        else
+            ReadNormVector(x, y, z);
+    }
+
+
+    /// @method SerializeVector
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param [in] templateType & x
+    /// @param [in] templateType & y
+    /// @param [in] templateType & z
+    /// @brief 
+    /// bidirectional serialize/deserialize a vector, using 10 bytes instead of 12.
+    /// loses accuracy to about 3 / 10ths and only saves 2 bytes, 
+    /// so only use if accuracy is not important.
+    /// @notice
+    /// templateType for this function must be a float or double
+    template <class templateType>
+    void SerializeVector(bool writeBitstream,
+        templateType &x, templateType &y, templateType &z)
+    {
+        if (writeBitstream)
+            WriteVector(x, y, z);
+        else
+            ReadVector(x, y, z);
+    }
+
+
+    /// @method SerializeNormQuat
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param [in] templateType & x
+    /// @param [in] templateType & y
+    /// @param [in] templateType & z
+    /// @brief 
+    /// bidirectional serialize / deserialize a normalized quaternion
+    /// in 6 bytes + 4 bits instead of 16 bytes.Slightly lossy.
+    /// @notice
+    /// templateType for this function must be a float or double
+    template <class templateType>
+    void SerializeNormQuat(bool writeBitstream,
+        templateType &w, templateType &x, templateType &y, templateType &z)
+    {
+        if (writeBitstream)
+            WriteNormQuat(w, x, y, z);
+        else
+            ReadNormQuat(w, x, y, z);
+    }
+
+
+    /// @method SerializeOrthMatrix
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.  
+    /// false to read from this bitstream and write to your data
+    /// @param [in] templateType & x
+    /// @param [in] templateType & y
+    /// @param [in] templateType & z
+    /// @brief 
+    /// bidirectional serialize / deserialize an orthogonal matrix by creating a 
+    /// quaternion, and writing 3 components of the quaternion in 2 bytes each.
+    /// use 6 bytes instead of 36, 
+    /// @notice
+    /// templateType for this function must be a float or double
+    /// lossy, although the result is renormalized
+    template <class templateType>
+    void SerializeOrthMatrix(
+        bool writeBitstream,
+        templateType &m00, templateType &m01, templateType &m02,
+        templateType &m10, templateType &m11, templateType &m12,
+        templateType &m20, templateType &m21, templateType &m22)
+    {
+        if (writeBitstream)
+            WriteOrthMatrix(m00, m01, m02, m10, m11, m12, m20, m21, m22);
+        else
+            ReadOrthMatrix(m00, m01, m02, m10, m11, m12, m20, m21, m22);
+    }
+
+
+    /// @method SerializeBits
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool writeBitstream
+    /// true to write from your data to this bitstream.
+    /// false to read from this bitstream and write to your data
+    /// @param [in] UInt8 * inOutByteArray
+    /// @param [in] const BitSize numberOfBitsSerialize
+    /// @param [in] const bool rightAlignedBits
+    /// @brief
+    /// @notice
+    /// from the right (bit 0) rather than the left (as in the normal
+    /// internal representation) You would set this to true when
+    /// writing user data, and false when copying bitstream data, such
+    /// as writing one bitstream to another
+    /// @remarks
+    /// right aligned data means in the case of a partial byte, 
+    /// the bits are aligned right
+    /// @see
+    void SerializeBits(bool writeBitstream,
+        UInt8* inOutByteArray,
+        const BitSize numberOfBitsSerialize,
+        const bool rightAlignedBits = true)
+    {
+        if (writeBitstream)
+            WriteBits(inOutByteArray,
+            numberOfBitsSerialize, rightAlignedBits);
+        else
+            ReadBits(inOutByteArray,
+            numberOfBitsSerialize, rightAlignedBits);
+    }
+
+
+    /// @method AlignReadPosBitsByteBoundary
+    /// @access public 
+    /// @returns void
+    /// @param [in] void
+    /// @brief align the next read to a byte boundary.  
+    /// @notice
+    /// this can be used to 'waste' bits to byte align for efficiency reasons It
+    /// can also be used to force coalesced bitstreams to start on byte
+    /// boundaries so so WriteAlignedBits and ReadAlignedBits both
+    /// calculate the same offset when aligning.
+    /// @see
+    inline void AlignReadPosBitsByteBoundary(void)
+    {
         readable_bit_pos_ += 8 - (((readable_bit_pos_ - 1) & 7) + 1);
     }
 
-    //! @method Read
-    //! @access public 
-    //! @returns void
-    //! @param [in] Int8 * output 
-    //! The result byte array. It should be larger than @em numberOfBytes.
-    //! @param [in] const unsigned int numberOfBytes  The number of byte to read
-    //! @brief Read an array of raw data or casted stream of byte.
-    //! @notice The array is raw data. 
-    //! @warnning no automatic endian conversion with this function AND read bit pos is not aligned
-    void ReadBytes(UInt8* output, const UInt32 bytes2read)
+
+    /// @method Read
+    /// @access public 
+    /// @returns void
+    /// @param [in] Int8 * output 
+    /// The result byte array. It should be larger than @em numberOfBytes.
+    /// @param [in] const unsigned int numberOfBytes  The number of byte to read
+    /// @brief Read an array of raw data or casted stream of byte.
+    /// @notice The array is raw data. 
+    /// There is no automatic endian conversion with this function
+    void Read(Int8* output, const unsigned int numberOfBytes)
     {
-        ReadBits(output, BYTES_TO_BITS(bytes2read));
+        ReadBits((UInt8*)output, BYTES_TO_BITS(numberOfBytes));
     }
 
-    //! @func   ReadBits
-    //! @brief   Read numbers of bit into dest array
-    //! @access public
-    //! @param [out] [unsigned UInt8 * dest]  The destination array
-    //! @param [in] [BitSize bitsRead] The number of bits to read
-    //! @param [in] [const bool alignRight]  If true bits will be right aligned
-    //! @returns void
-    //! @remarks
-    //! 1.jackie stream internal data are aligned to the left side of byte boundary.
-    //! 2.user data are aligned to the right side of byte boundary.
-    //! @notice
-    //! 1.use True to read to user data 
-    //! 2.use False to read this stream to another stream 
-    //! @author mengdi[Jackie]
+
+    /// @func   ReadBits
+    /// @brief   Read numbers of bit into dest array
+    /// @access public
+    /// @param [out] [unsigned UInt8 * dest]  The destination array
+    /// @param [in] [BitSize bitsRead] The number of bits to read
+    /// @param [in] [const bool alignRight]  If true bits will be right aligned
+    /// @returns void
+    /// @remarks
+    /// 1.jackie stream internal data are aligned to the left side of byte boundary.
+    /// 2.user data are aligned to the right side of byte boundary.
+    /// @notice
+    /// 1.use True to read to user data 
+    /// 2.use False to read this stream to another stream 
+    /// @author mengdi[Jackie]
     void ReadBits(UInt8 *dest, BitSize bitsRead, bool alignRight = true);
 
-    //! @brief Read any integral type from a bitstream.  
-    //! Define DO_NOT_SWAP_ENDIAN if you DO NOT need endian swapping.
-    inline void ReadUInt8(UInt8 &dest)
+
+    /// @method Read
+    /// @access public 
+    /// @returns void
+    /// @param [in] IntegralType & outTemplateVar
+    /// @brief Read any integral type from a bitstream.  
+    /// Define DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    template <class IntegralType>
+    inline void Read(IntegralType &dest)
     {
-        ReadBits(&dest, BYTES_TO_BITS(sizeof(UInt8)), true);
-    }
-    inline void ReadInt8(Int8 &dest)
-    {
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int8)), true);
-    }
-    inline void ReadUInt16(UInt16 &dest)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(UInt16)];
-            ReadBits(output, BYTES_TO_BITS(sizeof(UInt16)), true);
-            ReverseBytes(output, (UInt8*)&dest, sizeof(UInt16));
-        }
+        if (sizeof(IntegralType) == 1)
+            ReadBits((UInt8*)&dest, sizeof(IntegralType) * 8, true);
         else
         {
-            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt16)), true);
-        }
-#else
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt16)), true);
-#endif
-    }
-    inline void ReadInt16(Int16 &dest)
-    {
 #ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(Int16)];
-            ReadBits(output, BYTES_TO_BITS(sizeof(Int16)), true);
-            ReverseBytes(output, (UInt8*)&dest, sizeof(Int16));
-        }
-        else
-        {
-            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int16)), true);
-        }
+            if (DoEndianSwap())
+            {
+                UInt8 output[sizeof(IntegralType)];
+                ReadBits(output, BYTES_TO_BITS(sizeof(IntegralType)), true);
+                ReverseBytes(output, (UInt8*)&dest, sizeof(IntegralType));
+            }
+            else
+            {
+                ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(IntegralType)), true);
+            }
 #else
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int16)), true);
+            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(IntegralType)), true);
 #endif
+        }
     }
-    inline void ReadUInt32(UInt32 &dest)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(UInt32)];
-            ReadBits(output, BYTES_TO_BITS(sizeof(UInt32)), true);
-            ReverseBytes(output, (UInt8*)&dest, sizeof(UInt32));
-        }
-        else
-        {
-            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), true);
-        }
-#else
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), true);
-#endif
-    }
-    inline void ReadInt32(Int32 &dest)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(Int32)];
-            ReadBits(output, BYTES_TO_BITS(sizeof(Int32)), true);
-            ReverseBytes(output, (UInt8*)&dest, sizeof(Int32));
-        }
-        else
-        {
-            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int32)), true);
-        }
-#else
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int32)), true);
-#endif
-    }
-    inline void ReadUInt64(UInt64 &dest)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(UInt64)];
-            ReadBits(output, BYTES_TO_BITS(sizeof(UInt64)), true);
-            ReverseBytes(output, (UInt8*)&dest, sizeof(UInt64));
-        }
-        else
-        {
-            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), true);
-        }
-#else
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), true);
-#endif
-    }
-    inline void ReadInt64(Int64 &dest)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(Int64)];
-            ReadBits(output, BYTES_TO_BITS(sizeof(Int64)), true);
-            ReverseBytes(output, (UInt8*)&dest, sizeof(Int64));
-        }
-        else
-        {
-            ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int64)), true);
-        }
-#else
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int64)), true);
-#endif
-    }
-    inline void ReadBoolean(bool &dest)
+
+    /// @method Read
+    /// @access public 
+    /// @returns void
+    /// @param [in] bool & dest The value to read
+    /// @brief  Read a bool from a bitstream.
+    inline void Read(bool &dest)
     {
         assert(GetPayLoadBits() >= 1);
-        dest = (data_[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0;
+        //if (GetPayLoadBits() < 1) return;
+        // Has to be on a different line for Mac
+        // Is it faster to just write it out here?
+        dest = (data[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0;
         readable_bit_pos_++;
     }
-    inline void ReadInetAddress(InetAddress &dest)
+    /// @method Read
+    /// @access public 
+    /// @returns void
+    /// @param [in] InetAddress & dest The value to read
+    /// @brief Read a InetAddress from a bitstream.
+
+    inline void Read(InetAddress &dest)
     {
         UInt8 ipVersion;
-        ReadUInt8(ipVersion);
+        Read(ipVersion);
         if (ipVersion == 4)
         {
             dest.address.addr4.sin_family = AF_INET;
+            // Read(var.binaryAddress);
             // Don't endian swap the address or port
             UInt32 binaryAddress;
-            ReadBits((UInt8*)& binaryAddress, BYTES_TO_BITS(sizeof(binaryAddress)), true);
+            ReadBits((UInt8*)& binaryAddress,
+                BYTES_TO_BITS(sizeof(binaryAddress)), true);
             // Unhide the IP address, done to prevent routers from changing it
             dest.address.addr4.sin_addr.s_addr = ~binaryAddress;
-            ReadBits((UInt8*)& dest.address.addr4.sin_port,
-                BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
+            ReadBits((UInt8*)& dest.address.addr4.sin_port, BYTES_TO_BITS(sizeof(dest.address.addr4.sin_port)), true);
             dest.debugPort = ntohs(dest.address.addr4.sin_port);
         }
         else
@@ -420,14 +719,27 @@ class GECO_EXPORT GecoBitStream
 #if NET_SUPPORT_IPV6==1
             ReadBits((UInt8*)&dest.address.addr6, BYTES_TO_BITS(sizeof(dest.address.addr6)), true);
             dest.debugPort = ntohs(dest.address.addr6.sin6_port);
+            //return b;
+#else
+            //return false;
 #endif
-        }
     }
-    //! @notice will align @mReadPosBIts to byte-boundary internally
-    //! @see  AlignReadPosBitsByteBoundary()
-    inline void ReadUInt24(UInt24 &dest)
+}
+    /// @func Read 
+    /// @brief read three bytes into stream
+    /// @access  public  
+    /// @param [in] [const UInt24 & inTemplateVar]  
+    /// @return [void] 
+    /// @remark
+    /// @notice will align @mReadPosBIts to byte-boundary internally
+    /// @see  AlignReadPosBitsByteBoundary()
+    /// @author mengdi[Jackie]
+
+    inline void Read(UInt24 &dest)
     {
         assert(GetPayLoadBits() >= 24);
+        //if (GetPayLoadBits() < 24) return;
+
         if (!IsBigEndian())
         {
             ReadBits((UInt8 *)&dest.val, 24, false);
@@ -440,460 +752,259 @@ class GECO_EXPORT GecoBitStream
             ((UInt8 *)&dest.val)[0] = 0;
         }
     }
-    inline void ReadGUID(JackieGUID &dest)
+
+    inline void Read(JackieGUID &dest)
     {
-        return ReadUInt64(dest.g);
+        return Read(dest.g);
     }
-    inline void ReadGecoString(GecoString &outTemplateVar)
+
+    inline void Read(GecoString &outTemplateVar)
     {
         //outTemplateVar.Read(this);
     }
-    inline void ReadGecoWString(GecoWString &outTemplateVar)
+    //
+    //inline bool Read(RakWString &outTemplateVar)
+    //{
+    //	return outTemplateVar.Deserialize(this);
+    //}
+
+    inline void Read(char *&varString)
     {
-        //return outTemplateVar.Deserialize(this);
+        //GecoString::Read(varString, this);
     }
-    inline void ReadCharStr(char *&varString)
+    //
+    //inline bool Read(wchar_t *&varString)
+    //{
+    //	return RakWString::Deserialize(varString, this);
+    //}
+
+    inline void Read(UInt8 *&varString)
     {
-        // GecoString::Read(varString, this);
-    }
-    inline void ReadWCharStr(wchar_t *&varString)
-    {
-        //return GecoWString::Deserialize(varString, this);
+        //GecoString::Read((char*)varString, this);
     }
 
-    //! @brief Read any integral type from a bitstream.  
-    //! @details If the written value differed from the value 
-    //! compared against in the write function,
-    //! var will be updated.  Otherwise it will retain the current value.
-    //! ReadDelta is only valid from a previous call to WriteDelta
-    //! @param[in] outTemplateVar The value to read
-    inline void ReadUInt8Changed(UInt8 &dest)
+
+
+
+    /// @brief Read any integral type from a bitstream.  
+    /// @details If the written value differed from the value 
+    /// compared against in the write function,
+    /// var will be updated.  Otherwise it will retain the current value.
+    /// ReadDelta is only valid from a previous call to WriteDelta
+    /// @param[in] outTemplateVar The value to read
+    template <class IntegralType>
+    inline void ReadChangedValue(IntegralType &dest)
     {
         bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadUInt8(dest);
-    }
-    inline void ReadInt8Changed(Int8 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadInt8(dest);
-    }
-    inline void ReadUInt16Changed(UInt16 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadUInt16(dest);
-    }
-    inline void ReadInt16Changed(Int16 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadInt16(dest);
-    }
-    inline void ReadUInt32Changed(UInt32 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadUInt32(dest);
-    }
-    inline void ReadInt32Changed(Int32 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadInt32(dest);
-    }
-    inline void ReadUInt64Changed(UInt64 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadUInt64(dest);
-    }
-    inline void ReadInt64Changed(Int64 &dest)
-    {
-        bool dataWritten;
-        ReadBoolean(dataWritten);
-        if (dataWritten) ReadInt64(dest);
-    }
-    inline void ReadBooleanChanged(bool &dest)
-    {
-        ReadBoolean(dest);
+        Read(dataWritten);
+        if (dataWritten) Read(dest);
     }
 
-    //! decompress the written bytes and read them to dest, the uint is char or uchar,
-    //! because mini write methods need a type to compress data
-    //! WriteMiniBytes(raw_data) will intenally call WriteMiniUChar() to compress each byte and write them to stream
-    void ReadMiniBits(UInt8* dest, const BitSize bits2Read, bool isUnsigned);
-    void ReadMiniBytes(UInt8* dest, const ByteSize bytes2read, bool isUnsigned)
-    {
-        ReadMiniBits(dest, bytes2read, isUnsigned);
-    }
-    //! @method ReadMini
-    //! @access public 
-    //! @returns void
-    //! @param [in] IntegralType & dest
-    //! @brief Read any integral type from a bitstream, 
-    //! endian swapping counters internally. default is unsigned (isUnsigned = true)
-    //! @notice
-    //! For floating point, this is lossy, using 2 bytes for a float and 4 for
-    //! a double.  The range must be between -1 and +1.
-    //! For non-floating point, this is lossless, but only has benefit if you 
-    //! use less than half the bits of the type
 
-    inline void ReadMiniUInt8(UInt8 &dest)
+    /// @brief Read a bool from a bitstream.
+    /// @param[in] outTemplateVar The value to read
+
+    inline void ReadChangedValue(bool &dest)
     {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt8)), true);
-    }
-    inline void ReadMiniInt8(Int8 &dest)
-    {
-        ReadBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int8)), false);
-    }
-    inline void ReadMiniUInt16(UInt16 &dest)
-    {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt16)), true);
-    }
-    inline void ReadMiniInt16(Int16 &dest)
-    {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(Int16)), false);
-    }
-    inline void ReadMiniUInt32(UInt32 &dest)
-    {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), true);
-    }
-    inline void ReadMiniInt32(Int32 &dest)
-    {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt32)), false);
-    }
-    inline void ReadMiniUInt64(UInt64 &dest)
-    {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), true);
-    }
-    inline void ReadMiniInt64(Int64 &dest)
-    {
-        ReadMiniBits((UInt8*)&dest, BYTES_TO_BITS(sizeof(UInt64)), false);
-    }
-    inline void ReadMiniBoolean(bool &dest)
-    {
-        ReadBoolean(dest);
+        return Read(dest);
     }
 
-    inline void ReadMiniInetAddress(InetAddress &dest)
+
+    /// @Brief Assume the input source points to a compressed native type. 
+    /// Decompress and read it.
+    void ReadMini(UInt8* dest, const BitSize bits2Read, const bool isUnsigned);
+
+
+    /// @method ReadMini
+    /// @access public 
+    /// @returns void
+    /// @param [in] IntegralType & dest
+    /// @brief Read any integral type from a bitstream, 
+    /// endian swapping counters internally. default is unsigned (isUnsigned = true)
+    /// @notice
+    /// For floating point, this is lossy, using 2 bytes for a float and 4 for
+    /// a double.  The range must be between -1 and +1.
+    /// For non-floating point, this is lossless, but only has benefit if you 
+    /// use less than half the bits of the type
+    template <bool isUnsigned = UnSignedInteger, class IntegralType>
+    inline void ReadMini(IntegralType &dest)
+    {
+        ReadMini((UInt8*)&dest, BYTES_TO_BITS(sizeof(IntegralType)), isUnsigned);
+    }
+    inline void ReadMini(InetAddress &dest)
     {
         UInt8 ipVersion;
-        ReadMiniUInt8(ipVersion);
+        ReadMini<UnSignedInteger>(ipVersion);
         if (ipVersion == 4)
         {
             dest.address.addr4.sin_family = AF_INET;
             // Read(var.binaryAddress);
             // Don't endian swap the address or port
             UInt32 binaryAddress;
-            ReadMiniUInt32(binaryAddress);
+            ReadMini<UnSignedInteger>(binaryAddress);
             // Unhide the IP address, done to prevent routers from changing it
             dest.address.addr4.sin_addr.s_addr = ~binaryAddress;
-            ReadMiniUInt16(dest.address.addr4.sin_port);
+            ReadMini<UnSignedInteger>(dest.address.addr4.sin_port);
             dest.debugPort = ntohs(dest.address.addr4.sin_port);
         }
         else
         {
 #if NET_SUPPORT_IPV6==1
-            ReadMiniUInt16(dest.address.addr6);
+            ReadMini<UnSignedInteger>(dest.address.addr6);
             dest.debugPort = ntohs(dest.address.addr6.sin6_port);
 #endif
-        }
     }
-    inline void ReadMiniUInt24(UInt24 &dest)
+    }
+    inline void ReadMini(UInt24 &dest)
     {
-        ReadMiniUInt32(dest.val);
+
+        ReadMini<UnSignedInteger>(dest.val);
     }
-    inline void ReadMiniGUID(JackieGUID &dest)
+    inline void ReadMini(JackieGUID &dest)
     {
-        ReadMiniUInt64(dest.g);
+        ReadMini<UnSignedInteger>(dest.g);
     }
-    //! For values between -1 and 1
-    inline void ReadMiniFloat(float &dest)
+    inline void ReadMini(bool &dest)
+    {
+        Read(dest);
+    }
+    /// For values between -1 and 1
+    inline void ReadMini(float &dest)
     {
         UInt16 compressedFloat;
-        ReadMiniUInt16(compressedFloat);
+        ReadMini<UnSignedInteger>(compressedFloat);
         dest = ((float)compressedFloat / 32767.5f - 1.0f);
     }
-    //! For values between -1 and 1
-    inline void ReadMiniDouble(double &dest)
+    /// For values between -1 and 1
+    inline void ReadMini(double &dest)
     {
         UInt32 compressedFloat;
-        ReadMiniUInt32(compressedFloat);
+        ReadMini<UnSignedInteger>(compressedFloat);
         dest = ((double)compressedFloat / 2147483648.0 - 1.0);
     }
 
-    //! For strings
-    inline void ReadMiniGecoString(GecoString &outTemplateVar)
-    {
-        // outTemplateVar.ReadMini(this, false);
-    }
-    inline void ReadMiniGecoWString(GecoWString &outTemplateVar)
-    {
-        //outTemplateVar.ReadMini(this);
-    }
-    inline void ReadMiniCharStr(char *outTemplateVar)
-    {
-        bool use_haffman_coding;
-        ReadMiniBoolean(use_haffman_coding);
-        if (!use_haffman_coding)
-        {
-            UInt24 len;
-            ReadMiniUInt24(len);
 
-            UInt8 charr;
-            for (int i = 0; i < len; ++i)
-            {
-                ReadMiniUInt8(*((UInt8*)outTemplateVar + i));
-            }
-        }
-        else
-        {
-            // GecoString::ReadMini(outTemplateVar, this, false);
-        }
+    /// For strings
 
-    }
-    inline void ReadMiniWCharStr(wchar_t *&outtemplatevar)
+    inline void ReadMini(GecoString &outTemplateVar)
     {
-        // GecoWString::deserialize(outtemplatevar, this);
+        //outTemplateVar.ReadMini(this, false);
     }
-    inline void ReadMiniUChars(unsigned char *outTemplateVar)
-    {
-        bool use_haffman_coding;
-        ReadMiniBoolean(use_haffman_coding);
-        if (!use_haffman_coding)
-        {
-            UInt24 len;
-            ReadMiniUInt24(len);
+    //
+    //inline void ReadMiniTo(RakWString &outTemplateVar)
+    //{
+    //	 outTemplateVar.ReadMini(this);
+    //}
 
-            UInt8 charr;
-            for (int i = 0; i < len; ++i)
-            {
-                ReadMiniUInt8(*(outTemplateVar + i));
-            }
-        }
-        else
-        {
-            // GecoString::ReadMini(outTemplateVar, this, false);
-        }
+    inline void ReadMini(char *&outTemplateVar)
+    {
+        //GecoString::ReadMini(outTemplateVar, this, false);
+    }
+    //
+    //inline void ReadMiniTo(wchar_t *&outTemplateVar)
+    //{
+    //	return RakWString::Deserialize(outTemplateVar, this);
+    //}
+
+    inline void ReadMini(UInt8 *&outTemplateVar)
+    {
+        //GecoString::ReadMini((char*)outTemplateVar, this, false);
     }
 
-    inline void ReadMiniChars(char *outTemplateVar)
+    /// @access public 
+    /// @brief
+    template <class srcType, class destType >
+    void ReadCasted(destType &value)
     {
-        bool use_haffman_coding;
-        ReadMiniBoolean(use_haffman_coding);
-        if (!use_haffman_coding)
-        {
-            UInt24 len;
-            ReadMiniUInt24(len);
-
-            UInt8 charr;
-            for (int i = 0; i < len; ++i)
-            {
-                ReadMiniInt8(*(Int8*)(outTemplateVar + i));
-            }
-        }
-        else
-        {
-            // GecoString::ReadMini(outTemplateVar, this, false);
-        }
+        srcType val;
+        Read(val);
+        value = (destType)val;
     }
 
-    //! @method ReadMiniChanged
-    //! @access public 
-    //! @returns void
-    //! @param [in] templateType & dest
-    //! @brief Read any integral type from a bitstream.  
-    //! If the written value differed from the value compared against in 
-    //! the write function, var will be updated.  Otherwise it will retain the
-    //! current value. the current value will be updated.
-    //! @notice
-    //! For floating point, this is lossy, using 2 bytes for a float and 4 for a 
-    //! double.  The range must be between -1 and +1. For non-floating point, 
-    //! this is lossless, but only has benefit if you use less than half the bits of the
-    //! type.  If you are not using DO_NOT_SWAP_ENDIAN the opposite is true for
-    //! types larger than 1 byte
-    //! @see
-    inline void ReadMiniUInt8Changed(UInt8 &dest)
+    /// @method ReadMiniChanged
+    /// @access public 
+    /// @returns void
+    /// @param [in] templateType & dest
+    /// @brief Read any integral type from a bitstream.  
+    /// If the written value differed from the value compared against in 
+    /// the write function, var will be updated.  Otherwise it will retain the
+    /// current value. the current value will be updated.
+    /// @notice
+    /// For floating point, this is lossy, using 2 bytes for a float and 4 for a 
+    /// double.  The range must be between -1 and +1. For non-floating point, 
+    /// this is lossless, but only has benefit if you use less than half the bits of the
+    /// type.  If you are not using DO_NOT_SWAP_ENDIAN the opposite is true for
+    /// types larger than 1 byte
+    /// @see
+    template <class IntegralType>
+    inline void ReadMiniChanged(IntegralType &dest)
     {
         bool dataWritten;
-        ReadMiniBoolean(dataWritten);
-        if (dataWritten)
-            ReadMiniUInt8(dest);
+        Read(dataWritten);
+        if (dataWritten) ReadMini(dest);
     }
 
-    //! @brief Read a bool from a bitstream.
-    //! @param[in] outTemplateVar The value to read
-    inline void ReadMiniBooleanChanged(bool &dest)
+
+    /// @brief Read a bool from a bitstream.
+    /// @param[in] outTemplateVar The value to read
+
+    inline void ReadMiniChanged(bool &dest)
     {
-        ReadMiniBoolean(dest);
+        Read(dest);
     }
 
-    void ReadUInt8Range(
-        UInt8 &value,
-        const UInt8 minimum,
-        const UInt8 maximum,
-        bool allowOutsideRange = false)
-    {
-        //! get the high byte bits size
-        UInt8 diff = maximum - minimum;
-        int requiredBits = BYTES_TO_BITS(sizeof(UInt8)) - GetLeadingZeroSize(diff);
-        //ReadIntegerRange(value, minimum, maximum, requiredBits, allowOutsideRange);
-
-        assert(maximum >= minimum);
-        if (allowOutsideRange)
-        {
-            bool isOutsideRange;
-            ReadMiniBoolean(isOutsideRange);
-            if (isOutsideRange)
-            {
-                ReadMiniUInt8(value);
-                return;
-            }
-        }
-
-        value = 0;
-        ReadBits((UInt8*)&value, requiredBits, true);
-        if (IsBigEndian())
-        {
-            ReverseBytes((UInt8*)&value, sizeof(value));
-        }
-        value += minimum;
-    }
-
-    void ReadInt8Range(
-        Int8 &value,
-        const Int8 minimum,
-        const Int8 maximum,
-        bool allowOutsideRange = false)
-    {
-        //! get the high byte bits size
-        Int8 diff = maximum - minimum;
-        int requiredBits = BYTES_TO_BITS(sizeof(Int8)) - GetLeadingZeroSize(diff);
-        //ReadIntegerRange(value, minimum, maximum, requiredBits, allowOutsideRange);
-
-        assert(maximum >= minimum);
-        if (allowOutsideRange)
-        {
-            bool isOutsideRange;
-            ReadMiniBoolean(isOutsideRange);
-            if (isOutsideRange)
-            {
-                ReadMiniInt8(value);
-                return;
-            }
-        }
-
-        value = 0;
-        ReadBits((UInt8*)&value, requiredBits, true);
-        if (IsBigEndian())
-        {
-            ReverseBytes((UInt8*)&value, sizeof(value));
-        }
-        value += minimum;
-    }
-
-    void ReadUInt16Range(
-        UInt16 &value,
-        const UInt16 minimum,
-        const UInt16 maximum,
-        bool allowOutsideRange = false)
-    {
-        //! get the high byte bits size
-        UInt16 diff = maximum - minimum;
-        int requiredBits = BYTES_TO_BITS(sizeof(UInt16)) - GetLeadingZeroSize(diff);
-        //ReadIntegerRange(value, minimum, maximum, requiredBits, allowOutsideRange);
-
-        assert(maximum >= minimum);
-        if (allowOutsideRange)
-        {
-            bool isOutsideRange;
-            ReadMiniBoolean(isOutsideRange);
-            if (isOutsideRange)
-            {
-                ReadMiniUInt16(value);
-                return;
-            }
-        }
-
-        value = 0;
-        ReadBits((UInt8*)&value, requiredBits, true);
-        if (IsBigEndian())
-        {
-            ReverseBytes((UInt8*)&value, sizeof(value));
-        }
-        value += minimum;
-    }
-    void ReadUInt16Range(
-        Int16 &value,
-        const Int16 minimum,
-        const Int16 maximum,
-        bool allowOutsideRange = false)
-    {
-        //! get the high byte bits size
-        Int16 diff = maximum - minimum;
-        int requiredBits = BYTES_TO_BITS(sizeof(Int16)) - GetLeadingZeroSize(diff);
-        //ReadIntegerRange(value, minimum, maximum, requiredBits, allowOutsideRange);
-
-        assert(maximum >= minimum);
-        if (allowOutsideRange)
-        {
-            bool isOutsideRange;
-            ReadMiniBoolean(isOutsideRange);
-            if (isOutsideRange)
-            {
-                ReadMiniInt16(value);
-                return;
-            }
-        }
-
-        value = 0;
-        ReadBits((UInt8*)&value, requiredBits, true);
-        if (IsBigEndian())
-        {
-            ReverseBytes((UInt8*)&value, sizeof(value));
-        }
-        value += minimum;
-    }
-
-    //! @method ReadBitsIntegerRange
-    //! @access public 
-    //! @returns void
-    //! @param [in] templateType & value
-    //! @param [in] const templateType minimum
-    //! @param [in] const templateType maximum
-    //! @param [in] const int requiredBits the value of bits to read
-    //! @param [in] bool allowOutsideRange 
-    //! if true, we directly read it
-    //! @brief
-    //! @notice
-    //! This is how we write value
-    //! Assume@valueBeyondMini's value is 0x000012
-    //!------------------> Memory Address
-    //!+++++++++++
-    //!| 00 | 00 | 00 | 12 |  Big Endian
-    //!+++++++++++
-    //!+++++++++++
-    //!| 12 | 00 | 00 | 00 |  Little Endian 
-    //!+++++++++++
-    //! so for big endian, we need to reverse byte so that
-    //! the high byte of 0x00 that was put in low address can be written correctly
-    //! for little endian, we do nothing.
-    //! After reverse bytes:
-    //!+++++++++++
-    //!| 12 | 00 | 00 | 00 |  Big Endian 
-    //!+++++++++++
-    //!+++++++++++
-    //!| 12 | 00 | 00 | 00 |  Little Endian 
-    //!+++++++++++
-    //! When reading it, we have to reverse it back fro big endian
-    //! we do nothing for little endian.
-    //! @see
+    template <class IntegerType>
     void ReadIntegerRange(
-        UInt8 &value,
-        const UInt8 minimum,
-        const UInt8 maximum,
+        IntegerType &value,
+        const IntegerType minimum,
+        const IntegerType maximum,
+        bool allowOutsideRange = false)
+    {
+        /// get the high byte bits size
+        IntegerType diff = maximum - minimum;
+        int requiredBits = BYTES_TO_BITS(sizeof(IntegerType)) - GetLeadingZeroSize(diff);
+        ReadIntegerRange(value, minimum, maximum, requiredBits, allowOutsideRange);
+    }
+
+
+    /// @method ReadBitsIntegerRange
+    /// @access public 
+    /// @returns void
+    /// @param [in] templateType & value
+    /// @param [in] const templateType minimum
+    /// @param [in] const templateType maximum
+    /// @param [in] const int requiredBits the value of bits to read
+    /// @param [in] bool allowOutsideRange 
+    /// if true, we directly read it
+    /// @brief
+    /// @notice
+    /// This is how we write value
+    /// Assume@valueBeyondMini's value is 0x000012
+    ///------------------> Memory Address
+    ///+++++++++++
+    ///| 00 | 00 | 00 | 12 |  Big Endian
+    ///+++++++++++
+    ///+++++++++++
+    ///| 12 | 00 | 00 | 00 |  Little Endian 
+    ///+++++++++++
+    /// so for big endian, we need to reverse byte so that
+    /// the high byte of 0x00 that was put in low address can be written correctly
+    /// for little endian, we do nothing.
+    /// After reverse bytes:
+    ///+++++++++++
+    ///| 12 | 00 | 00 | 00 |  Big Endian 
+    ///+++++++++++
+    ///+++++++++++
+    ///| 12 | 00 | 00 | 00 |  Little Endian 
+    ///+++++++++++
+    /// When reading it, we have to reverse it back fro big endian
+    /// we do nothing for little endian.
+    /// @see
+    template <class templateType>
+    void ReadIntegerRange(
+        templateType &value,
+        const templateType minimum,
+        const templateType maximum,
         const int requiredBits,
         bool allowOutsideRange)
     {
@@ -902,10 +1013,10 @@ class GECO_EXPORT GecoBitStream
         if (allowOutsideRange)
         {
             bool isOutsideRange;
-            ReadMiniBoolean(isOutsideRange);
+            Read(isOutsideRange);
             if (isOutsideRange)
             {
-                ReadMiniUInt8(value);
+                ReadMini(value);
                 return;
             }
         }
@@ -917,90 +1028,114 @@ class GECO_EXPORT GecoBitStream
             ReverseBytes((UInt8*)&value, sizeof(value));
         }
         value += minimum;
+
+        //UInt8 output[sizeof(templateType)] = { 0 };
+        //ReadBits(output, requiredBits, true);
+        //if (IsBigEndian()) ReverseBytes(output, sizeof(output));
+        //memcpy(&value, output, sizeof(output));
+        //value += minimum;
+
     }
 
-    //! @method Read
-    //! @access public 
-    //! @returns void
-    //! @param [in] float & outFloat The float to read
-    //! @param [in] float floatMin  Predetermined minimum value of f
-    //! @param [in] float floatMax Predetermined maximum value of f
-    //! @brief
-    //! Read a float into 2 bytes, spanning the range between
-    //! @param floatMin and @param floatMax
-    //! @notice
-    //! @see
+
+    /// @method Read
+    /// @access public 
+    /// @returns void
+    /// @param [in] float & outFloat The float to read
+    /// @param [in] float floatMin  Predetermined minimum value of f
+    /// @param [in] float floatMax Predetermined maximum value of f
+    /// @brief
+    /// Read a float into 2 bytes, spanning the range between
+    /// @param floatMin and @param floatMax
+    /// @notice
+    /// @see
     void ReadFloatRange(float &outFloat, float floatMin, float floatMax);
 
-    //! @brief Read bytes, starting at the next aligned byte. 
-    //! @details Note that the modulus 8 starting offset of the sequence
-    //! must be the same as was used with WriteBits. This will be a problem
-    //! with packet coalescence unless you byte align the coalesced packets.
-    //! @param[in] dest The byte array larger than @em numberOfBytesRead
-    //! @param[in] bytes2Read The number of byte to read from the internal state
-    //! @return true if there is enough byte.
+
+    /// @brief Read bytes, starting at the next aligned byte. 
+    /// @details Note that the modulus 8 starting offset of the sequence
+    /// must be the same as was used with WriteBits. This will be a problem
+    /// with packet coalescence unless you byte align the coalesced packets.
+    /// @param[in] dest The byte array larger than @em numberOfBytesRead
+    /// @param[in] bytes2Read The number of byte to read from the internal state
+    /// @return true if there is enough byte.
     void ReadAlignedBytes(UInt8 *dest, const ByteSize bytes2Read);
 
-    //! @brief Reads what was written by WriteAlignedBytes.
-    //! @param[in] inOutByteArray The data
-    //! @param[in] maxBytesRead Maximum number of bytes to read
-    //! @return true on success, false on failure.
+
+    /// @brief Reads what was written by WriteAlignedBytes.
+    /// @param[in] inOutByteArray The data
+    /// @param[in] maxBytesRead Maximum number of bytes to read
+    /// @return true on success, false on failure.
     void ReadAlignedBytes(Int8 *dest, ByteSize &bytes2Read,
         const ByteSize maxBytes2Read);
 
-    //! @method ReadAlignedBytesAlloc
-    //! @access public 
-    //! @returns void
-    //! @param [in] Int8 * * dest  will be deleted if it is not a pointer to 0
-    //! @param [in] ByteSize & bytes2Read
-    //! @param [in] const ByteSize maxBytes2Read
-    //! @brief  Same as ReadAlignedBytesSafe() but allocates the memory
-    //! for you using new, rather than assuming it is safe to write to
+
+    /// @method ReadAlignedBytesAlloc
+    /// @access public 
+    /// @returns void
+    /// @param [in] Int8 * * dest  will be deleted if it is not a pointer to 0
+    /// @param [in] ByteSize & bytes2Read
+    /// @param [in] const ByteSize maxBytes2Read
+    /// @brief  Same as ReadAlignedBytesSafe() but allocates the memory
+    /// for you using new, rather than assuming it is safe to write to
     void ReadAlignedBytesAlloc(Int8 **dest, ByteSize &bytes2Read, const ByteSize maxBytes2Read);
 
     // @brief return 1 if the next data read is a 1, 0 if it is a 0
+    ///@access public 
     inline UInt32 ReadBit(void)
     {
-        UInt32 result = ((data_[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0) ? 1 : 0;
+        UInt32 result = ((data[readable_bit_pos_ >> 3] & (0x80 >> (readable_bit_pos_ & 7))) != 0) ? 1 : 0;
         readable_bit_pos_++;
         return result;
     }
 
-    //! @access public
-    //! @brief Read a normalized 3D vector, using (at most) 4 bytes 
-    //! + 3 bits instead of 12-24 bytes.  
-    //! @details Will further compress y or z axis aligned vectors.
-    //! Accurate to 1/32767.5.
-    //! @param[in] x x
-    //! @param[in] y y
-    //! @param[in] z z
-    //! @return void
-    //! @notice templateType for this function must be a float or double
-    template <class FloatingType>
-    void ReadNormVector(FloatingType &x, FloatingType &y, FloatingType &z)
+    /// @access public
+    /// @brief Read a normalized 3D vector, using (at most) 4 bytes 
+    /// + 3 bits instead of 12-24 bytes.  
+    /// @details Will further compress y or z axis aligned vectors.
+    /// Accurate to 1/32767.5.
+    /// @param[in] x x
+    /// @param[in] y y
+    /// @param[in] z z
+    /// @return void
+    /// @notice templateType for this function must be a float or double
+    template <class templateType>
+    void ReadNormVector(templateType &x, templateType &y, templateType &z)
     {
         ReadFloatRange(x, -1.0f, 1.0f);
         ReadFloatRange(y, -1.0f, 1.0f);
         ReadFloatRange(z, -1.0f, 1.0f);
     }
 
-    //! @brief Read 3 floats or doubles, using 10 bytes, 
-    //! where those float or doubles comprise a vector.
-    //! @details Loses accuracy to about 3/10ths and only saves 2 bytes, 
-    //! so only use if accuracy is not important.
-    //! @param[in] x x
-    //! @param[in] y y
-    //! @param[in] z z
-    //! @return void
-    //! @notice FloatingType for this function must be a float or double
-    template <class FloatingType>
-    void ReadVector(FloatingType &x, FloatingType &y, FloatingType &z)
+
+    /// @brief Read 3 floats or doubles, using 10 bytes, 
+    /// where those float or doubles comprise a vector.
+    /// @details Loses accuracy to about 3/10ths and only saves 2 bytes, 
+    /// so only use if accuracy is not important.
+    /// @param[in] x x
+    /// @param[in] y y
+    /// @param[in] z z
+    /// @return void
+    /// @notice templateType for this function must be a float or double
+    template <class templateType>
+    void ReadVector(templateType &x, templateType &y, templateType &z)
     {
         float magnitude;
-        ReadMiniFloat(magnitude);
+        Read(magnitude);
 
         if (magnitude > 0.00001f)
         {
+            //float cx = 0.0f, cy = 0.0f, cz = 0.0f;
+            //ReadMini(cx);
+            //ReadMini(cy);
+            //ReadMini(cz);
+            //x = cx;
+            //y = cy;
+            //z = cz;
+            //x *= magnitude;
+            //y *= magnitude;
+            //z *= magnitude;
+
             ReadMini(x);
             ReadMini(y);
             ReadMini(z);
@@ -1016,28 +1151,57 @@ class GECO_EXPORT GecoBitStream
         }
     }
 
-    //! @brief Read a normalized quaternion in 6 bytes + 4 bits instead of 16 bytes.
-    //! @param[in] w w
-    //! @param[in] x x
-    //! @param[in] y y
-    //! @param[in] z z
-    //! @return void
-    //! @notice FloatingType for this function must be a float or double
-    void ReadNormQuat(float &w, float &x, float &y, float &z);
-    void ReadNormQuat(double &w, double &x, double &y, double &z);
+    /// @brief Read a normalized quaternion in 6 bytes + 4 bits instead of 16 bytes.
+    /// @param[in] w w
+    /// @param[in] x x
+    /// @param[in] y y
+    /// @param[in] z z
+    /// @return void
+    /// @notice templateType for this function must be a float or double
+    template <class templateType>
+    bool ReadNormQuat(templateType &w, templateType &x, templateType &y, templateType &z)
+    {
+        bool cwNeg = false, cxNeg = false, cyNeg = false, czNeg = false;
+        Read(cwNeg);
+        Read(cxNeg);
+        Read(cyNeg);
+        Read(czNeg);
 
-    //! @brief Read an orthogonal matrix from a quaternion, 
-    //! reading 3 components of the quaternion in 2 bytes each and
-    //! extrapolatig the 4th.
-    //! @details Use 6 bytes instead of 36
-    //! Lossy, although the result is renormalized
-    //! @return true on success, false on failure.
-    //!@notice FloatingType for this function must be a float or double
-    template <class FloatingType>
+        UInt16 cx, cy, cz;
+        ReadMini(cx);
+        ReadMini(cy);
+        ReadMini(cz);
+
+        // Calculate w from x,y,z
+        x = (templateType)(cx / 65535.0);
+        y = (templateType)(cy / 65535.0);
+        z = (templateType)(cz / 65535.0);
+
+        if (cxNeg) x = -x;
+        if (cyNeg) y = -y;
+        if (czNeg) z = -z;
+
+        float difference = 1.0f - x*x - y*y - z*z;
+        if (difference < 0.0f) difference = 0.0f;
+
+        w = (templateType)(sqrt(difference));
+        if (cwNeg) w = -w;
+    }
+
+
+
+    /// @brief Read an orthogonal matrix from a quaternion, 
+    /// reading 3 components of the quaternion in 2 bytes each and
+    /// extrapolatig the 4th.
+    /// @details Use 6 bytes instead of 36
+    /// Lossy, although the result is renormalized
+    /// @return true on success, false on failure.
+    ///@notice templateType for this function must be a float or double
+    template <class templateType>
     void ReadOrthMatrix(
-        FloatingType &m00, FloatingType &m01, FloatingType &m02,
-        FloatingType &m10, FloatingType &m11, FloatingType &m12,
-        FloatingType &m20, FloatingType &m21, FloatingType &m22)
+        templateType &m00, templateType &m01, templateType &m02,
+        templateType &m10, templateType &m11, templateType &m12,
+        templateType &m20, templateType &m21, templateType &m22)
     {
         float qw, qx, qy, qz;
         ReadNormQuat(qw, qx, qy, qz);
@@ -1048,62 +1212,72 @@ class GECO_EXPORT GecoBitStream
         double sqx = (double)qx*(double)qx;
         double sqy = (double)qy*(double)qy;
         double sqz = (double)qz*(double)qz;
-        m00 = (FloatingType)(sqx - sqy - sqz + sqw);// since sqw + sqx + sqy + sqz =1
-        m11 = (FloatingType)(-sqx + sqy - sqz + sqw);
-        m22 = (FloatingType)(-sqx - sqy + sqz + sqw);
+        m00 = (templateType)(sqx - sqy - sqz + sqw); // since sqw + sqx + sqy + sqz =1
+        m11 = (templateType)(-sqx + sqy - sqz + sqw);
+        m22 = (templateType)(-sqx - sqy + sqz + sqw);
 
         double tmp1 = (double)qx*(double)qy;
         double tmp2 = (double)qz*(double)qw;
-        m10 = (FloatingType)(2.0 * (tmp1 + tmp2));
-        m01 = (FloatingType)(2.0 * (tmp1 - tmp2));
+        m10 = (templateType)(2.0 * (tmp1 + tmp2));
+        m01 = (templateType)(2.0 * (tmp1 - tmp2));
 
         tmp1 = (double)qx*(double)qz;
         tmp2 = (double)qy*(double)qw;
-        m20 = (FloatingType)(2.0 * (tmp1 - tmp2));
-        m02 = (FloatingType)(2.0 * (tmp1 + tmp2));
+        m20 = (templateType)(2.0 * (tmp1 - tmp2));
+        m02 = (templateType)(2.0 * (tmp1 + tmp2));
         tmp1 = (double)qy*(double)qz;
         tmp2 = (double)qx*(double)qw;
-        m21 = (FloatingType)(2.0 * (tmp1 + tmp2));
-        m12 = (FloatingType)(2.0 * (tmp1 - tmp2));
+        m21 = (templateType)(2.0 * (tmp1 + tmp2));
+        m12 = (templateType)(2.0 * (tmp1 - tmp2));
     }
 
-    //! @func AppendBitsCouldRealloc 
-    //! @brief 
-    //! reallocates (if necessary) in preparation of writing @bits2Append
-    //! all internal status will not be changed like @mWritePosBits and so on
-    //! @access  public  
-    //! @notice  
-    //! It is caller's reponsibility to ensure 
-    //! @param bits2Append > 0 and @param mReadOnly is false
-    //! @author mengdi[Jackie]
+
+    /// @func AppendBitsCouldRealloc 
+    /// @brief 
+    /// reallocates (if necessary) in preparation of writing @bits2Append
+    /// all internal status will not be changed like @mWritePosBits and so on
+    /// @access  public  
+    /// @notice  
+    /// It is caller's reponsibility to ensure 
+    /// @param bits2Append > 0 and @param mReadOnly is false
+    /// @author mengdi[Jackie]
     void AppendBitsCouldRealloc(const BitSize bits2Append);
 
-    //! @func  WriteBits 
-    //! @brief  write @bitsCount number of bits into @input
-    //! @access      public  
-    //! @param [in] [const UInt8 * src] source array
-    //! @param [in] [BitSize bits2Write] the number of bits to write
-    //! @param [in] [bool rightAligned] if true particial bits will be right aligned
-    //! @returns void
-    //! @remarks
-    //! 1.jackie stream internal data are aligned to the left side of byte boundary.
-    //! 2.user data are aligned to the right side of byte boundary.
-    //! @notice
-    //! 1.Use true to write user data to jackie stream 
-    //! 2.Use False to write this jackie stream internal data to another stream
-    //! @Author mengdi[Jackie]
+
+    /// @func  WriteBits 
+    /// @brief  write @bitsCount number of bits into @input
+    /// @access      public  
+    /// @param [in] [const UInt8 * src] source array
+    /// @param [in] [BitSize bits2Write] the number of bits to write
+    /// @param [in] [bool rightAligned] if true particial bits will be right aligned
+    /// @returns void
+    /// @remarks
+    /// 1.jackie stream internal data are aligned to the left side of byte boundary.
+    /// 2.user data are aligned to the right side of byte boundary.
+    /// @notice
+    /// 1.Use true to write user data to jackie stream 
+    /// 2.Use False to write this jackie stream internal data to another stream
+    /// @Author mengdi[Jackie]
     void WriteBits(const UInt8* src, BitSize bits2Write, bool rightAligned = true);
 
-    //! @brief write an array or raw data in bytes.
-    //! NOT do endian swapp.
-    inline void WriteBytes(const Int8* src, const ByteSize bytes2Write)
+    /// @func Write
+    /// @access  public  
+    /// @brief write an array or raw data in bytes.
+    /// NOT do endian swapp.
+    /// default is right aligned[true]
+    /// @author mengdi[Jackie]
+    inline void Write(const Int8* src, const ByteSize bytes2Write)
     {
         WriteBits((UInt8*)src, BYTES_TO_BITS(bytes2Write), true);
     }
-    inline void WriteUBytes(const UInt8* src, const ByteSize bytes2Write)
+    inline void Write(const UInt8* src, const ByteSize bytes2Write)
     {
         WriteBits(src, BYTES_TO_BITS(bytes2Write), true);
     }
+
+    /// @brief Write one JackieBits to another.
+    /// @param[in] [bits2Write] bits to write
+    /// @param[in] [JackieBits] the JackieBits to copy from
     void Write(GecoBitStream *jackieBits, BitSize bits2Write);
     inline void Write(GecoBitStream &jackieBits, BitSize bits2Write)
     {
@@ -1113,176 +1287,162 @@ class GECO_EXPORT GecoBitStream
     {
         Write(jackieBits, jackieBits->GetPayLoadBits());
     }
-    inline void Write(GecoBitStream &jackieBits)
+    inline void Write(GecoBitStream &jackieBits) { Write(&jackieBits); }
+
+    /// @method WritePtr
+    /// @access public 
+    /// @returns void
+    /// @param [in] IntergralType * src pointing to the value to write
+    /// @brief  
+    /// write the dereferenced pointer to any integral type to a bitstream.  
+    /// Undefine DO_NOT_SWAP_ENDIAN if you need endian swapping.
+    template <class IntergralType>
+    void WritePtr(IntergralType *src)
     {
-        Write(&jackieBits);
+        if (sizeof(IntergralType) == 1)
+            WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+        else
+        {
+#ifndef DO_NOT_SWAP_ENDIAN
+            if (DoEndianSwap())
+            {
+                UInt8 output[sizeof(IntergralType)];
+                ReverseBytes((UInt8*)src, output, sizeof(IntergralType));
+                WriteBits((UInt8*)output, BYTES_TO_BITS(sizeof(IntergralType)), true);
+            }
+            else
+#endif
+                WriteBits((UInt8*)src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+        }
     }
+
+    /// @func WriteBitZero 
+    /// @access  public  
+    /// @notice @mReadOnly must be false
+    /// @author mengdi[Jackie]
     inline void WriteBitZero(void)
     {
+        assert(is_read_only_ == false);
+
+        //AppendBitsCouldRealloc(1);
+        //BitSize shit = 8 - (mWritingPosBits & 7);
+        //data[mWritingPosBits >> 3] = ((data[mWritingPosBits >> 3] >> shit) << shit);
+        //mWritingPosBits++;
+
         AppendBitsCouldRealloc(1);
-        //@pre the unwritten bytes are all initialized to zeros
-        if ((writable_bit_pos_ & 7) == 0) data_[writable_bit_pos_ >> 3] = 0;
-        writable_bit_pos_++;
-    }
-    inline void WriteBitOne(void)
-    {
-        AppendBitsCouldRealloc(1);
-        // Write bit 1
-        BitSize shift = writable_bit_pos_ & 7;
-        shift == 0 ? data_[writable_bit_pos_ >> 3] = 0x80 :
-            data_[writable_bit_pos_ >> 3] |= 0x80 >> shift;
+        /// New bytes need to be zeroed
+        if ((writable_bit_pos_ & 7) == 0) data[writable_bit_pos_ >> 3] = 0;
         writable_bit_pos_++;
     }
 
-    //! @func AlignWritePosBits2ByteBoundary 
-    //! @brief align @mWritePosBits to a byte boundary.
-    //! @access  public  
-    //! @notice
-    //! this can be used to 'waste' bits to byte align for efficiency reasons It
-    //! can also be used to force coalesced bitstreams to start on byte
-    //! boundaries so so WriteAlignedBits and ReadAlignedBits both
-    //! calculate the same offset when aligning.
-    //! @author mengdi[Jackie]
+    /// @func WriteBitOne 
+    /// @access  public  
+    /// @notice @mReadOnly must be false
+    /// @author mengdi[Jackie]
+    inline void WriteBitOne(void)
+    {
+        assert(is_read_only_ == false);
+        AppendBitsCouldRealloc(1);
+
+        // Write bit 1
+        BitSize shift = writable_bit_pos_ & 7;
+        shift == 0 ? data[writable_bit_pos_ >> 3] = 0x80 :
+            data[writable_bit_pos_ >> 3] |= 0x80 >> shift;
+        writable_bit_pos_++;
+    }
+
+
+    /// @func AlignWritePosBits2ByteBoundary 
+    /// @brief align @mWritePosBits to a byte boundary. 
+    /// @access  public  
+    /// @notice
+    /// this can be used to 'waste' bits to byte align for efficiency reasons It
+    /// can also be used to force coalesced bitstreams to start on byte
+    /// boundaries so so WriteAlignedBits and ReadAlignedBits both
+    /// calculate the same offset when aligning.
+    /// @author mengdi[Jackie]
     inline void AlignWritePosBits2ByteBoundary(void)
     {
         writable_bit_pos_ += 8 - (((writable_bit_pos_ - 1) & 7) + 1);
     }
 
-    //! @func WriteAlignedBytes 
-    //! @brief  align the bitstream to the byte boundary and 
-    //! then write the specified number of bytes.  
-    //! @access  public  
-    //! @param [in] [const UInt8 * src]  
-    //! @param [in] [const ByteSize numberOfBytesWrite]  
-    //! @returns [void]
-    //! @notice this is faster than WriteBits() but
-    //! wastes the bits to do the alignment for @mWritePosBits and
-    //! requires you to call ReadAlignedBits() at the corresponding 
-    //! read position.
-    //! @author mengdi[Jackie]
+    /// @func WriteAlignedBytes 
+    /// @brief  align the bitstream to the byte boundary and 
+    /// then write the specified number of bytes.  
+    /// @access  public  
+    /// @param [in] [const UInt8 * src]  
+    /// @param [in] [const ByteSize numberOfBytesWrite]  
+    /// @returns [void]
+    /// @notice this is faster than WriteBits() but
+    /// wastes the bits to do the alignment for @mWritePosBits and
+    /// requires you to call ReadAlignedBits() at the corresponding 
+    /// read position.
+    /// @author mengdi[Jackie]
     void WriteAlignedBytes(const UInt8 *src, const ByteSize numberOfBytesWrite);
 
-    //! @brief Aligns the bitstream, writes inputLength, and writes input. 
-    //! @access  public  
-    //! @param[in] inByteArray The data
-    //! @param[in] inputLength the size of input.
-    //! @param[in] maxBytesWrite max bytes to write
-    //! @notice Won't write beyond maxBytesWrite
+
+    /// @brief Aligns the bitstream, writes inputLength, and writes input. 
+    /// @access  public  
+    /// @param[in] inByteArray The data
+    /// @param[in] inputLength the size of input.
+    /// @param[in] maxBytesWrite max bytes to write
+    /// @notice Won't write beyond maxBytesWrite
     void WriteAlignedBytes(const UInt8 *src, const ByteSize bytes2Write,
         const ByteSize maxBytes2Write);
 
-    //! @func Write 
-    //! @brief write a float into 2 bytes, spanning the range, 
-    //! between @param[floatMin] and @param[floatMax]
-    //! @access  public  
-    //! @param [in] [float src]  value to write into stream
-    //! @param [in] [float floatMin] Predetermined mini value of f
-    //! @param [in] [float floatMax] Predetermined max value of f
-    //! @return bool
-    //! @notice 
-    //! @author mengdi[Jackie]
+
+    /// @func Write 
+    /// @brief write a float into 2 bytes, spanning the range, 
+    /// between @param[floatMin] and @param[floatMax]
+    /// @access  public  
+    /// @param [in] [float src]  value to write into stream
+    /// @param [in] [float floatMin] Predetermined mini value of f
+    /// @param [in] [float floatMax] Predetermined max value of f
+    /// @return bool
+    /// @notice 
+    /// @author mengdi[Jackie]
     void WriteFloatRange(float src, float floatMin, float floatMax);
 
-    //! @func Write 
-    //! @brief write any integral type to a bitstream.  
-    //! @access  public  
-    //! @param [in] [const templateType & src] 
-    //! it is user data that is right aligned in default
-    //! @return void
-    //! @notice will swap endian internally 
-    //! if DO_NOT_SWAP_ENDIAN not defined
-    void WriteUInt8(const UInt8 &src)
+
+    /// @func Write 
+    /// @brief write any integral type to a bitstream.  
+    /// @access  public  
+    /// @param [in] [const templateType & src] 
+    /// it is user data that is right aligned in default
+    /// @return void
+    /// @notice will swap endian internally 
+    /// if DO_NOT_SWAP_ENDIAN not defined
+    /// @author mengdi[Jackie]
+    template <class IntergralType>
+    void Write(const IntergralType &src)
     {
-        WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt8)), true);
+        if (sizeof(IntergralType) == 1)
+        {
+            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+        }
+        else
+        {
+#ifndef DO_NOT_SWAP_ENDIAN
+            if (DoEndianSwap())
+            {
+                UInt8 output[sizeof(IntergralType)];
+                ReverseBytes((UInt8*)&src, output, sizeof(IntergralType));
+                WriteBits(output, BYTES_TO_BITS(sizeof(IntergralType)), true);
+            }
+            else
+#endif
+                WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(IntergralType)), true);
+        }
     }
 
-    void WriteInt8(const Int8 &src)
-    {
-        if (sizeof(Int8) == 1)
-        {
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt8)), true);
-        }
-    }
-    void WriteUInt16(const UInt16 &src)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(UInt16)];
-            ReverseBytes((UInt8*)&src, output, sizeof(UInt16));
-            WriteBits(output, BYTES_TO_BITS(sizeof(UInt16)), true);
-        }
-        else
-#endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt16)), true);
-    }
-    void WriteInt16(const Int16 &src)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(Int16)];
-            ReverseBytes((UInt8*)&src, output, sizeof(Int16));
-            WriteBits(output, BYTES_TO_BITS(sizeof(Int16)), true);
-        }
-        else
-#endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int16)), true);
-    }
-    void WriteUInt32(const UInt32 &src)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(UInt32)];
-            ReverseBytes((UInt8*)&src, output, sizeof(UInt32));
-            WriteBits(output, BYTES_TO_BITS(sizeof(UInt32)), true);
-        }
-        else
-#endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt32)), true);
-    }
-    void WriteInt32(const Int32 &src)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(Int32)];
-            ReverseBytes((UInt8*)&src, output, sizeof(Int32));
-            WriteBits(output, BYTES_TO_BITS(sizeof(Int32)), true);
-        }
-        else
-#endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int32)), true);
-    }
-    void WriteUInt64(const UInt64 &src)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(UInt64)];
-            ReverseBytes((UInt8*)&src, output, sizeof(UInt64));
-            WriteBits(output, BYTES_TO_BITS(sizeof(UInt64)), true);
-        }
-        else
-#endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(UInt64)), true);
-    }
-    void WriteInt64(const Int64 &src)
-    {
-#ifndef DO_NOT_SWAP_ENDIAN
-        if (DoEndianSwap())
-        {
-            UInt8 output[sizeof(Int64)];
-            ReverseBytes((UInt8*)&src, output, sizeof(Int64));
-            WriteBits(output, BYTES_TO_BITS(sizeof(Int64)), true);
-        }
-        else
-#endif
-            WriteBits((UInt8*)&src, BYTES_TO_BITS(sizeof(Int64)), true);
-    }
 
-    inline void WriteBoolean(const bool &src)
+    /// @func Write 
+    /// @access  public  
+    /// @brief Write a bool to a bitstream.
+    /// @param [in] [const bool & src] The value to write
+    /// @return [bool] true succeed, false failed
+    /// @author mengdi[Jackie]
+    inline void Write(const bool &src)
     {
         if (src == true)
             WriteBitOne();
@@ -1290,15 +1450,23 @@ class GECO_EXPORT GecoBitStream
             WriteBitZero();
     }
 
-    // notice  will not endian swap the address or port
-    inline void WriteInetAddress(const InetAddress &src)
+    /// @func Write 
+    /// @brief write a InetAddress to stream
+    /// @access  public  
+    /// @param [in] [const InetAddress & src]  
+    /// @return [bool]  true succeed, false failed
+    /// @remark
+    /// @notice  will not endian swap the address or port
+    /// @author mengdi[Jackie]
+
+    inline void Write(const InetAddress &src)
     {
         UInt8 version = src.GetIPVersion();
-        WriteUInt8(version);
+        Write(version);
 
         if (version == 4)
         {
-            //! Hide the address so routers don't modify it
+            /// Hide the address so routers don't modify it
             InetAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
@@ -1314,10 +1482,20 @@ class GECO_EXPORT GecoBitStream
             WriteBits((UInt8*)&src.address.addr6,
                 BYTES_TO_BITS(sizeof(src.address.addr6)), true);
 #endif
-        }
+    }
     }
 
-    inline void WriteUInt24(const UInt24 &inTemplateVar)
+    /// @func Write 
+    /// @brief write three bytes into stream
+    /// @access  public  
+    /// @param [in] [const UInt24 & inTemplateVar]  
+    /// @return [void]  true succeed, false failed
+    /// @remark
+    /// @notice will align write-position to byte-boundary internally
+    /// @see  AlignWritePosBits2ByteBoundary()
+    /// @author mengdi[Jackie]
+
+    inline void Write(const UInt24 &inTemplateVar)
     {
         if (!IsBigEndian())
         {
@@ -1330,484 +1508,308 @@ class GECO_EXPORT GecoBitStream
         }
     }
 
-    inline void WriteGUID(const JackieGUID &inTemplateVar)
+    /// @func Write 
+    /// @access  public  
+    /// @param [in] [const JackieGUID & inTemplateVar]  
+    /// @return void
+    /// @author mengdi[Jackie]
+
+    inline void Write(const JackieGUID &inTemplateVar)
     {
-        WriteUInt64(inTemplateVar.g);
+        Write(inTemplateVar.g);
     }
 
-    inline void WriteGecoString(const GecoString &src)
+
+    inline void Write(const GecoString &src)
     {
         //src.Write(this);
     }
-    inline void WriteGecoWString(const GecoWString &src)
+    //
+    //inline void WriteFrom(const RakWString &src)
+    //{
+    //	src.Serialize(this);
+    //}
+
+    inline void Write(const char * const &inStringVar)
     {
-        //src.Serialize(this);
+        //GecoString::Write(inStringVar, this);
     }
-    inline void WriteCharStr(const char * const &inStringVar)
-    {
-        // JackieString::Write(inStringVar, this);
-    }
-    inline void WriteWCharStr(const wchar_t * const &inStringVar)
+
+    inline void Write(const wchar_t * const &inStringVar)
     {
         //JackieWString::Serialize(inStringVar, this);
     }
-    inline void WriteCharStr(const UInt8 * const &src)
+
+    inline void Write(const UInt8 * const &src)
     {
-        WriteCharStr((const char*)src);
-    }
-    inline void WriteCharStr(char * const &src)
-    {
-        WriteCharStr((const char*)src);
-    }
-    inline void WriteCharStr(UInt8 * const &src)
-    {
-        WriteCharStr((const char*)src);
+        Write((const char*)src);
     }
 
-    //! @func WriteChanged 
-    //! @brief write any changed integral type to a bitstream.
-    //! @access  public  
-    //! @param [in] const templateType & latestVal 
-    //! @param [in] const templateType & lastVal  
-    //! @return void 
-    //! @notice 
-    //! If the current value is different from the last value
-    //! the current value will be written.  Otherwise, a single bit will be written
-    inline void WriteUInt8Changed(const UInt8 &latestVal,
-        const UInt8 &lastVal)
+    inline void Write(char * const &src)
+    {
+        Write((const char*)src);
+    }
+
+    inline void Write(UInt8 * const &src)
+    {
+        Write((const char*)src);
+    }
+
+    /// @func WriteChanged 
+    /// @brief write any changed integral type to a bitstream.
+    /// @access  public  
+    /// @param [in] const templateType & latestVal 
+    /// @param [in] const templateType & lastVal  
+    /// @return void 
+    /// @notice 
+    /// If the current value is different from the last value
+    /// the current value will be written.  Otherwise, a single bit will be written
+    /// @author mengdi[Jackie]
+    template <class templateType>
+    inline void WriteChangedValue(const templateType &latestVal,
+        const templateType &lastVal)
     {
         if (latestVal == lastVal)
         {
-            WriteBoolean(false);
+            Write(false);
         }
         else
         {
-            WriteBoolean(true);
-            WriteUInt8(latestVal);
+            Write(true);
+            Write(latestVal);
         }
     }
-    inline void WriteInt8Changed(const Int8 &latestVal,
-        const Int8 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteInt8(latestVal);
-        }
-    }
-    inline void WriteUInt16Changed(const UInt16 &latestVal,
-        const UInt16 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteUInt16(latestVal);
-        }
-    }
-    inline void WriteInt16Changed(const Int16 &latestVal,
-        const Int16 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteInt16(latestVal);
-        }
-    }
-    inline void WriteUInt32Changed(const UInt32 &latestVal,
-        const UInt32 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteUInt32(latestVal);
-        }
-    }
-    inline void WriteInt32Changed(const Int32 &latestVal,
-        const Int32 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteInt32(latestVal);
-        }
-    }
-    inline void WriteUInt64Changed(const UInt64 &latestVal,
-        const UInt64 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteUInt64(latestVal);
-        }
-    }
-    inline void WriteInt64Changed(const Int64 &latestVal,
-        const Int64 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteInt64(latestVal);
-        }
-    }
-    //! @func WriteChanged 
-    //! @brief write a bool delta. Same thing as just calling Write
-    //! @access  public  
-    //! @param [in] const bool & currentValue  
-    //! @param [in] const bool & lastValue  
-    //! @return void 
-    //! @author mengdi[Jackie]
+
+
+
+    /// @func WriteChanged 
+    /// @brief write a bool delta. Same thing as just calling Write
+    /// @access  public  
+    /// @param [in] const bool & currentValue  
+    /// @param [in] const bool & lastValue  
+    /// @return void 
+    /// @author mengdi[Jackie]
+
     inline void WriteChangedValue(const bool &currentValue,
         const bool &lastValue)
     {
         (void)lastValue;
-        WriteBoolean(currentValue);
+        Write(currentValue);
     }
 
-    //! @brief WriteDelta when you don't know what the last value is, or there is no last value.
-    //! @param[in] currentValue The current value to write
-    //! @func WriteChanged 
-    //! @brief 
-    //! writeDelta when you don't know what the last value is, or there is no last value.
-    //! @access  public  
-    //! @param [in] const templateType & currentValue  
-    //! @return void  
-    //! @author mengdi[Jackie]
-    //    template <class templateType>
-    //    inline void WriteChangedValue(const templateType &currentValue)
-    //    {
-    //        WriteBoolean(true);
-    //        Write(currentValue);
-    //    }
+    /// @brief WriteDelta when you don't know what the last value is, or there is no last value.
+    /// @param[in] currentValue The current value to write
+    /// @func WriteChanged 
+    /// @brief 
+    /// writeDelta when you don't know what the last value is, or there is no last value.
+    /// @access  public  
+    /// @param [in] const templateType & currentValue  
+    /// @return void  
+    /// @author mengdi[Jackie]
+    template <class templateType>
+    inline void WriteChangedValue(const templateType &currentValue)
+    {
+        Write(true);
+        Write(currentValue);
+    }
 
-    //! @func WriteMiniChanged 
-    //! @brief write any integral type to a bitstream.  
-    //! @access  public  
-    //! @param [in] const templateType & currVal 
-    //! The current value to write 
-    //! @param [in] const templateType & lastValue  
-    //!  The last value to compare against
-    //! @return void 
-    //! @notice
-    //! If the current value is different from the last value. the current
-    //! value will be written.  Otherwise, a single bit will be written
-    //! For floating point, this is lossy, using 2 bytes for a float and 
-    //! 4 for a double. The range must be between -1 and +1.
-    //! For non-floating point, this is lossless, but only has benefit
-    //! if you use less than half the bits of the type
-    //! If you are not using DO_NOT_SWAP_ENDIAN the opposite is
-    //! true for types larger than 1 byte
-    //! @author mengdi[Jackie]
-    inline void WriteMiniUInt8Changed(const UInt8 &latestVal,
-        const UInt8 &lastVal)
+
+    /// @func WriteMiniChanged 
+    /// @brief write any integral type to a bitstream.  
+    /// @access  public  
+    /// @param [in] const templateType & currVal 
+    /// The current value to write 
+    /// @param [in] const templateType & lastValue  
+    ///  The last value to compare against
+    /// @return void 
+    /// @notice
+    /// If the current value is different from the last value. the current
+    /// value will be written.  Otherwise, a single bit will be written
+    /// For floating point, this is lossy, using 2 bytes for a float and 
+    /// 4 for a double. The range must be between -1 and +1.
+    /// For non-floating point, this is lossless, but only has benefit
+    /// if you use less than half the bits of the type
+    /// If you are not using DO_NOT_SWAP_ENDIAN the opposite is
+    /// true for types larger than 1 byte
+    /// @author mengdi[Jackie]
+    template <class templateType>
+    inline void WriteMiniChanged(const templateType&currVal,
+        const templateType &lastValue)
     {
-        if (latestVal == lastVal)
+        if (currVal == lastValue)
         {
-            WriteBoolean(false);
+            Write(false);
         }
         else
         {
-            WriteBoolean(true);
-            WriteMiniUInt8(latestVal);
-        }
-    }
-    inline void WriteMiniInt8Changed(const Int8 &latestVal,
-        const Int8 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniInt8(latestVal);
-        }
-    }
-    inline void WriteMiniUInt16Changed(const UInt16 &latestVal,
-        const UInt16 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniUInt16(latestVal);
-        }
-    }
-    inline void WriteMiniInt16Changed(const Int16 &latestVal,
-        const Int16 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniInt16(latestVal);
-        }
-    }
-    inline void WriteMiniUInt32Changed(const UInt32 &latestVal,
-        const UInt32 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniUInt32(latestVal);
-        }
-    }
-    inline void WriteMiniInt32Changed(const Int32 &latestVal,
-        const Int32 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniInt32(latestVal);
-        }
-    }
-    inline void WriteMiniUInt64Changed(const UInt64 &latestVal,
-        const UInt64 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniUInt64(latestVal);
-        }
-    }
-    inline void WriteMiniInt64Changed(const Int64 &latestVal,
-        const Int64 &lastVal)
-    {
-        if (latestVal == lastVal)
-        {
-            WriteBoolean(false);
-        }
-        else
-        {
-            WriteBoolean(true);
-            WriteMiniInt64(latestVal);
+            Write(true);
+            WriteMini(currVal);
         }
     }
 
-    //! @brief Write a bool delta.  Same thing as just calling Write
-    //! @param[in] currentValue The current value to write
-    //! @param[in] lastValue The last value to compare against
-    inline void WriteMiniBooleanChanged(const bool currentValue, const bool lastValue)
+    /// @brief Write a bool delta.  Same thing as just calling Write
+    /// @param[in] currentValue The current value to write
+    /// @param[in] lastValue The last value to compare against
+
+    inline void WriteMiniChanged(const bool &currentValue, const bool&
+        lastValue)
     {
         (void)lastValue;
-        WriteBoolean(currentValue);
+        Write(currentValue);
     }
 
-    //! @brief Same as WriteMiniChanged() 
-    //! when we have an unknown second parameter
-    //    template <class templateType>
-    //    inline void WriteMiniChanged(const templateType &currentValue)
-    //    {
-    //        WriteBoolean(true);
-    //        WriteMini(currentValue);
-    //    }
-
-    //! @func WriteMini 
-    //! @access  public  
-    //! @param [in] const UInt8 * src  
-    //! @param [in] const BitSize bits2Write  write size in bits
-    //! @param [in] const bool isUnsigned  
-    //! @return void 
-    //! @notice 
-    //! this function assumes that @src points to a native type,
-    //! compress and write it.
-    //! @Remarks
-    //! assume we have src with value of FourOnes-FourOnes-FourOnes-11110001
-    //!++++++++++++++> High Memory Address (hma)
-    //!++++++++++++++++++++++++++++++
-    //! | FourOnes | FourOnes | FourOnes | 11110001 |  Big Endian 
-    //!++++++++++++++++++++++++++++++
-    //!++++++++++++++++++++++++++++++
-    //! |11110001 | FourOnes | FourOnes | FourOnes |  Little Endian 
-    //!++++++++++++++++++++++++++++++
-    //! for little endian, the high bytes are located in hma and so @currByte should 
-    //! increment from value of highest index ((bits2Write >> 3) - 1)
-    //! for big endian, the high bytes are located in lma and so @currByte should 
-    //! increment from value of lowest index (0)
-    //! ���ֽ��ڲ���һ���ֽڵĶ��������򣬲����ڴ�С�����⡣
-    //! �ͺ�ƽ����д��һ������д��λ�����͵�ַ�洢��λ��
-    //! ��char a=0x12.�洢�ӵ�λ����λ��Ϊ0001 0010
-    //! @author mengdi[Jackie]
-    void WriteMiniBits(const UInt8* src, const BitSize bits2Write, const bool isUnsigned);
-
-    //! @func WriteMini 
-    //! @brief Write any integral type to a bitstream,
-    //! endian swapping counters internally. default is unsigned (isUnsigned = true)
-    //! @access  public  
-    //! @param [in] const IntergralType & src  
-    //! @return void 
-    //! @notice
-    //! For floating point, this is lossy, using 2 bytes for a float and 4 for 
-    //! a double.  The range must be between -1 and +1.
-    //! For non-floating point, this is lossless, but only has benefit 
-    //! if you use less than half the bits of the type
-    //! we write low bits and reassenble the value in receiver endpoint
-    //! based on its endian, so no need to do endian swap here
-    //! @author mengdi[Jackie]
-    inline void WriteMiniUInt8(const UInt8 &src)
+    /// @brief Same as WriteMiniChanged() 
+    /// when we have an unknown second parameter
+    template <class templateType>
+    inline void WriteMiniChanged(const templateType &currentValue)
     {
-        WriteMiniBits((UInt8*)&src, sizeof(UInt8) << 3, true);
-    }
-    inline void WriteMiniInt8(const Int8 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(Int8) << 3, false);
-    }
-    inline void WriteMiniUInt16(const UInt16 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(UInt16) << 3, true);
-    }
-    inline void WriteMiniInt16(const Int16 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(Int16) << 3, false);
-    }
-    inline void WriteMiniUInt32(const UInt32 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(UInt32) << 3, true);
-    }
-    inline void WriteMiniInt32(const Int32 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(Int32) << 3, false);
-    }
-    inline void WriteMiniUInt64(const UInt64 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(UInt64) << 3, true);
-    }
-    inline void WriteMiniInt64(const Int64 &src)
-    {
-        WriteMiniBits((UInt8*)&src, sizeof(Int64) << 3, false);
+        Write(true);
+        WriteMini(currentValue);
     }
 
-    inline void WriteMiniInetAddress(const InetAddress &src)
+
+    /// @func WriteMini 
+    /// @access  public  
+    /// @param [in] const UInt8 * src  
+    /// @param [in] const BitSize bits2Write  write size in bits
+    /// @param [in] const bool isUnsigned  
+    /// @return void 
+    /// @notice 
+    /// this function assumes that @src points to a native type,
+    /// compress and write it.
+    /// @Remarks
+    /// assume we have src with value of FourOnes-FourOnes-FourOnes-11110001
+    ///++++++++++++++> High Memory Address (hma)
+    ///++++++++++++++++++++++++++++++
+    /// | FourOnes | FourOnes | FourOnes | 11110001 |  Big Endian 
+    ///++++++++++++++++++++++++++++++
+    ///++++++++++++++++++++++++++++++
+    /// |11110001 | FourOnes | FourOnes | FourOnes |  Little Endian 
+    ///++++++++++++++++++++++++++++++
+    /// for little endian, the high bytes are located in hma and so @currByte should 
+    /// increment from value of highest index ((bits2Write >> 3) - 1)
+    /// for big endian, the high bytes are located in lma and so @currByte should 
+    /// increment from value of lowest index (0)
+    /// 在字节内部，一个字节的二进制排序，不存在大小端问题。
+    /// 就和平常书写的一样，先写高位，即低地址存储高位。
+    /// 如char a=0x12.存储从低位到高位就为0001 0010
+    /// @author mengdi[Jackie]
+    void WriteMini(const UInt8* src, const BitSize bits2Write, const bool isUnsigned);
+
+
+    /// @func WriteMini 
+    /// @brief Write any integral type to a bitstream,
+    /// endian swapping counters internally. default is unsigned (isUnsigned = true)
+    /// @access  public  
+    /// @param [in] const IntergralType & src  
+    /// @return void 
+    /// @notice
+    /// For floating point, this is lossy, using 2 bytes for a float and 4 for 
+    /// a double.  The range must be between -1 and +1.
+    /// For non-floating point, this is lossless, but only has benefit 
+    /// if you use less than half the bits of the type
+    /// we write low bits and reassenble the value in receiver endpoint
+    /// based on its endian, so no need to do endian swap here
+    /// @author mengdi[Jackie]
+    template <bool isUnsigned = UnSignedInteger, class IntergralType>
+    inline void WriteMini(const IntergralType &src)
     {
+        WriteMini((UInt8*)&src, sizeof(IntergralType) << 3, isUnsigned);
+    }
+
+    inline void WriteMini(const InetAddress &src)
+    {
+        //Write(src);
         UInt8 version = src.GetIPVersion();
-        WriteMiniUInt8(version);
+        WriteMini<UnSignedInteger>(version);
 
         if (version == 4)
         {
-            //! Hide the address so routers don't modify it
+            /// Hide the address so routers don't modify it
             InetAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
-            WriteMiniUInt32(binaryAddress);
-            WriteMiniUInt16(p);
+            WriteMini<UnSignedInteger>(binaryAddress);
+            WriteMini<UnSignedInteger>(p);
         }
         else
         {
 #if NET_SUPPORT_IPV6 == 1
             UInt32 binaryAddress = src.address.addr6;
-            WriteMiniUInt32(binaryAddress);
+            WriteMini<UnSignedInteger>(binaryAddress);
 #endif
-        }
     }
-    inline void WriteMiniGUID(const JackieGUID &src)
-    {
-        WriteMiniUInt64(src.g);
     }
-    inline void WriteMiniUInt24(const UInt24 &var)
+    inline void WriteMini(const JackieGUID &src)
     {
-        WriteUInt32(var.val);
+        WriteMini<UnSignedInteger>(src.g);
     }
-    inline void WriteMiniBoolean(const bool &src)
+    inline void WriteMini(const UInt24 &var)
     {
-        WriteBoolean(src);
+        WriteMini<UnSignedInteger>(var.val);
+    }
+    inline void WriteMini(const bool &src)
+    {
+        Write(src);
     }
 
-    inline void WriteMiniFloat(const float &src)
+    inline void WriteMini(const float &src)
     {
         assert(src > -1.01f && src < 1.01f);
         float varCopy = src;
         if (varCopy < -1.0f) varCopy = -1.0f;
         if (varCopy > 1.0f) varCopy = 1.0f;
-        WriteMiniUInt16((UInt16)((varCopy + 1.0f)*32767.5f));
+        WriteMini<UnSignedInteger>((UInt16)((varCopy + 1.0f)*32767.5f));
     }
-    //!@notice For values between -1 and 1
-    inline void WriteMiniDouble(const double &src)
+    ///@notice For values between -1 and 1
+    inline void WriteMini(const double &src)
     {
         assert(src > -1.01f && src < 1.01f);
         double varCopy = src;
         if (varCopy < -1.0f) varCopy = -1.0f;
         if (varCopy > 1.0f) varCopy = 1.0f;
-        WriteMiniUInt32((UInt32)((varCopy + 1.0)*2147483648.0));
+        WriteMini<UnSignedInteger>((UInt32)((varCopy + 1.0)*2147483648.0));
     }
 
-    //! Compress the string
-    inline void WriteMiniGecoString(const GecoString &src)
+    /// Compress the string
+
+    inline void WriteMini(const GecoString &src)
     {
-        // src.WriteMini(this, 0, false);
+        //src.WriteMini(this, 0, false);
     }
-    inline void WriteMiniGecoWString(const GecoWString &src)
+    //
+    //inline void WriteMini(const JackieWString &src)
+    //{
+    //	src.Serialize(this);
+    //}
+
+    inline void WriteMini(const char * const &inStringVar)
     {
-        //src.Serialize(this);
+        //GecoString::WriteMini(inStringVar, this);
     }
-    inline void WriteMiniCharStr(const char * const &inStringVar)
-    {
-        // JackieString::WriteMini(inStringVar, this);
-    }
-    inline void WriteMiniWCharStr(const wchar_t * const &inStringVar)
+
+    inline void WriteMini(const wchar_t * const &inStringVar)
     {
         //JackieWString::Serialize(inStringVar, this);
     }
+
     inline void WriteMini(const UInt8 * const &src)
     {
-        WriteMiniCharStr((const char*)src);
-    }
-    inline void WriteMini(char * const &src)
-    {
-        WriteMiniCharStr((const char*)src);
-    }
-    inline void WriteMini(UInt8 * const &src)
-    {
-        WriteMiniCharStr((const char*)src);
+        WriteMini((const char*)src);
     }
 
-    //! @access public 
-    //! @returns void
+    inline void WriteMini(char * const &src)
+    {
+        WriteMini((const char*)src);
+    }
+
+    inline void WriteMini(UInt8 * const &src)
+    {
+        WriteMini((const char*)src);
+    }
+
+    /// @access public 
+    /// @returns void
     template <class destType, class srcType >
     void WriteCasted(const srcType &value)
     {
@@ -1815,40 +1817,30 @@ class GECO_EXPORT GecoBitStream
         Write(val);
     }
 
-    //! @method WriteBitsIntegerRange
-    //! @access public 
-    //! @returns void
-    //! @param [in] const templateType value 
-    //! value Integer value to write, which should be
-    //! between @param mini and @param max
-    //! which should be between @paramminimum and @param maximum
-    //! @param [in] const templateType minimum best to use global const
-    //! @param [in] const templateType maximum best to use global const
-    //! @param [in] bool allowOutsideRange
-    //! If true, all sends will take an extra bit, however value can deviate
-    //! from outside @param minimum and @param maximum.
-    //! If false, will assert if the value deviates
-    //! @brief Given the minimum and maximum values for an integer type,
-    //! figure out the minimum number of bits to represent the range
-    //! Then serialize only those bits, smaller the difference is, less bits to use,
-    //! no matter how big the max or mini is, best to send and recv huge numbers,
-    //! like 666666666, SerializeMini() will not work well in such case,
-    //! @notice
-    //! A static is used so that the required number of bits for
-    //! (maximum - minimum) is only calculated once.This does require that
-    //! @param minimum and @param maximum are fixed values for a
-    //! given line of code  for the life of the program
-    //! @use
-    //! const uint64 MAX_VALUE = 1000000000;
-    //! const uint64 Mini_VALUE = 999999900;
-    //! uint64 currVal = 999999966;
-    //! SerializeIntegerRange(true, currVal, MAX_VALUE, Mini_VALUE);
-    //! uint64 Val;
-    //! SerializeIntegerRange(fals, Val, MAX_VALUE, Mini_VALUE);
-    //! the sample above will use 7 bits (128) instead of 8 bytes
-    //! if you use SerializeMini(), will also use 8 bytes because there are  no zero bits to compress
-    template <class IntegerType>
-    void WriteIntegerRange(
+    /// @method WriteBitsIntegerRange
+    /// @access public 
+    /// @returns void
+    /// @param [in] const templateType value 
+    /// value Integer value to write, which should be
+    /// between @param mini and @param max
+    /// @param [in] const templateType mini
+    /// @param [in] const templateType max
+    /// @param [in] bool allowOutsideRange
+    /// If true, all sends will take an extra bit,
+    /// however value can deviate from outside @a minimum and @a maximum.
+    /// If false, will assert if the value deviates. 
+    /// This should match the corresponding value passed to Read().
+    /// @brief 
+    /// given the minimum and maximum values for an integer type, 
+    /// figure out the minimum number of bits to represent the range
+    /// Then write only those bits
+    /// @notice
+    /// a static is used so that the required number of bits for
+    /// (maximum-minimum pair) is only calculated once. 
+    /// This does require that @param mini and @param max are fixed 
+    /// values for a given line of code for the life of the program
+    /// @see
+    template <class IntegerType> void WriteIntegerRange(
         const IntegerType value,
         const IntegerType mini,
         const IntegerType max,
@@ -1859,21 +1851,21 @@ class GECO_EXPORT GecoBitStream
         WriteIntegerRange(value, mini, max, requiredBits, allowOutsideRange);
     }
 
-    //! @brief 
-    //! only work for positive integers but you can transfer nagative integers as postive
-    //! integers and transform it back to negative at receipt endpoint.
-    //! the smaller difference between min and max, the less bits used to transmit
-    //! eg. given a number of 105 in 100 - 120 is more efficiently compressed 
-    //! than that in 0 - 120, you actually is sending number of 105-100=5
-    //! it is even more efficient than using WriteMini()
-    //! @Remarks
-    //! Assume@valueBeyondMini's value is 00000000 - 00101100 
-    //! Memory Address ------------------> 
-    //! 00000000   00101100   Big Endian
-    //! 00101100   00000000   Little Endian 
-    //! so for big endian, we need to reverse byte so that
-    //! the high byte of 00101100 that was put in low address can be written correctly
-    //! for little endian, we do nothing.
+    /// @brief 
+    /// only work for positive integers but you can transfer nagative integers as postive
+    /// integers and transform it back to negative at receipt endpoint.
+    /// the smaller difference between min and max, the less bits used to transmit
+    /// eg. given a number of 105 in 100 - 120 is more efficiently compressed 
+    /// than that in 0 - 120, you actually is sending number of 105-100=5
+    /// it is even more efficient than using WriteMini()
+    /// @Remarks
+    /// Assume@valueBeyondMini's value is 00000000 - 00101100 
+    /// Memory Address ------------------> 
+    /// 00000000   00101100   Big Endian
+    /// 00101100   00000000   Little Endian 
+    /// so for big endian, we need to reverse byte so that
+    /// the high byte of 00101100 that was put in low address can be written correctly
+    /// for little endian, we do nothing.
     template <class IntegerType>
     void WriteIntegerRange(
         const IntegerType value,
@@ -1887,13 +1879,13 @@ class GECO_EXPORT GecoBitStream
 
         if (allowOutsideRange)
         {
-            if (value <mini || value>max)  //!< out of range
+            if (value <mini || value>max)  ///< out of range
             {
-                WriteBoolean(true);
+                Write(true);
                 WriteMini(value);
                 return;
             }
-            WriteBoolean(false); //!< inside range
+            Write(false); ///< inside range
         }
 
         IntegerType valueBeyondMini = value - mini;
@@ -1909,19 +1901,20 @@ class GECO_EXPORT GecoBitStream
         }
     }
 
-    //! @method WriteNormVector
-    //! @access public 
-    //! @returns void
-    //! @param [in] templateType x
-    //! @param [in] templateType y
-    //! @param [in] templateType z
-    //! @brief
-    //! Write a normalized 3D vector, using (at most) 4 bytes + 3 bits
-    //! instead of 12 - 24 bytes. Accurate to 1/32767.5.
-    //! @notice
-    //! Will further compress y or z axis aligned vectors.
-    //! templateType for this function must be a float or double
-    //! @see
+
+    /// @method WriteNormVector
+    /// @access public 
+    /// @returns void
+    /// @param [in] templateType x
+    /// @param [in] templateType y
+    /// @param [in] templateType z
+    /// @brief
+    /// Write a normalized 3D vector, using (at most) 4 bytes + 3 bits
+    /// instead of 12 - 24 bytes. Accurate to 1/32767.5.
+    /// @notice
+    /// Will further compress y or z axis aligned vectors.
+    /// templateType for this function must be a float or double
+    /// @see
     template <class templateType> void WriteNormVector(
         templateType x,
         templateType y,
@@ -1933,84 +1926,70 @@ class GECO_EXPORT GecoBitStream
         WriteFloatRange((float)z, -1.0f, 1.0f);
     }
 
-    //! @method WriteVector
-    //! @access public 
-    //! @returns void
-    //! @brief Write a vector, using 10 bytes instead of 12.
-    //! @notice
-    //! Loses accuracy to about 3/10ths and only saves 2 bytes, 
-    //! so only use if accuracy is not important
-    //! templateType for this function must be a float or double
-    //! @see
-    template <class FloatingType> void WriteVector(
-        FloatingType x,
-        FloatingType y,
-        FloatingType z)
+    /// @method WriteVector
+    /// @access public 
+    /// @returns void
+    /// @brief Write a vector, using 10 bytes instead of 12.
+    /// @notice
+    /// Loses accuracy to about 3/10ths and only saves 2 bytes, 
+    /// so only use if accuracy is not important
+    /// templateType for this function must be a float or double
+    /// @see
+    template <class templateType> void WriteVector(
+        templateType x,
+        templateType y,
+        templateType z)
     {
-        FloatingType magnitude = sqrt(x * x + y * y + z * z);
-        WriteMiniFloat((float)magnitude);
+        templateType magnitude = sqrt(x * x + y * y + z * z);
+        Write((float)magnitude);
         if (magnitude > 0.00001f)
         {
-            WriteMiniFloat((float)(x / magnitude));
-            WriteMiniFloat((float)(y / magnitude));
-            WriteMiniFloat((float)(z / magnitude));
+            WriteMini((float)(x / magnitude));
+            WriteMini((float)(y / magnitude));
+            WriteMini((float)(z / magnitude));
         }
     }
 
-    //! @method WriteNormQuat
-    //! @access public 
-    //! @returns void
-    //! @brief 
-    //! Write a normalized quaternion in (18 bits[best case] to 6 bytes[worest case]) + 4 bits instead of 16 bytes.  
-    //! Slightly lossy.
-    //! @notice
-    //! FloatingType for this function must be a float or double
-    //! @see
-    void WriteNormQuat(
-        float& w,
-        float& x,
-        float& y,
-        float& z)
+    /// @method WriteNormQuat
+    /// @access public 
+    /// @returns void
+    /// @brief 
+    /// Write a normalized quaternion in (18 bits[best case] to 6 bytes[worest case]) + 4 bits instead of 16 bytes.  
+    /// Slightly lossy.
+    /// @notice
+    /// templateType for this function must be a float or double
+    /// @see
+    template <class templateType> void WriteNormQuat(
+        templateType w,
+        templateType x,
+        templateType y,
+        templateType z)
     {
-        WriteBoolean((bool)(w < 0.0));
-        WriteBoolean((bool)(x < 0.0));
-        WriteBoolean((bool)(y < 0.0));
-        WriteBoolean((bool)(z < 0.0));
-        WriteMiniUInt16((UInt16)(fabs(x)*65535.0));
-        WriteMiniUInt16((UInt16)(fabs(y)*65535.0));
-        WriteMiniUInt16((UInt16)(fabs(z)*65535.0));
+        Write((bool)(w < 0.0));
+        Write((bool)(x < 0.0));
+        Write((bool)(y < 0.0));
+        Write((bool)(z < 0.0));
+        WriteMini((UInt16)(fabs(x)*65535.0));
+        WriteMini((UInt16)(fabs(y)*65535.0));
+        WriteMini((UInt16)(fabs(z)*65535.0));
         // Leave out w and calculate it on the target
     }
-    void WriteNormQuat(
-        double& w,
-        double& x,
-        double& y,
-        double& z)
-    {
-        WriteBoolean((bool)(w < 0.0));
-        WriteBoolean((bool)(x < 0.0));
-        WriteBoolean((bool)(y < 0.0));
-        WriteBoolean((bool)(z < 0.0));
-        WriteMiniUInt16((UInt16)(fabs(x)*65535.0));
-        WriteMiniUInt16((UInt16)(fabs(y)*65535.0));
-        WriteMiniUInt16((UInt16)(fabs(z)*65535.0));
-        // Leave out w and calculate it on the target
-    }
-    //! @method WriteOrthMatrix
-    //! @access public 
-    //! @returns void
-    //! @brief
-    //! Write an orthogonal matrix by creating a quaternion, 
-    //! and writing 3 components of the quaternion in 2 bytes each.
-    //! @notice
-    //! Lossy, although the result is renormalized
-    //! Use (18 bits to 6 bytes) +4 bits instead of 36
-    //! FloatingType for this function must be a float or double
-    //! @see WriteNormQuat()
-    void WriteOrthMatrix(
-        float m00, float m01, float m02,
-        float m10, float m11, float m12,
-        float m20, float m21, float m22)
+
+    /// @method WriteOrthMatrix
+    /// @access public 
+    /// @returns void
+    /// @brief
+    /// Write an orthogonal matrix by creating a quaternion, 
+    /// and writing 3 components of the quaternion in 2 bytes each.
+    /// @notice
+    /// Lossy, although the result is renormalized
+    /// Use (18 bits to 6 bytes) +4 bits instead of 36
+    /// templateType for this function must be a float or double
+    /// @see WriteNormQuat()
+    template <class templateType> void WriteOrthMatrix(
+        templateType m00, templateType m01, templateType m02,
+        templateType m10, templateType m11, templateType m12,
+        templateType m20, templateType m21, templateType m22)
     {
         double qw;
         double qx;
@@ -2043,34 +2022,32 @@ class GECO_EXPORT GecoBitStream
         WriteNormQuat(qw, qx, qy, qz);
     }
 
-    //! @brief  Write zeros until the bitstream is filled up to @param bytes
-    //! @notice will internally align write pos and then reallocate if necessary
-    //!  the @mWritePosBits will be byte aligned
+    /// @brief  Write zeros until the bitstream is filled up to @param bytes
+    /// @notice will internally align write pos and then reallocate if necessary
+    ///  the @mWritePosBits will be byte aligned
     void PadZero2LengthOf(UInt32 bytes);
 
-    //! @brief swao bytes starting from @data with offset given
+    /// @brief swao bytes starting from @data with offset given
     inline void EndianSwapBytes(UInt32 byteOffset, UInt32 length)
     {
-        if (DoEndianSwap()) ReverseBytes(data_ + byteOffset, length);
+        if (DoEndianSwap()) ReverseBytes(data + byteOffset, length);
     }
 
-    //! @brief Makes a copy of the internal data for you @param _data 
-    //! will point to the stream. Partial bytes are left aligned
-    //! @param[out] _data The allocated copy of GetData()
-    //! @return The length in bits of the stream.
-    //! @notice
-    //! all bytes are copied besides the bytes in GetPayLoadBits()
+    /// @brief Makes a copy of the internal data for you @param _data 
+    /// will point to the stream. Partial bytes are left aligned
+    /// @param[out] _data The allocated copy of GetData()
+    /// @return The length in bits of the stream.
+    /// @notice
+    /// all bytes are copied besides the bytes in GetPayLoadBits()
     BitSize Copy(UInt8*& _data) const
     {
         assert(writable_bit_pos_ > 0);
-
-        _data = (UInt8*)gMallocEx(BITS_TO_BYTES(writable_bit_pos_),
-            TRACKE_MALLOC);
-        memcpy(_data, data_, sizeof(UInt8) * BITS_TO_BYTES(writable_bit_pos_));
+        _data = (UInt8*)gMallocEx(BITS_TO_BYTES(writable_bit_pos_), TRACKE_MALLOC);
+        memcpy(_data, data, sizeof(UInt8) * BITS_TO_BYTES(writable_bit_pos_));
         return writable_bit_pos_;
     }
 
-    //!@brief Ignore data we don't intend to read
+    ///@brief Ignore data we don't intend to read
     void ReadSkipBits(const BitSize numberOfBits)
     {
         readable_bit_pos_ += numberOfBits;
@@ -2084,16 +2061,16 @@ class GECO_EXPORT GecoBitStream
     {
         assert((writable_bit_pos_ & 7) == 0);
         AppendBitsCouldRealloc(8);
-        data_[writable_bit_pos_ >> 3] = inByteArray[0];
+        data[writable_bit_pos_ >> 3] = inByteArray[0];
         writable_bit_pos_ += 8;
     }
     void ReadOneAlignedBytes(char *inOutByteArray)
     {
         assert((readable_bit_pos_ & 7) == 0);
         assert(GetPayLoadBits() >= 8);
-        // if (curr_readable_pos + 1 * 8 > mWritePosBits) return;
+        // if (mReadPosBits + 1 * 8 > mWritePosBits) return;
 
-        inOutByteArray[0] = data_[(readable_bit_pos_ >> 3)];
+        inOutByteArray[0] = data[(readable_bit_pos_ >> 3)];
         readable_bit_pos_ += 8;
     }
 
@@ -2104,14 +2081,14 @@ class GECO_EXPORT GecoBitStream
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[1];
-            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[0];
+            data[(writable_bit_pos_ >> 3) + 0] = inByteArray[1];
+            data[(writable_bit_pos_ >> 3) + 1] = inByteArray[0];
         }
         else
 #endif
         {
-            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[0];
-            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[1];
+            data[(writable_bit_pos_ >> 3) + 0] = inByteArray[0];
+            data[(writable_bit_pos_ >> 3) + 1] = inByteArray[1];
         }
 
         writable_bit_pos_ += 16;
@@ -2120,18 +2097,18 @@ class GECO_EXPORT GecoBitStream
     {
         assert((readable_bit_pos_ & 7) == 0);
         assert(GetPayLoadBits() >= 16);
-        //if (curr_readable_pos + 16 > mWritePosBits) return ;
+        //if (mReadPosBits + 16 > mWritePosBits) return ;
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 1];
-            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 0];
+            inOutByteArray[0] = data[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[1] = data[(readable_bit_pos_ >> 3) + 0];
         }
         else
 #endif
         {
-            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 0];
-            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[0] = data[(readable_bit_pos_ >> 3) + 0];
+            inOutByteArray[1] = data[(readable_bit_pos_ >> 3) + 1];
         }
 
         readable_bit_pos_ += 16;
@@ -2144,18 +2121,18 @@ class GECO_EXPORT GecoBitStream
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[3];
-            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[2];
-            data_[(writable_bit_pos_ >> 3) + 2] = inByteArray[1];
-            data_[(writable_bit_pos_ >> 3) + 3] = inByteArray[0];
+            data[(writable_bit_pos_ >> 3) + 0] = inByteArray[3];
+            data[(writable_bit_pos_ >> 3) + 1] = inByteArray[2];
+            data[(writable_bit_pos_ >> 3) + 2] = inByteArray[1];
+            data[(writable_bit_pos_ >> 3) + 3] = inByteArray[0];
         }
         else
 #endif
         {
-            data_[(writable_bit_pos_ >> 3) + 0] = inByteArray[0];
-            data_[(writable_bit_pos_ >> 3) + 1] = inByteArray[1];
-            data_[(writable_bit_pos_ >> 3) + 2] = inByteArray[2];
-            data_[(writable_bit_pos_ >> 3) + 3] = inByteArray[3];
+            data[(writable_bit_pos_ >> 3) + 0] = inByteArray[0];
+            data[(writable_bit_pos_ >> 3) + 1] = inByteArray[1];
+            data[(writable_bit_pos_ >> 3) + 2] = inByteArray[2];
+            data[(writable_bit_pos_ >> 3) + 3] = inByteArray[3];
         }
 
         writable_bit_pos_ += 32;
@@ -2164,140 +2141,99 @@ class GECO_EXPORT GecoBitStream
     {
         assert((readable_bit_pos_ & 7) == 0);
         assert(GetPayLoadBits() >= 32);
-        //if (curr_readable_pos + 4 * 8 > mWritePosBits) return;
+        //if (mReadPosBits + 4 * 8 > mWritePosBits) return;
 #ifndef DO_NOT_SWAP_ENDIAN
         if (DoEndianSwap())
         {
-            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 3];
-            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 2];
-            inOutByteArray[2] = data_[(readable_bit_pos_ >> 3) + 1];
-            inOutByteArray[3] = data_[(readable_bit_pos_ >> 3) + 0];
+            inOutByteArray[0] = data[(readable_bit_pos_ >> 3) + 3];
+            inOutByteArray[1] = data[(readable_bit_pos_ >> 3) + 2];
+            inOutByteArray[2] = data[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[3] = data[(readable_bit_pos_ >> 3) + 0];
         }
         else
 #endif
         {
-            inOutByteArray[0] = data_[(readable_bit_pos_ >> 3) + 0];
-            inOutByteArray[1] = data_[(readable_bit_pos_ >> 3) + 1];
-            inOutByteArray[2] = data_[(readable_bit_pos_ >> 3) + 2];
-            inOutByteArray[3] = data_[(readable_bit_pos_ >> 3) + 3];
+            inOutByteArray[0] = data[(readable_bit_pos_ >> 3) + 0];
+            inOutByteArray[1] = data[(readable_bit_pos_ >> 3) + 1];
+            inOutByteArray[2] = data[(readable_bit_pos_ >> 3) + 2];
+            inOutByteArray[3] = data[(readable_bit_pos_ >> 3) + 3];
         }
 
         readable_bit_pos_ += 32;
     }
 
-    //!@brief text-print bits starting from @data to @mWritingPosBits
-    void Bitify(void);
-    void Hexlify(void);
+    ///@brief text-print bits starting from @data to @mWritingPosBits
+    void PrintBit(void);
+    void PrintHex(void);
 
-    //! @briefAssume we have value of 00101100   00000000   Little Endian
-    //! the required bits are 8(0000000)+2(first 2 bits from left to right in 00101100)
-    //! = 10 buts in total
+
+    /// @briefAssume we have value of 00101100   00000000   Little Endian
+    /// the required bits are 8(0000000)+2(first 2 bits from left to right in 00101100)
+    /// = 10 buts in total
     inline static int GetLeadingZeroSize(Int8 x)
     {
         return GetLeadingZeroSize((UInt8)x);
     }
-    inline static int GetLeadingZeroSize(UInt8 x)
+    inline static  int GetLeadingZeroSize(UInt8 x)
     {
         UInt8 y;
         int n;
 
         n = 8;
-        y = x >> 4; if (y != 0)
-        {
-            n = n - 4; x = y;
-        }
-        y = x >> 2; if (y != 0)
-        {
-            n = n - 2; x = y;
-        }
-        y = x >> 1; if (y != 0) return n - 2;
+        y = x >> 4;  if (y != 0) { n = n - 4;  x = y; }
+        y = x >> 2;  if (y != 0) { n = n - 2;  x = y; }
+        y = x >> 1;  if (y != 0) return n - 2;
         return (int)(n - x);
     }
     inline static int GetLeadingZeroSize(Int16 x)
     {
         return GetLeadingZeroSize((UInt16)x);
     }
-    inline static int GetLeadingZeroSize(UInt16 x)
+    inline static  int GetLeadingZeroSize(UInt16 x)
     {
         UInt16 y;
         int n;
 
         n = 16;
-        y = x >> 8; if (y != 0)
-        {
-            n = n - 8; x = y;
-        }
-        y = x >> 4; if (y != 0)
-        {
-            n = n - 4; x = y;
-        }
-        y = x >> 2; if (y != 0)
-        {
-            n = n - 2; x = y;
-        }
-        y = x >> 1; if (y != 0) return n - 2;
+        y = x >> 8;  if (y != 0) { n = n - 8;  x = y; }
+        y = x >> 4;  if (y != 0) { n = n - 4;  x = y; }
+        y = x >> 2;  if (y != 0) { n = n - 2;  x = y; }
+        y = x >> 1;  if (y != 0) return n - 2;
         return (int)(n - x);
     }
-    inline static int GetLeadingZeroSize(Int32 x)
+    inline static  int GetLeadingZeroSize(Int32 x)
     {
         return GetLeadingZeroSize((UInt32)x);
     }
-    inline static int GetLeadingZeroSize(UInt32 x)
+    inline static  int GetLeadingZeroSize(UInt32 x)
     {
         UInt32 y;
         int n;
 
         n = 32;
-        y = x >> 16; if (y != 0)
-        {
-            n = n - 16; x = y;
-        }
-        y = x >> 8; if (y != 0)
-        {
-            n = n - 8; x = y;
-        }
-        y = x >> 4; if (y != 0)
-        {
-            n = n - 4; x = y;
-        }
-        y = x >> 2; if (y != 0)
-        {
-            n = n - 2; x = y;
-        }
-        y = x >> 1; if (y != 0) return n - 2;
+        y = x >> 16;  if (y != 0) { n = n - 16;  x = y; }
+        y = x >> 8;  if (y != 0) { n = n - 8;  x = y; }
+        y = x >> 4;  if (y != 0) { n = n - 4;  x = y; }
+        y = x >> 2;  if (y != 0) { n = n - 2;  x = y; }
+        y = x >> 1;  if (y != 0) return n - 2;
         return (int)(n - x);
     }
-    inline static int GetLeadingZeroSize(Int64 x)
+    inline static  int GetLeadingZeroSize(Int64 x)
     {
         return GetLeadingZeroSize((UInt64)x);
     }
-    inline static int GetLeadingZeroSize(UInt64 x)
+    inline static  int GetLeadingZeroSize(UInt64 x)
     {
         UInt64 y;
         int n;
 
         n = 64;
-        y = x >> 32; if (y != 0)
-        {
-            n = n - 32; x = y;
-        }
-        y = x >> 16; if (y != 0)
-        {
-            n = n - 16; x = y;
-        }
-        y = x >> 8; if (y != 0)
-        {
-            n = n - 8; x = y;
-        }
-        y = x >> 4; if (y != 0)
-        {
-            n = n - 4; x = y;
-        }
-        y = x >> 2; if (y != 0)
-        {
-            n = n - 2; x = y;
-        }
-        y = x >> 1; if (y != 0) return n - 2;
+        y = x >> 32;  if (y != 0) { n = n - 32;  x = y; }
+        y = x >> 16;  if (y != 0) { n = n - 16;  x = y; }
+        y = x >> 8;  if (y != 0) { n = n - 8;  x = y; }
+        y = x >> 4;  if (y != 0) { n = n - 4;  x = y; }
+        y = x >> 2;  if (y != 0) { n = n - 2;  x = y; }
+        y = x >> 1;  if (y != 0) return n - 2;
         return (int)(n - x);
     }
 
@@ -2315,14 +2251,11 @@ class GECO_EXPORT GecoBitStream
         static bool isNetworkOrder = *((char*)& a) != 1;
         return isNetworkOrder;
     }
-    inline static bool IsBigEndian(void)
-    {
-        return IsNetworkOrder();
-    }
+    inline static bool IsBigEndian(void) { return IsNetworkOrder(); }
 
-    //! @Brief faster than ReverseBytes() if you want to reverse byte
-    //! for a variable teself internnaly like uint64 will loop 12 times 
-    //! compared to 8 times using ReverseBytes()
+    /// @Brief faster than ReverseBytes() if you want to reverse byte
+    /// for a variable teself internnaly like uint64 will loop 12 times 
+    /// compared to 8 times using ReverseBytes()
     inline static void ReverseBytes(UInt8 *src, const UInt32 length)
     {
         UInt8 temp;
@@ -2341,18 +2274,12 @@ class GECO_EXPORT GecoBitStream
         }
     }
 
-    //! Can only print 4096 size of UInt8 no materr is is bit or byte
-    //! mainly used for dump binary data
-
-    //! @brief Return the bit representation of the binary data.
-    static void Bitify(char* out_bitstr, BitSize bitsPrint, UInt8* src);
-    //! @brief Return the binary data represented by the bit string bitstr.
-    static void unBitify(char* outstr, BitSize bitsPrint, UInt8* src);
-
-    //! @brief Return the hexadecimal representation of the binary data.
-    static void Hexlify(char* out_hexstr, BitSize bitsPrint, UInt8* src);
-    //! @brief Return the binary data represented by the hexadecimal string hexstr.
-    static void unHexlify(char* outstr, BitSize bitsPrint, UInt8* src);
+    /// Can only print 4096 size of UInt8 no materr is is bit or byte
+    /// mainly used for dump binary data
+    static void Bitify(char* outstr, BitSize bitsPrint, UInt8* src);
+    void Bitify(void);
+    static void Hexlify(char* outstr, BitSize bitsPrint, UInt8* src);
+    void Hexlify(void);
 };
 
 GECO_NET_END_NSPACE

@@ -174,5 +174,5 @@ inline GECO_EXPORT extern bool  LessThan(Time a, Time b)
     return b != a && b - a < halfSpan;
 }
 
-GECO_EXPORT extern void JackieSleep(unsigned int ms);
+extern GECO_EXPORT void GecoSleep(unsigned int ms);
 #endif

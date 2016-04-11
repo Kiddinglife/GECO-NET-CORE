@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "geco-memory-stream.h"
+#include "geco-bit-stream.h"
 using namespace geco::net;
 
 struct vec { float x; float y; float z; };
@@ -60,12 +60,12 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.Write(uint8);
             s8.Write(int64);
             s8.WriteMini(uint8);
-            s8.WriteMini<signed_integral>(int64);
+            s8.WriteMini<SignedInteger>(int64);
 
             s8.Write(uint16);
             s8.Write(int32);
-            s8.WriteMini<unsigned_integral>(uint16);
-            s8.WriteMini<signed_integral>(int32);
+            s8.WriteMini<UnSignedInteger>(uint16);
+            s8.WriteMini<SignedInteger>(int32);
 
             s8.WriteBits(&particialByte, 4, true);
             s8.Write(uint24);
@@ -78,24 +78,23 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.Write(uint32);
             s8.Write(int16);
             s8.WriteMini(uint32);
-            s8.WriteMini<signed_integral>(int16);
+            s8.WriteMini<SignedInteger>(int16);
 
             s8.WriteBits(&particialByte, 4, false);
 
             s8.Write(uint64);
             s8.Write(int8);
             s8.WriteMini(uint64);
-            s8.WriteMini<unsigned_integral>(int8);
+            s8.WriteMini<UnSignedInteger>(int8);
 
             s8.WriteBits(&particialByte, 7, false);
         }
 
         GecoBitStream s9;
         s9.Write(s8);
-
         if (i == 0)
         {
-            printf("compressed  '%.5f' MB\n", (BITS_TO_BYTES(s9.GetPayLoadBits()) / 1024.0f / 1024.0f));
+            printf("uncompressed  '%.5f' MB\n", float(BITS_TO_BYTES(s9.GetPayLoadBits()) / 1024 / 1024));
         }
 
         for (UInt32 i = 1; i <= looptimes; i++)
@@ -127,7 +126,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint8 == uint8);
 
             Int64 mini_int64;
-            s9.ReadMini<signed_integral>(mini_int64);
+            s9.ReadMini<SignedInteger>(mini_int64);
             EXPECT_TRUE(mini_int64 == int64);
 
             s9.Read(uint16);
@@ -137,7 +136,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint16 == uint16);
 
             Int32 mini_int32;
-            s9.ReadMini<signed_integral>(mini_int32);
+            s9.ReadMini<SignedInteger>(mini_int32);
             EXPECT_TRUE(mini_int32 == int32);
 
 
@@ -172,7 +171,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint32 == uint32);
 
             Int16 mini_int16;
-            s9.ReadMini<signed_integral>(mini_int16);
+            s9.ReadMini<SignedInteger>(mini_int16);
             EXPECT_TRUE(mini_int16 == int16);
 
             v = 0;
@@ -186,7 +185,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint64 == uint64);
 
             Int8 mini_int8;
-            s9.ReadMini<signed_integral>(mini_int8);
+            s9.ReadMini<SignedInteger>(mini_int8);
             EXPECT_TRUE(mini_int8 == int8);
 
             v = 0;
@@ -204,10 +203,8 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(int64 == -64);
         }
 
-
         s8.Reset();
         s9.Reset();
-
     }
 }
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)

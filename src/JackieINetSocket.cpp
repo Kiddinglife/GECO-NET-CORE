@@ -156,7 +156,7 @@ JISBindResult JISBerkley::Bind(JISBerkleyBindParams *bindParameters,
     while (bindResult == JISBindResult_FAILED_BIND_SOCKET)
     {
         // Sometimes windows will fail if the socket is recreated too quickly
-        JackieSleep(100);
+        GecoSleep(100);
         bindResult = BindShared(bindParameters, file, line);
     }
     return bindResult;
@@ -178,7 +178,7 @@ JISBindResult JISBerkley::BindShared(JISBerkleyBindParams *bindParameters,
     JISSendParams sendParams = { (char*)&zero, sizeof(zero), 0, boundAddress, 0 };
 
     Send(&sendParams, TRACKE_MALLOC);
-    JackieSleep(10); // make sure data has been delivered into us
+    GecoSleep(10); // make sure data has been delivered into us
     JISRecvParams recvParams;
     recvParams.localBoundSocket = this;
     JISRecvResult rr = RecvFrom(&recvParams);

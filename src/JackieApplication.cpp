@@ -393,7 +393,7 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
         }
 
         /// Wait for the threads to activate. When they are active they will set these variables to true
-        while (!isRecvPollingThreadActive.GetValue()) JackieSleep(10);
+        while (!isRecvPollingThreadActive.GetValue()) GecoSleep(10);
 #else
         /// we handle recv in this thread, that is we only have two threads in the app this recv thread and th other send thread
         isRecvPollingThreadActive.Increment();
@@ -411,7 +411,7 @@ StartupResult JackieApplication::Start(JackieBindingSocket *bindLocalSockets,
                 return FAILED_TO_CREATE_NETWORK_UPDATE_THREAD;
             }
             /// Wait for the threads to activate. When they are active they will set these variables to true
-            while (!isNetworkUpdateThreadActive) JackieSleep(10);
+            while (!isNetworkUpdateThreadActive) GecoSleep(10);
 #else
             /// we only have one thread to handle recv and send so just simply set it to true
             isNetworkUpdateThreadActive = true;
@@ -675,7 +675,7 @@ void JackieApplication::StopRecvThread()
                 while (isRecvPollingThreadActive.GetValue() > 0 && Get32BitsTimeMS() < timeout)
                 {
                     SEND_10040_ERR(sock, sendParams);
-                    JackieSleep(100);
+                    GecoSleep(100);
                 }
             }
         }
@@ -710,13 +710,13 @@ void JackieApplication::ProcessOneRecvParam(JISRecvParams* recvParams)
             this->pluginListNTS[index]->OnDirectSocketReceive(recvParams);
 
         GecoBitStream bs;
-        bs.WriteUInt8((MessageID)ID_CONNECTION_BANNED);
-        bs.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-        bs.WriteMiniGUID(myGuid);
+        bs.Write((MessageID)ID_CONNECTION_BANNED);
+        bs.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+        bs.WriteMini(myGuid);
 
         JISSendParams bsp;
         bsp.data = bs.ByteData();
-        bsp.length = bs.GetWrittenBytesSize();
+        bsp.length = bs.GetWrittenBytesCount();
         bsp.receiverINetAddress = recvParams->senderINetAddress;
         if (recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC) > 0)
         {
@@ -905,19 +905,19 @@ void JackieApplication::OnConnectionFailed(JISRecvParams* recvParams,
 
         GecoBitStream reader((UInt8*)recvParams->data, recvParams->bytesRead);
         MessageID msgid;
-        reader.ReadUInt8(msgid);
+        reader.Read(msgid);
         std::cout << "client receives msg with " << "msgid " << (int)msgid;
         if ((MessageID)recvParams->data[0] == ID_INCOMPATIBLE_PROTOCOL_VERSION)
         {
             MessageID update_protocol_version;
-            reader.ReadUInt8(update_protocol_version);
+            reader.Read(update_protocol_version);
             std::cout << "update_protocol_version "
                 << (int)update_protocol_version;
         }
         reader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
         JackieGUID guid;
-        reader.ReadMiniGUID(guid);
+        reader.Read(guid);
         std::cout << "guid " << guid.g;
 
         ConnectionRequest *connectionRequest;
@@ -998,7 +998,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
                 recvParams->senderINetAddress) == false;
 
             UInt32 cookie;
-            fromClientReader.ReadMiniUInt32(cookie);
+            fromClientReader.Read(cookie);
             if (this->serverCookie->Verify(
                 &recvParams->senderINetAddress.address,
                 sizeof(recvParams->senderINetAddress.address), cookie)
@@ -1011,7 +1011,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             }
             std::cout << "Server verified Cookie from client !";
 
-            fromClientReader.ReadBoolean(clientSecureConnectionEnabled);
+            fromClientReader.Read(clientSecureConnectionEnabled);
             if (clientSecureRequiredbyServer && !clientSecureConnectionEnabled)
             {
                 std::cout
@@ -1029,14 +1029,14 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 #endif // ENABLE_SECURE_HAND_SHAKE
 
         InetAddress recvivedBoundAddrFromClient;
-        fromClientReader.ReadMiniInetAddress(recvivedBoundAddrFromClient);
+        fromClientReader.Read(recvivedBoundAddrFromClient);
         std::cout << "serverReadMini(server_bound_addr) "
             << recvivedBoundAddrFromClient.ToString();
         UInt16 mtu;
-        fromClientReader.ReadMiniUInt16(mtu);
+        fromClientReader.Read(mtu);
         std::cout << "server ReadMini(mtu) " << mtu;
         JackieGUID guid;
-        fromClientReader.ReadMiniGUID(guid);
+        fromClientReader.Read(guid);
         std::cout << "server ReadMini(client guid) " << guid.g;
 
         int outcome;
@@ -1103,12 +1103,12 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         }
 
         GecoBitStream toClientReplay2Writer;
-        toClientReplay2Writer.WriteUInt8(ID_OPEN_CONNECTION_REPLY_2);
-        toClientReplay2Writer.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-        toClientReplay2Writer.WriteMiniGUID(myGuid);
-        toClientReplay2Writer.WriteMiniInetAddress(recvParams->senderINetAddress);
-        toClientReplay2Writer.WriteMiniUInt16(mtu);
-        toClientReplay2Writer.WriteMiniBoolean(clientSecureRequiredbyServer);
+        toClientReplay2Writer.Write(ID_OPEN_CONNECTION_REPLY_2);
+        toClientReplay2Writer.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+        toClientReplay2Writer.WriteMini(myGuid);
+        toClientReplay2Writer.WriteMini(recvParams->senderINetAddress);
+        toClientReplay2Writer.WriteMini(mtu);
+        toClientReplay2Writer.WriteMini(clientSecureRequiredbyServer);
 
         //return ID_OPEN_CONNECTION_REPLY if they are the same
         if (outcome == 1)
@@ -1129,7 +1129,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 
             JISSendParams bsp;
             bsp.data = toClientReplay2Writer.ByteData();
-            bsp.length = toClientReplay2Writer.GetWrittenBytesSize();
+            bsp.length = toClientReplay2Writer.GetWrittenBytesCount();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
             recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1141,13 +1141,13 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         {
             std::cout << "Server return ID_ALREADY_CONNECTED to client";
             GecoBitStream toClientAlreadyConnectedWriter;
-            toClientAlreadyConnectedWriter.WriteUInt8(ID_ALREADY_CONNECTED);
-            toClientAlreadyConnectedWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-            toClientAlreadyConnectedWriter.WriteGUID(myGuid);
+            toClientAlreadyConnectedWriter.Write(ID_ALREADY_CONNECTED);
+            toClientAlreadyConnectedWriter.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+            toClientAlreadyConnectedWriter.Write(myGuid);
 
             JISSendParams bsp;
             bsp.data = toClientAlreadyConnectedWriter.ByteData();
-            bsp.length = toClientAlreadyConnectedWriter.GetWrittenBytesSize();
+            bsp.length = toClientAlreadyConnectedWriter.GetWrittenBytesCount();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
             recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1164,13 +1164,13 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
             {
                 std::cout
                     << "Server return ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS to client";
-                toClientWriter.WriteUInt8(ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS);
-                toClientWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-                toClientWriter.WriteMiniGUID(myGuid);
+                toClientWriter.Write(ID_CANNOT_ACCEPT_INCOMING_CONNECTIONS);
+                toClientWriter.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+                toClientWriter.WriteMini(myGuid);
 
                 JISSendParams bsp;
                 bsp.data = toClientWriter.ByteData();
-                bsp.length = toClientWriter.GetWrittenBytesSize();
+                bsp.length = toClientWriter.GetWrittenBytesCount();
                 bsp.receiverINetAddress = recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1199,14 +1199,14 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 
                 if (thisIPFloodsConnRequest)
                 {
-                    toClientWriter.WriteUInt8(ID_YOU_CONNECT_TOO_OFTEN);
-                    toClientWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-                    toClientWriter.WriteMiniGUID(myGuid);
+                    toClientWriter.Write(ID_YOU_CONNECT_TOO_OFTEN);
+                    toClientWriter.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+                    toClientWriter.WriteMini(myGuid);
                     //SocketLayer::SendTo( rakNetSocket, (const char*) bsOut.GetData(), bsOut.GetNumberOfBytesUsed(), systemAddress, _FILE_AND_LINE_ );
 
                     JISSendParams bsp;
                     bsp.data = toClientWriter.ByteData();
-                    bsp.length = toClientWriter.GetWrittenBytesSize();
+                    bsp.length = toClientWriter.GetWrittenBytesCount();
                     bsp.receiverINetAddress = recvParams->senderINetAddress;
                     recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1241,7 +1241,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
 
                 JISSendParams bsp;
                 bsp.data = toClientReplay2Writer.ByteData();
-                bsp.length = toClientReplay2Writer.GetWrittenBytesSize();
+                bsp.length = toClientReplay2Writer.GetWrittenBytesCount();
                 bsp.receiverINetAddress = recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&bsp, TRACKE_MALLOC);
 
@@ -1277,14 +1277,14 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
         if (remote_system_protcol != (MessageID)JACKIE_INET_PROTOCOL_VERSION)
         {
             //test_sendto(*this);
-            writer.WriteUInt8(ID_INCOMPATIBLE_PROTOCOL_VERSION);
-            writer.WriteUInt8((MessageID)JACKIE_INET_PROTOCOL_VERSION);
-            writer.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-            writer.WriteMiniGUID(myGuid);
+            writer.Write(ID_INCOMPATIBLE_PROTOCOL_VERSION);
+            writer.Write((MessageID)JACKIE_INET_PROTOCOL_VERSION);
+            writer.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+            writer.WriteMini(myGuid);
 
             JISSendParams data2send;
             data2send.data = writer.ByteData();
-            data2send.length = writer.GetWrittenBytesSize();
+            data2send.length = writer.GetWrittenBytesCount();
             data2send.receiverINetAddress = recvParams->senderINetAddress;
 
             /// we do not need test 10040 error because it is only 24 bytes length
@@ -1303,20 +1303,20 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
                 ((JISBerkley*)recvParams->localBoundSocket)->SetDoNotFragment(
                 1);
 #endif
-            writer.WriteUInt8(ID_OPEN_CONNECTION_REPLY_1);
-            writer.WriteUBytes((unsigned char*)OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-            writer.WriteMiniGUID(myGuid);
+            writer.Write(ID_OPEN_CONNECTION_REPLY_1);
+            writer.Write((unsigned char*)OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+            writer.WriteMini(myGuid);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
             if (secureIncomingConnectionEnabled)
             {
-                writer.WriteMiniBoolean(true);  // HasCookie on
+                writer.WriteMini(true);  // HasCookie on
                 std::cout
                     << "AUDIT: server WriteMini(HasCookie On true) to client";
                 UInt32 cookie = serverCookie->Generate(
                     &recvParams->senderINetAddress.address,
                     sizeof(recvParams->senderINetAddress.address));
-                writer.WriteMiniUInt32(cookie); // Write cookie
+                writer.Write(cookie); // Write cookie
                 std::cout << "AUDIT: server WriteMini(cookie " << cookie
                     << ") to client";
                 // @Important !!!
@@ -1330,7 +1330,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
                 // std::cout << "AUDIT: server WriteAlignedBytes(my_public_key) to client";
             }
 #else // ENABLE_SECURE_HAND_SHAKE
-            writer.WriteMiniBoolean(false);  // HasCookie off
+            writer.WriteMini(false);  // HasCookie off
             std::cout << "AUDIT: server WriteMini(HasCookie Off false) to client";
 #endif
             // MTU. Lower MTU if it exceeds our own limit.
@@ -1341,7 +1341,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
                 (recvParams->bytesRead + UDP_HEADER_SIZE >= MAXIMUM_MTU_SIZE) ?
             MAXIMUM_MTU_SIZE :
                              recvParams->bytesRead + UDP_HEADER_SIZE;
-            writer.WriteMiniUInt16(newClientMTU);
+            writer.WriteMini(newClientMTU);
             std::cout << "AUDIT: server WriteMini(newClientMTU)" << newClientMTU
                 << " to client";
             // Pad response with zeros to MTU size
@@ -1353,7 +1353,7 @@ void JackieApplication::OnConnectionRequest1(JISRecvParams* recvParams,
 
             JISSendParams bsp;
             bsp.data = writer.ByteData();
-            bsp.length = writer.GetWrittenBytesSize();
+            bsp.length = writer.GetWrittenBytesCount();
             bsp.receiverINetAddress = recvParams->senderINetAddress;
 
             // this send will never return 10040 error because bsp.length must be <= MAXIMUM_MTU_SIZE
@@ -1395,15 +1395,15 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
         fromServerReader.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
 
         JackieGUID serverGuid;
-        fromServerReader.ReadMiniGUID(serverGuid);
+        fromServerReader.Read(serverGuid);
 
         bool serverRequiresSecureConn;
-        fromServerReader.ReadMiniBoolean(serverRequiresSecureConn);
+        fromServerReader.ReadMini(serverRequiresSecureConn);
 
         UInt32 cookie;
         if (serverRequiresSecureConn)
         {
-            fromServerReader.ReadMiniUInt32(cookie);
+            fromServerReader.Read(cookie);
         }
 
         ConnectionRequest *connectionRequest;
@@ -1420,13 +1420,13 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
 
                 /// prepare out data to server
                 GecoBitStream toServerWriter;
-                toServerWriter.WriteUInt8((MessageID)ID_OPEN_CONNECTION_REQUEST_2);
-                toServerWriter.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+                toServerWriter.Write((MessageID)ID_OPEN_CONNECTION_REQUEST_2);
+                toServerWriter.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
 
                 // server require secure connection
                 if (serverRequiresSecureConn)
                 {
-                    toServerWriter.WriteMiniUInt32(cookie);
+                    toServerWriter.Write(cookie);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
 
@@ -1470,11 +1470,11 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                     // client contains no challenge  We might still pass if we are in the security exception list
                     if (connectionRequest->client_handshake == 0)
                     {
-                        toServerWriter.WriteMiniBoolean(false); //  has chanllenge off
+                        toServerWriter.WriteMini(false); //  has chanllenge off
                     }
                     else 	// client contains  a challenge
                     {
-                        toServerWriter.WriteMiniBoolean(true); // has chanllenge on
+                        toServerWriter.WriteMini(true); // has chanllenge on
                         toServerWriter.WriteAlignedBytes(
                             (const unsigned char*)connectionRequest->handshakeChallenge,
                             cat::EasyHandshake::CHALLENGE_BYTES);
@@ -1484,7 +1484,7 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
 #else // ENABLE_SECURE_HAND_SHAKE
                     // client contain a challenge
                     assert(connectionRequest->client_handshake == 0);
-                    toServerWriter.WriteMiniBoolean(false);
+                    toServerWriter.WriteMini(false);
 #endif
                 }
                 else 	// Server does not need security
@@ -1506,24 +1506,24 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                 }
 
                 // echo server's bound address
-                toServerWriter.WriteMiniInetAddress(connectionRequest->receiverAddr);
+                toServerWriter.WriteMini(connectionRequest->receiverAddr);
                 std::cout
                     << "client WriteMini(connectionRequest->receiverAddr) to server";
 
                 // echo MTU
                 UInt16 mtu;
-                fromServerReader.ReadMiniUInt16(mtu);
-                toServerWriter.WriteMiniUInt16(mtu);
+                fromServerReader.Read(mtu);
+                toServerWriter.WriteMini(mtu);
                 std::cout << "client WriteMini(mtu)" << mtu << " to server";
 
                 // echo Our guid
-                toServerWriter.WriteMiniGUID(myGuid);
+                toServerWriter.WriteMini(myGuid);
                 std::cout << "client WriteMini(myGuid) " << myGuid.g
                     << " to server ";
 
                 JISSendParams outcome_data;
                 outcome_data.data = toServerWriter.ByteData();
-                outcome_data.length = toServerWriter.GetWrittenBytesSize();
+                outcome_data.length = toServerWriter.GetWrittenBytesCount();
                 outcome_data.receiverINetAddress =
                     recvParams->senderINetAddress;
                 recvParams->localBoundSocket->Send(&outcome_data, TRACKE_MALLOC
@@ -1564,10 +1564,10 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
             recvParams->bytesRead);
         bs.ReadSkipBytes(sizeof(MessageID));
         bs.ReadSkipBytes(sizeof(OFFLINE_MESSAGE_DATA_ID));
-        bs.ReadMiniGUID(guid);
-        bs.ReadMiniInetAddress(ourOwnBoundAddEchoFromServer);
-        bs.ReadMiniUInt16(mtu);
-        bs.ReadMiniBoolean(clientSecureRequiredbyServer);
+        bs.Read(guid);
+        bs.Read(ourOwnBoundAddEchoFromServer);
+        bs.Read(mtu);
+        bs.ReadMini(clientSecureRequiredbyServer);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
         char answer[cat::EasyHandshake::ANSWER_BYTES];
@@ -1701,34 +1701,34 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
                             connReq->timeout);
 
                         GecoBitStream temp;
-                        temp.WriteUInt8(ID_CONNECTION_REQUEST);
-                        temp.WriteMiniGUID(guid);
-                        temp.WriteMiniUInt64(GetTimeMS());
+                        temp.Write(ID_CONNECTION_REQUEST);
+                        temp.WriteMini(guid);
+                        temp.WriteMini(GetTimeMS());
 
 #if ENABLE_SECURE_HAND_SHAKE==1
                         if (clientSecureRequiredbyServer)
                         {
-                            temp.WriteMiniBoolean(true);
+                            temp.WriteMini(true);
                             unsigned char proof[32];
                             free_rs->reliabilityLayer.GetAuthenticatedEncryption()->GenerateProof(
                                 proof, sizeof(proof));
                             temp.WriteAlignedBytes(proof, sizeof(proof));
                             if (doIdentity)
                             {
-                                temp.WriteMiniBoolean(true);
+                                temp.WriteMini(true);
                                 temp.WriteAlignedBytes(ident, sizeof(ident));
                             }
                             else
                             {
-                                temp.WriteMiniBoolean(false);
+                                temp.WriteMini(false);
                             }
                         }
                         else
                         {
-                            temp.WriteMiniBoolean(false);
+                            temp.WriteMini(false);
                         }
 #else
-                        temp.WriteMiniBoolean(false);
+                        temp.WriteMini(false);
 #endif // ENABLE_SECURE_HAND_SHAKE
 
                         // send passwd to server
@@ -1740,7 +1740,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
 
                         ReliableSendParams sendParams;
                         sendParams.data = temp.ByteData();
-                        sendParams.bitsSize = temp.GetWrittenBitsSize();
+                        sendParams.bitsSize = temp.GetWrittenBitsCount();
                         sendParams.broadcast = false;
                         sendParams.sendPriority =
                             PacketSendPriority::UNBUFFERED_IMMEDIATELY_SEND;
@@ -1908,9 +1908,9 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
                     + connReq->connAttemptIntervalMS;
 
                 GecoBitStream bitStream;
-                bitStream.WriteUInt8(ID_OPEN_CONNECTION_REQUEST_1);
-                bitStream.WriteUBytes(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
-                bitStream.WriteUInt8((MessageID)JACKIE_INET_PROTOCOL_VERSION);
+                bitStream.Write(ID_OPEN_CONNECTION_REQUEST_1);
+                bitStream.Write(OFFLINE_MESSAGE_DATA_ID, sizeof(OFFLINE_MESSAGE_DATA_ID));
+                bitStream.Write((MessageID)JACKIE_INET_PROTOCOL_VERSION);
                 bitStream.PadZero2LengthOf(mtuSizes[MTUSizeIndex] - UDP_HEADER_SIZE);
                 //bitStream.PadZero2LengthOf(3000 -
                 //	UDP_HEADER_SIZE); //will trigger 10040 recvfrom
@@ -1920,7 +1920,7 @@ void JackieApplication::ProcessConnectionRequestQ(TimeUS& timeUS,
 
                 JISSendParams jsp;
                 jsp.data = bitStream.ByteData();
-                jsp.length = bitStream.GetWrittenBytesSize();
+                jsp.length = bitStream.GetWrittenBytesCount();
                 jsp.receiverINetAddress = connReq->receiverAddr;
 
 #if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
@@ -2571,7 +2571,7 @@ JackiePacket* JackieApplication::GetPacketOnce(void)
     //	TIMED_FUNC();
     // sleep a while to make user thread more responsible
     // and low cpu usaage rate
-    JackieSleep(userThreadSleepTime);
+    GecoSleep(userThreadSleepTime);
 
 #if USE_SINGLE_THREAD == 0
     if (!(active())) return 0;
@@ -2775,7 +2775,7 @@ UInt64 JackieApplication::CreateUniqueRandness(void)
         for (int index = 0; index < 4; index++)
         {
             lastTime = Get64BitsTimeUS();
-            JackieSleep(1);
+            GecoSleep(1);
             thisTime = Get64BitsTimeUS();
             diff = thisTime - lastTime;
             diffByte ^= (unsigned char)((diff & 15) << (index * 2)); ///0xF = 1111 = 15
