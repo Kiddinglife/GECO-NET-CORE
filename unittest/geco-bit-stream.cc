@@ -62,12 +62,12 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.Write(uint8);
             s8.Write(int64);
             s8.WriteMini(uint8);
-            s8.WriteMini<SignedInteger>(int64);
+            s8.WriteMini(int64,false);
 
             s8.Write(uint16);
             s8.Write(int32);
-            s8.WriteMini<UnSignedInteger>(uint16);
-            s8.WriteMini<SignedInteger>(int32);
+            s8.WriteMini(uint16);
+            s8.WriteMini(int32,false);
 
             s8.WriteBits(&particialByte, 4, true);
             s8.Write(uint24);
@@ -80,14 +80,14 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.Write(uint32);
             s8.Write(int16);
             s8.WriteMini(uint32);
-            s8.WriteMini<SignedInteger>(int16);
+            s8.WriteMini(int16,false);
 
             s8.WriteBits(&particialByte, 4, false);
 
             s8.Write(uint64);
             s8.Write(int8);
             s8.WriteMini(uint64);
-            s8.WriteMini<UnSignedInteger>(int8);
+            s8.WriteMini(int8);
 
             s8.WriteBits(&particialByte, 7, false);
         }
@@ -128,7 +128,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint8 == uint8);
 
             Int64 mini_int64;
-            s9.ReadMini<SignedInteger>(mini_int64);
+            s9.ReadMini(mini_int64,false);
             EXPECT_TRUE(mini_int64 == int64);
 
             s9.Read(uint16);
@@ -138,7 +138,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint16 == uint16);
 
             Int32 mini_int32;
-            s9.ReadMini<SignedInteger>(mini_int32);
+            s9.ReadMini(mini_int32,false);
             EXPECT_TRUE(mini_int32 == int32);
 
 
@@ -173,7 +173,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint32 == uint32);
 
             Int16 mini_int16;
-            s9.ReadMini<SignedInteger>(mini_int16);
+            s9.ReadMini(mini_int16,false);
             EXPECT_TRUE(mini_int16 == int16);
 
             v = 0;
@@ -187,7 +187,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(mini_uint64 == uint64);
 
             Int8 mini_int8;
-            s9.ReadMini<SignedInteger>(mini_int8);
+            s9.ReadMini(mini_int8,false);
             EXPECT_TRUE(mini_int8 == int8);
 
             v = 0;

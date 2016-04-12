@@ -826,43 +826,42 @@ class GECO_EXPORT GecoBitStream
     /// a double.  The range must be between -1 and +1.
     /// For non-floating point, this is lossless, but only has benefit if you 
     /// use less than half the bits of the type
-    template <bool isUnsigned = UnSignedInteger, class IntegralType>
-    inline void ReadMini(IntegralType &dest)
+    template <class IntegralType>
+    inline void ReadMini(IntegralType &dest, bool isUnsigned=true)
     {
         ReadMini((UInt8*)&dest, BYTES_TO_BITS(sizeof(IntegralType)), isUnsigned);
     }
     inline void ReadMini(NetworkAddress &dest)
     {
         UInt8 ipVersion;
-        ReadMini<UnSignedInteger>(ipVersion);
+        ReadMini(ipVersion);
         if (ipVersion == 4)
         {
             dest.address.addr4.sin_family = AF_INET;
             // Read(var.binaryAddress);
             // Don't endian swap the address or port
             UInt32 binaryAddress;
-            ReadMini<UnSignedInteger>(binaryAddress);
+            ReadMini(binaryAddress);
             // Unhide the IP address, done to prevent routers from changing it
             dest.address.addr4.sin_addr.s_addr = ~binaryAddress;
-            ReadMini<UnSignedInteger>(dest.address.addr4.sin_port);
+            ReadMini(dest.address.addr4.sin_port);
             dest.debugPort = ntohs(dest.address.addr4.sin_port);
         }
         else
         {
 #if NET_SUPPORT_IPV6==1
-            ReadMini<UnSignedInteger>(dest.address.addr6);
+            ReadMini(dest.address.addr6);
             dest.debugPort = ntohs(dest.address.addr6.sin6_port);
 #endif
     }
     }
     inline void ReadMini(UInt24 &dest)
     {
-
-        ReadMini<UnSignedInteger>(dest.val);
+        ReadMini(dest.val);
     }
     inline void ReadMini(JackieGUID &dest)
     {
-        ReadMini<UnSignedInteger>(dest.g);
+        ReadMini(dest.g);
     }
     inline void ReadMini(bool &dest)
     {
@@ -872,20 +871,18 @@ class GECO_EXPORT GecoBitStream
     inline void ReadMini(float &dest)
     {
         UInt16 compressedFloat;
-        ReadMini<UnSignedInteger>(compressedFloat);
+        ReadMini(compressedFloat);
         dest = ((float)compressedFloat / 32767.5f - 1.0f);
     }
     /// For values between -1 and 1
     inline void ReadMini(double &dest)
     {
         UInt32 compressedFloat;
-        ReadMini<UnSignedInteger>(compressedFloat);
+        ReadMini(compressedFloat);
         dest = ((double)compressedFloat / 2147483648.0 - 1.0);
     }
 
-
     /// For strings
-
     inline void ReadMini(GecoString &outTemplateVar)
     {
         //outTemplateVar.ReadMini(this, false);
@@ -947,7 +944,6 @@ class GECO_EXPORT GecoBitStream
 
     /// @brief Read a bool from a bitstream.
     /// @param[in] outTemplateVar The value to read
-
     inline void ReadMiniChanged(bool &dest)
     {
         Read(dest);
@@ -1028,13 +1024,6 @@ class GECO_EXPORT GecoBitStream
             ReverseBytes((UInt8*)&value, sizeof(value));
         }
         value += minimum;
-
-        //UInt8 output[sizeof(templateType)] = { 0 };
-        //ReadBits(output, requiredBits, true);
-        //if (IsBigEndian()) ReverseBytes(output, sizeof(output));
-        //memcpy(&value, output, sizeof(output));
-        //value += minimum;
-
     }
 
 
@@ -1711,8 +1700,8 @@ class GECO_EXPORT GecoBitStream
     /// we write low bits and reassenble the value in receiver endpoint
     /// based on its endian, so no need to do endian swap here
     /// @author mengdi[Jackie]
-    template <bool isUnsigned = UnSignedInteger, class IntergralType>
-    inline void WriteMini(const IntergralType &src)
+    template <class IntergralType>
+    inline void WriteMini(const IntergralType &src, bool isUnsigned=true)
     {
         WriteMini((UInt8*)&src, sizeof(IntergralType) << 3, isUnsigned);
     }
@@ -1721,7 +1710,7 @@ class GECO_EXPORT GecoBitStream
     {
         //Write(src);
         UInt8 version = src.GetIPVersion();
-        WriteMini<UnSignedInteger>(version);
+        WriteMini(version);
 
         if (version == 4)
         {
@@ -1729,37 +1718,36 @@ class GECO_EXPORT GecoBitStream
             NetworkAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
-            WriteMini<UnSignedInteger>(binaryAddress);
-            WriteMini<UnSignedInteger>(p);
+            WriteMini(binaryAddress);
+            WriteMini(p);
         }
         else
         {
 #if NET_SUPPORT_IPV6 == 1
             UInt32 binaryAddress = src.address.addr6;
-            WriteMini<UnSignedInteger>(binaryAddress);
+            WriteMini(binaryAddress);
 #endif
     }
     }
     inline void WriteMini(const JackieGUID &src)
     {
-        WriteMini<UnSignedInteger>(src.g);
+        WriteMini(src.g);
     }
     inline void WriteMini(const UInt24 &var)
     {
-        WriteMini<UnSignedInteger>(var.val);
+        WriteMini(var.val);
     }
     inline void WriteMini(const bool &src)
     {
         Write(src);
     }
-
     inline void WriteMini(const float &src)
     {
         assert(src > -1.01f && src < 1.01f);
         float varCopy = src;
         if (varCopy < -1.0f) varCopy = -1.0f;
         if (varCopy > 1.0f) varCopy = 1.0f;
-        WriteMini<UnSignedInteger>((UInt16)((varCopy + 1.0f)*32767.5f));
+        WriteMini((UInt16)((varCopy + 1.0f)*32767.5f));
     }
     ///@notice For values between -1 and 1
     inline void WriteMini(const double &src)
@@ -1768,7 +1756,7 @@ class GECO_EXPORT GecoBitStream
         double varCopy = src;
         if (varCopy < -1.0f) varCopy = -1.0f;
         if (varCopy > 1.0f) varCopy = 1.0f;
-        WriteMini<UnSignedInteger>((UInt32)((varCopy + 1.0)*2147483648.0));
+        WriteMini((UInt32)((varCopy + 1.0)*2147483648.0));
     }
 
     /// Compress the string
