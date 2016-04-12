@@ -17,7 +17,7 @@ using namespace geco::net;
 
 static const unsigned char OFFLINE_MESSAGE_DATA_ID[16] =
 { 0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12,
-        0x34, 0x56, 0x78 };
+0x34, 0x56, 0x78 };
 TEST(IsDomainIPAddrTest, when_given_numberic_addr_return_false)
 {
     const char* host_Num = "192.168.1.168";
@@ -201,7 +201,7 @@ TEST(AppTestCASE, test_connection)
     JackieIPlugin plugin;
     JackieApplication* server = JackieApplication::GetInstance();
     server->SetSleepTime(5);
-    server->SetIncomingConnectionsPasswd("admin", (int) strlen("admin"));
+    server->SetIncomingConnectionsPasswd("admin", (int)strlen("admin"));
     server->SetBannedRemoteSystem("202.168.1.123", 100);
     server->SetBannedRemoteSystem("202.168.1", 10000);
     server->SetBannedRemoteSystem("202.168.1", 1000);
@@ -233,7 +233,7 @@ TEST(AppTestCASE, test_connection)
     {
         // This sleep keeps RakNet responsive
         for (packet = server->GetPacketOnce(); packet != 0;
-                server->ReclaimPacket(packet), packet = server->GetPacketOnce())
+            server->ReclaimPacket(packet), packet = server->GetPacketOnce())
         {
             /// user logics goes here
             c = server->AllocCommand();

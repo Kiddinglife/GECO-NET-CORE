@@ -19,13 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\geco-bit-stream.cpp" />
+    <ClCompile Include="..\..\..\src\geco-globals.cpp" />
+    <ClCompile Include="..\..\..\src\geco-malloc-interface.cpp" />
+    <ClCompile Include="..\..\..\src\geco-net-plugin.cpp" />
+    <ClCompile Include="..\..\..\src\geco-net-type.cpp" />
+    <ClCompile Include="..\..\..\src\geco-random-seed-creator.cpp" />
+    <ClCompile Include="..\..\..\src\geco-secure-hand-shake.cpp" />
+    <ClCompile Include="..\..\..\src\geco-sliding-windows.cpp" />
+    <ClCompile Include="..\..\..\src\geco-time.cpp" />
+    <ClCompile Include="..\..\..\src\geco-wsa-singleton.cpp" />
+    <ClCompile Include="..\..\..\src\JackieApplication.cpp" />
+    <ClCompile Include="..\..\..\src\JackieINetSocket.cpp" />
+    <ClCompile Include="..\..\..\src\JackieReliabler.cpp" />
+    <ClCompile Include="..\..\..\src\JackieSimpleMutex.cpp" />
+    <ClCompile Include="..\..\..\src\JackieWaitEvent.cpp" />
+    <ClCompile Include="..\..\..\src\JACKIE_Atomic.cpp" />
+    <ClCompile Include="..\..\..\src\JACKIE_Thread.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\..\..\include\geco-basic-type.h" />
+    <ClInclude Include="..\..\..\include\geco-bit-stream.h" />
     <ClInclude Include="..\..\..\include\geco-export.h" />
     <ClInclude Include="..\..\..\include\geco-features-overrided.h" />
     <ClInclude Include="..\..\..\include\geco-features.h" />
     <ClInclude Include="..\..\..\include\geco-globals.h" />
     <ClInclude Include="..\..\..\include\geco-malloc-interface.h" />
-    <ClInclude Include="..\..\..\include\geco-memory-stream.h" />
     <ClInclude Include="..\..\..\include\geco-msg-ids.h" />
     <ClInclude Include="..\..\..\include\geco-namesapces.h" />
     <ClInclude Include="..\..\..\include\geco-net-config-override.h" />
@@ -52,25 +71,6 @@
     <ClInclude Include="..\..\..\include\JackieWaitEvent.h" />
     <ClInclude Include="..\..\..\include\JACKIE_Atomic.h" />
     <ClInclude Include="..\..\..\include\JACKIE_Thread.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\src\geco-globals.cpp" />
-    <ClCompile Include="..\..\..\src\geco-malloc-interface.cpp" />
-    <ClCompile Include="..\..\..\src\geco-memory-stream.cpp" />
-    <ClCompile Include="..\..\..\src\geco-net-plugin.cpp" />
-    <ClCompile Include="..\..\..\src\geco-net-type.cpp" />
-    <ClCompile Include="..\..\..\src\geco-random-seed-creator.cpp" />
-    <ClCompile Include="..\..\..\src\geco-secure-hand-shake.cpp" />
-    <ClCompile Include="..\..\..\src\geco-sliding-windows.cpp" />
-    <ClCompile Include="..\..\..\src\geco-time.cpp" />
-    <ClCompile Include="..\..\..\src\geco-wsa-singleton.cpp" />
-    <ClCompile Include="..\..\..\src\JackieApplication.cpp" />
-    <ClCompile Include="..\..\..\src\JackieINetSocket.cpp" />
-    <ClCompile Include="..\..\..\src\JackieReliabler.cpp" />
-    <ClCompile Include="..\..\..\src\JackieSimpleMutex.cpp" />
-    <ClCompile Include="..\..\..\src\JackieWaitEvent.cpp" />
-    <ClCompile Include="..\..\..\src\JACKIE_Atomic.cpp" />
-    <ClCompile Include="..\..\..\src\JACKIE_Thread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{65559532-5B6A-4790-AC91-609304689B59}</ProjectGuid>
@@ -171,9 +171,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>GECO_DLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GECO_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;DYNAMICLIBRARY_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../../../include;../../../thirdparty;../../../thirdparty/openssl-1.0.0d/include;../../../thirdparty/googletest/include;../../../thirdparty/googlemock/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../include;../../../thirdparty/;../../../thirdparty/openssl-1.0.0d/include;../../../thirdparty/googletest/include/;../../../thirdparty/googlemock/include/;</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>

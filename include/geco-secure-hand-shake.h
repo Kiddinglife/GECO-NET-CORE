@@ -29,7 +29,7 @@
 #endif
 
 #define CAT_AUDIT
-#include <cat/AllTunnel.hpp>
+#include "CAT/AllTunnel.hpp"
 #endif
 
 #endif  //__SECURITYHANDSHAKE_H__

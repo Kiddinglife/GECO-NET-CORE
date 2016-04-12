@@ -1483,7 +1483,6 @@ void JackieApplication::OnConnectionReply1(JISRecvParams* recvParams,
                     }
 #else // ENABLE_SECURE_HAND_SHAKE
                     // client contain a challenge
-                    assert(connectionRequest->client_handshake == 0);
                     toServerWriter.WriteMini(false);
 #endif
                 }

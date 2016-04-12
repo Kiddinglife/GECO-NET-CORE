@@ -60,7 +60,8 @@ GecoBitStream::GecoBitStream(UInt8* src, const ByteSize len, bool copy/*=false*/
 allocated_bits_size_(BYTES_TO_BITS(len)),
 writable_bit_pos_(BYTES_TO_BITS(len)),
 readable_bit_pos_(0),
-is_read_only_(false)
+can_free_(false),
+is_read_only_(!copy)
 {
     if (copy)
     {
@@ -69,26 +70,25 @@ is_read_only_(false)
             if (len <= GECO_STREAM_STACK_ALLOC_BYTES)
             {
                 data = statck_buffer_;
-                can_free_ = false;
-                allocated_bits_size_ = GECO_STREAM_STACK_ALLOC_BYTES;
+                allocated_bits_size_ = BYTES_TO_BITS(GECO_STREAM_STACK_ALLOC_BYTES);
+                memset(data, 0, GECO_STREAM_STACK_ALLOC_BYTES);
             }
             else
             {
                 data = (UInt8*)gMallocEx(len, TRACKE_MALLOC);
                 can_free_ = true;
+                memset(data, 0, len);
             }
             memcpy(data, src, len);
         }
         else
         {
             data = 0;
-            can_free_ = false;
         }
     }
     else
     {
         data = src;
-        can_free_ = false;
     }
 }
 GecoBitStream::~GecoBitStream()
