@@ -36,7 +36,7 @@ GECO_NET_BEGIN_NSPACE
 class   INetApplication;
 class   JackieBits;
 struct  JackiePacket;
-struct  InetAddress;
+struct  NetworkAddress;
 struct  JackieGUID;
 class JackieINetSocket;
 class JackieReliabler;
@@ -102,7 +102,7 @@ typedef UInt8 MessageID; ///< First byte of a network message
 
 /// Index of an invalid JACKIE_INET_Address and JACKIE_INet_GUID
 #ifndef SWIG
-GECO_EXPORT extern const  InetAddress JACKIE_NULL_ADDRESS;
+GECO_EXPORT extern const  NetworkAddress JACKIE_NULL_ADDRESS;
 GECO_EXPORT extern const  JackieGUID JACKIE_NULL_GUID;
 #endif
 
@@ -248,7 +248,6 @@ struct GECO_EXPORT JackieBindingSocket
     unsigned int extraSocketOptions;
 };
 
-//////////////////////////////////////////////////////////////////////////
 /// Network address for a system Corresponds to a network address
 /// This is not necessarily a unique identifier. For example, if a system has both LAN and
 /// WAN connections, the system may be identified by either one, depending on who is
@@ -257,8 +256,7 @@ struct GECO_EXPORT JackieBindingSocket
 /// in the case where that system is not behind a NAT (such as with a dedciated server)
 /// Use JACKIE_INet_GUID for a unique per-instance of ServerApplication to identify 
 /// systems
-//////////////////////////////////////////////////////////////////////////
-struct GECO_EXPORT InetAddress /// JACKIE_INET_Address
+struct GECO_EXPORT NetworkAddress
 {
     /// In6 Or In4 
     /// JACKIE_INET_Address, with RAKNET_SUPPORT_IPV6 defined, 
@@ -282,21 +280,21 @@ struct GECO_EXPORT InetAddress /// JACKIE_INET_Address
     UInt16 debugPort;
 
     /// Constructors
-    InetAddress();
-    InetAddress(const char *str);
-    InetAddress(const char *str, UInt16 port);
+    NetworkAddress();
+    NetworkAddress(const char *str);
+    NetworkAddress(const char *str, UInt16 port);
 
-    InetAddress& operator = (const InetAddress& input);
-    bool operator==(const InetAddress& right) const;
-    bool operator!=(const InetAddress& right) const;
-    bool operator > (const InetAddress& right) const;
-    bool operator < (const InetAddress& right) const;
-    bool EqualsExcludingPort(const InetAddress& right) const;
+    NetworkAddress& operator = (const NetworkAddress& input);
+    bool operator==(const NetworkAddress& right) const;
+    bool operator!=(const NetworkAddress& right) const;
+    bool operator > (const NetworkAddress& right) const;
+    bool operator < (const NetworkAddress& right) const;
+    bool EqualsExcludingPort(const NetworkAddress& right) const;
     /// @internal Return the size to write to a bitStream
     static Int32 size(void);
 
     /// Hash the JACKIE_INET_Address
-    static unsigned int ToHashCode(const InetAddress &sa);
+    static unsigned int ToHashCode(const NetworkAddress &sa);
 
     /// Return the IP version, either IPV4 or IPV6
     unsigned char GetIPVersion(void) const;
@@ -319,9 +317,9 @@ struct GECO_EXPORT InetAddress /// JACKIE_INET_Address
     void SetPortNetworkOrder(UInt16 s);
 
     /// set the port from another JACKIE_INET_Address structure
-    void SetPortNetworkOrder(const InetAddress& right);
+    void SetPortNetworkOrder(const NetworkAddress& right);
 
-    void FixForIPVersion(const InetAddress &boundAddressToSocket)
+    void FixForIPVersion(const NetworkAddress &boundAddressToSocket)
     {
         char str[128];
         ToString(false, str);
@@ -438,7 +436,7 @@ struct GECO_EXPORT JackieGUID
 struct GECO_EXPORT JackieAddressGuidWrapper
 {
     JackieGUID guid;
-    InetAddress systemAddress;
+    NetworkAddress systemAddress;
 
     SystemIndex GetSystemIndex(void) const
     {
@@ -475,7 +473,7 @@ struct GECO_EXPORT JackieAddressGuidWrapper
         guid = input.guid;
         systemAddress = input.systemAddress;
     }
-    JackieAddressGuidWrapper(const InetAddress& input)
+    JackieAddressGuidWrapper(const NetworkAddress& input)
     {
         guid = JACKIE_NULL_GUID;
         systemAddress = input;
@@ -492,7 +490,7 @@ struct GECO_EXPORT JackieAddressGuidWrapper
         systemAddress = input.systemAddress;
         return *this;
     }
-    JackieAddressGuidWrapper& operator = (const InetAddress& input)
+    JackieAddressGuidWrapper& operator = (const NetworkAddress& input)
     {
         guid = JACKIE_NULL_GUID;
         systemAddress = input;
@@ -790,7 +788,7 @@ struct InternalPacket : public PacketHeader
 struct GECO_EXPORT JackiePacket
 {
     /// The system that send this packet.
-    InetAddress systemAddress;
+    NetworkAddress systemAddress;
 
     /// A unique identifier for the system that sent this packet, 
     /// regardless of IP address (internal / external / remote system)
@@ -828,11 +826,11 @@ struct GECO_EXPORT JackieRemoteSystem
     // Is this structure in use?
     bool isActive;
     /// Their external IP on the internet
-    InetAddress systemAddress;
+    NetworkAddress systemAddress;
     /// Your external IP on the internet, from their perspective
-    InetAddress myExternalSystemAddress;
+    NetworkAddress myExternalSystemAddress;
     /// Their internal IP, behind the LAN
-    InetAddress theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
+    NetworkAddress theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
     /// The reliability layer associated with this player
     JackieReliabler reliabilityLayer;
     /// True if we started this connection via Connect.  
@@ -931,7 +929,7 @@ struct GECO_EXPORT Command
 
 struct GECO_EXPORT ConnectionRequest
 {
-    InetAddress receiverAddr;
+    NetworkAddress receiverAddr;
     Time nextRequestTime;
     unsigned char requestsMade;
     char *data;

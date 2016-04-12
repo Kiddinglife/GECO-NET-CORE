@@ -28,7 +28,7 @@
 #endif
 
 
-#define geco_debug debug
+#define geco_debug printf
 #define UnSignedInteger true
 #define SignedInteger false
 
@@ -131,7 +131,7 @@ class GECO_EXPORT GecoBitStream
     BitSize WritePosByte() const { return BITS_TO_BYTES(writable_bit_pos_); }
     BitSize ReadPosBits() const { return readable_bit_pos_; }
     UInt8* Data() const { return data; }
-    Int8* ByteData() const { return (Int8*)data; }
+    char* ByteData() const { return (char*)data; }
     void Data(UInt8* val){ data = val; is_read_only_ = true; }
     void WritePosBits(BitSize val) { writable_bit_pos_ = val; }
     void ReadPosBits(BitSize val) { readable_bit_pos_ = val; }
@@ -694,10 +694,10 @@ class GECO_EXPORT GecoBitStream
     /// @method Read
     /// @access public 
     /// @returns void
-    /// @param [in] InetAddress & dest The value to read
-    /// @brief Read a InetAddress from a bitstream.
+    /// @param [in] NetworkAddress & dest The value to read
+    /// @brief Read a NetworkAddress from a bitstream.
 
-    inline void Read(InetAddress &dest)
+    inline void Read(NetworkAddress &dest)
     {
         UInt8 ipVersion;
         Read(ipVersion);
@@ -831,7 +831,7 @@ class GECO_EXPORT GecoBitStream
     {
         ReadMini((UInt8*)&dest, BYTES_TO_BITS(sizeof(IntegralType)), isUnsigned);
     }
-    inline void ReadMini(InetAddress &dest)
+    inline void ReadMini(NetworkAddress &dest)
     {
         UInt8 ipVersion;
         ReadMini<UnSignedInteger>(ipVersion);
@@ -1159,7 +1159,7 @@ class GECO_EXPORT GecoBitStream
     /// @return void
     /// @notice templateType for this function must be a float or double
     template <class templateType>
-    bool ReadNormQuat(templateType &w, templateType &x, templateType &y, templateType &z)
+    void ReadNormQuat(templateType &w, templateType &x, templateType &y, templateType &z)
     {
         bool cwNeg = false, cxNeg = false, cyNeg = false, czNeg = false;
         Read(cwNeg);
@@ -1451,15 +1451,15 @@ class GECO_EXPORT GecoBitStream
     }
 
     /// @func Write 
-    /// @brief write a InetAddress to stream
+    /// @brief write a NetworkAddress to stream
     /// @access  public  
-    /// @param [in] [const InetAddress & src]  
+    /// @param [in] [const NetworkAddress & src]
     /// @return [bool]  true succeed, false failed
     /// @remark
     /// @notice  will not endian swap the address or port
     /// @author mengdi[Jackie]
 
-    inline void Write(const InetAddress &src)
+    inline void Write(const NetworkAddress &src)
     {
         UInt8 version = src.GetIPVersion();
         Write(version);
@@ -1467,7 +1467,7 @@ class GECO_EXPORT GecoBitStream
         if (version == 4)
         {
             /// Hide the address so routers don't modify it
-            InetAddress addr = src;
+            NetworkAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
             // Don't endian swap the address or port
@@ -1717,7 +1717,7 @@ class GECO_EXPORT GecoBitStream
         WriteMini((UInt8*)&src, sizeof(IntergralType) << 3, isUnsigned);
     }
 
-    inline void WriteMini(const InetAddress &src)
+    inline void WriteMini(const NetworkAddress &src)
     {
         //Write(src);
         UInt8 version = src.GetIPVersion();
@@ -1726,7 +1726,7 @@ class GECO_EXPORT GecoBitStream
         if (version == 4)
         {
             /// Hide the address so routers don't modify it
-            InetAddress addr = src;
+            NetworkAddress addr = src;
             UInt32 binaryAddress = ~src.address.addr4.sin_addr.s_addr;
             UInt16 p = addr.GetPortNetworkOrder();
             WriteMini<UnSignedInteger>(binaryAddress);

@@ -3,9 +3,10 @@
 #include "JackieApplication.h"
 
 GECO_NET_BEGIN_NSPACE
+
 const char* JISBindResultToString(JISBindResult reason)
 {
-    const char*  JISBindResultStrings[4] =
+    const char* JISBindResultStrings[4] =
     {
         "JISBindResult_SUCCESS",
         "JISBindResult_REQUIRES_NET_SUPPORT_IPV6_DEFINED",
@@ -47,12 +48,12 @@ const char* JISTypeToString(JISType reason)
 }
 
 /////////////////////////////// JISAllocator starts /////////////////////////////////
-inline JackieINetSocket*  JISAllocator::AllocJIS(void)
+inline JackieINetSocket* JISAllocator::AllocJIS(void)
 {
     JackieINetSocket* s2 = 0;
 #if defined(WINDOWS_STORE_RT)
     s2 = geco::ultils::OP_NEW<JISWINSTROE8>(TRACKE_MALLOC);
-    if(s2 != 0)  s2->SetSocketType(JISType_WINDOWS_STORE_8);
+    if(s2 != 0) s2->SetSocketType(JISType_WINDOWS_STORE_8);
 #elif defined(__native_client__)
     s2 = geco::ultils::OP_NEW<JISNativeClient>(TRACKE_MALLOC);
     s2->SetSocketType(RNS2T_CHROME);
@@ -60,19 +61,19 @@ inline JackieINetSocket*  JISAllocator::AllocJIS(void)
     s2 = geco::ultils::OP_NEW<JISBerkley>(TRACKE_MALLOC);
     if (s2 != 0) s2->SetSocketType(JISType_WINDOWS);
 #else
-    s2 = GECO_INET::OP_NEW<JISBerkley>(TRACKE_MALLOC);
-    if(s2 != 0)  s2->SetSocketType(JISType_LINUX);
+    s2 = geco::ultils::OP_NEW<JISBerkley>(TRACKE_MALLOC);
+    if(s2 != 0) s2->SetSocketType(JISType_LINUX);
 #endif
     return s2;
 }
-inline void  JISAllocator::DeallocJIS(JackieINetSocket *s)
+inline void JISAllocator::DeallocJIS(JackieINetSocket *s)
 {
     geco::ultils::OP_DELETE(s, TRACKE_MALLOC);
 }
 //////////////////////////////// JISAllocator ends  ///////////////////////
 
 /////////////////////////////// GECO_INet_Socket Implementations /////////////////////////////////
-void JackieINetSocket::GetMyIP(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
+void JackieINetSocket::GetMyIP(NetworkAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
 {
 #if defined(WINDOWS_STORE_RT)
     JISWINSTROE8::GetMyIP(addresses);
@@ -88,7 +89,7 @@ void JackieINetSocket::Print(void)
 {
     const char* addrStr = boundAddress.ToString();
     const char* socketTypeStr = JISTypeToString(socketType);
-    printf_s("GECO_INet_Socket::virtual print():: socketType(%s), userConnectionSocketIndex(%d),\n boundAddress(%s)", addrStr, socketTypeStr, userConnectionSocketIndex);
+    printf("GECO_INet_Socket::virtual print():: socketType(%s), userConnectionSocketIndex(%d),\n boundAddress(%s)", addrStr, socketTypeStr, userConnectionSocketIndex);
 }
 /////////////////////////////// GECO_INet_Socket Implementations /////////////////////////////////
 
@@ -101,7 +102,8 @@ void JackieINetSocket::Print(void)
 #if defined(__APPLE__)
 /// This C routine is called by CFSocket when there's data waiting on our 
 /// UDP socket.  It just redirects the call to Objective-C code.
-static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info){}
+static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info)
+{}
 #endif
 
 ////////////////////////////// JISBerkley implementations ////////////////////////////
@@ -122,34 +124,34 @@ JISBerkley::~JISBerkley()
 }
 
 bool JISBerkley::IsPortInUse(unsigned short port, const char *hostAddress,
-    unsigned short addressFamily, int type)
+        unsigned short addressFamily, int type)
 {
-    JISBerkleyBindParams bbp = {
+    JISBerkleyBindParams bbp =
+    {
         port, //unsigned short port;
-        (char*)hostAddress, //char *hostAddress;
-        addressFamily, //unsigned short addressFamily; // AF_INET or AF_INET6
-        type, //int type; // SOCK_DGRAM
-        0, //int protocol; // 0
-        false, //bool nonBlockingSocket;
-        false, //int setBroadcast;
-        false, //int setIPHdrIncl;
-        false, //int doNotFragment;
-        0, //int pollingThreadPriority;
+        (char*)hostAddress,//char *hostAddress;
+        addressFamily,//unsigned short addressFamily; // AF_INET or AF_INET6
+        type,//int type; // SOCK_DGRAM
+        0,//int protocol; // 0
+        false,//bool nonBlockingSocket;
+        false,//int setBroadcast;
+        false,//int setIPHdrIncl;
+        false,//int doNotFragment;
+        0,//int pollingThreadPriority;
         0,//JISEventHandler *eventHandler;
-        0 //unsigned short remotePortJackieNetWasStartedOn_PS3_PS4_PSP2;
+        0//unsigned short remotePortJackieNetWasStartedOn_PS3_PS4_PSP2;
     };
 
-    InetAddress boundAddress;
+    NetworkAddress boundAddress;
     JISBerkley *rns2 = (JISBerkley*)JISAllocator::AllocJIS();
     JISBindResult bindResult = rns2->BindSharedIPV4And6(&bbp, TRACKE_MALLOC);
     JISAllocator::DeallocJIS(rns2);
     return bindResult == JISBindResult_FAILED_BIND_SOCKET;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 JISBindResult JISBerkley::Bind(JISBerkleyBindParams *bindParameters,
-    const char *file, unsigned int line)
+        const char *file, unsigned int line)
 {
     JISBindResult bindResult = BindShared(bindParameters, file, line);
     /// we do not test bindResult == JISBindResult_FAILED_SEND_TEST here 
@@ -162,7 +164,7 @@ JISBindResult JISBerkley::Bind(JISBerkleyBindParams *bindParameters,
     return bindResult;
 }
 JISBindResult JISBerkley::BindShared(JISBerkleyBindParams *bindParameters,
-    const char *file, unsigned int line)
+        const char *file, unsigned int line)
 {
     JISBindResult br;
 
@@ -174,8 +176,10 @@ JISBindResult JISBerkley::BindShared(JISBerkleyBindParams *bindParameters,
 
     if (br != JISBindResult_SUCCESS) return br;
 
-    char zero[128] = { 0 };
-    JISSendParams sendParams = { (char*)&zero, sizeof(zero), 0, boundAddress, 0 };
+    char zero[128] =
+    {   0};
+    JISSendParams sendParams =
+    {   (char*)&zero, sizeof(zero), 0, boundAddress, 0};
 
     Send(&sendParams, TRACKE_MALLOC);
     GecoSleep(10); // make sure data has been delivered into us
@@ -191,7 +195,7 @@ JISBindResult JISBerkley::BindShared(JISBerkleyBindParams *bindParameters,
     return br;
 }
 JISBindResult JISBerkley::BindSharedIPV4(JISBerkleyBindParams *bindParameters,
-    const char *file, unsigned int line)
+        const char *file, unsigned int line)
 {
     memset(&boundAddress.address.addr4, 0, sizeof(sockaddr_in));
     boundAddress.address.addr4.sin_port = htons(bindParameters->port);
@@ -202,14 +206,14 @@ JISBindResult JISBerkley::BindSharedIPV4(JISBerkleyBindParams *bindParameters,
 #if defined(_WIN32)
         HLOCAL messageBuffer = 0;
         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, GetLastError(),
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
-            (PTSTR)& messageBuffer, 0, 0);
+                NULL, GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
+                (PTSTR)& messageBuffer, 0, 0);
         // I see this hit on XP with IPV6 for some reason
         fwprintf(stderr, L"JISBerkley::BindSharedIPV4()::socket__()::failed with errno code (%d, %ls)\n", GetLastError(), (PCTSTR)LocalLock(messageBuffer));
         LocalFree(messageBuffer);
 #elif (defined(__GNUC__) || defined(__GCCXML__) )
-        fprintf_s(stderr, "JISBerkley::BindSharedIPV4()::socket__()::failed with errno code (%d-%s)\n", errno, strerror(errno));
+        fprintf(stderr, "JISBerkley::BindSharedIPV4()::socket__()::failed with errno code (%d-%s)\n", errno, strerror(errno));
 #endif
         return JISBindResult_FAILED_BIND_SOCKET;
     }
@@ -223,7 +227,7 @@ JISBindResult JISBerkley::BindSharedIPV4(JISBerkleyBindParams *bindParameters,
     if (bindParameters->hostAddress != 0 && bindParameters->hostAddress[0] != 0)
     {
         boundAddress.address.addr4.sin_addr.s_addr =
-            inet_addr__(bindParameters->hostAddress);
+        inet_addr__(bindParameters->hostAddress);
     }
     else
     {
@@ -244,7 +248,7 @@ JISBindResult JISBerkley::BindSharedIPV4(JISBerkleyBindParams *bindParameters,
     return JISBindResult_SUCCESS;
 }
 JISBindResult JISBerkley::BindSharedIPV4And6(JISBerkleyBindParams *bindParameters,
-    const char *file, unsigned int line)
+        const char *file, unsigned int line)
 {
 #if NET_SUPPORT_IPV6 ==1
 
@@ -252,22 +256,23 @@ JISBindResult JISBerkley::BindSharedIPV4And6(JISBerkleyBindParams *bindParameter
     struct addrinfo *servinfo = 0, *aip;  // will point to the results
 
     struct addrinfo hints;
-    memset(&hints, 0, sizeof(addrinfo)); // make sure the struct is empty
-    hints.ai_socktype = SOCK_DGRAM; // UDP sockets
-    hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
+    memset(&hints, 0, sizeof(addrinfo));// make sure the struct is empty
+    hints.ai_socktype = SOCK_DGRAM;// UDP sockets
+    hints.ai_flags = AI_PASSIVE;// fill in my IP for me
     hints.ai_family = bindParameters->addressFamily;
 
     char portStr[32];
     ::Itoa(bindParameters->port, portStr, 10);
 
     if( bindParameters->hostAddress != 0 &&
-        ( _stricmp(bindParameters->hostAddress, "UNASSIGNED_SYSTEM_ADDRESS") == 0
-        || bindParameters->hostAddress[0] == 0 ) )
+            ( _stricmp(bindParameters->hostAddress, "UNASSIGNED_SYSTEM_ADDRESS") == 0
+                    || bindParameters->hostAddress[0] == 0 ) )
     {
         // empty ip adress with port can work on Ubuntu
         getaddrinfo(0, portStr, &hints, &servinfo);
-    } else if( bindParameters->hostAddress != 0 && bindParameters->hostAddress[0] != 0
-        && ( _stricmp(bindParameters->hostAddress, "UNASSIGNED_SYSTEM_ADDRESS") != 0 ) )
+    }
+    else if( bindParameters->hostAddress != 0 && bindParameters->hostAddress[0] != 0
+            && ( _stricmp(bindParameters->hostAddress, "UNASSIGNED_SYSTEM_ADDRESS") != 0 ) )
     {
         getaddrinfo(bindParameters->hostAddress, portStr, &hints, &servinfo);
     }
@@ -286,7 +291,7 @@ JISBindResult JISBerkley::BindSharedIPV4And6(JISBerkleyBindParams *bindParameter
             // Is this valid?
             memcpy(&boundAddress.address.addr6, aip->ai_addr, sizeof(boundAddress.address.addr6));
 
-            freeaddrinfo(servinfo); // free the linked-list
+            freeaddrinfo(servinfo);// free the linked-list
 
             SetSocketOptions();
             SetNonBlockingSocket(bindParameters->isNonBlocking);
@@ -296,16 +301,17 @@ JISBindResult JISBerkley::BindSharedIPV4And6(JISBerkleyBindParams *bindParameter
             GetSystemAddressViaJISSocketIPV4And6(rns2Socket, &boundAddress);
 
             return JISBindResult_SUCCESS;
-        } else
+        }
+        else
         {
 #if defined(_WIN32)
             if( ( binding.isNonBlocking && GetLastError() != WSAEWOULDBLOCK ) || !binding.isNonBlocking )
             {
                 HLOCAL messageBuffer = 0;
                 FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL, GetLastError(),
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
-                    (PTSTR) & messageBuffer, 0, 0);
+                        NULL, GetLastError(),
+                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                        (PTSTR) & messageBuffer, 0, 0);
                 // I see this hit on XP with IPV6 for some reason
                 fwprintf(stderr, L"JISBerkley::BindSharedIPV4And6()::bind__()::failed with errno code (%d, %ls)\n", GetLastError(), (PCTSTR) LocalLock(messageBuffer));
                 LocalFree(messageBuffer);
@@ -327,7 +333,6 @@ JISBindResult JISBerkley::BindSharedIPV4And6(JISBerkleyBindParams *bindParameter
 }
 //////////////////////////////////////////////////////////////////////////
 
-
 inline JISRecvResult JISBerkley::RecvFrom(JISRecvParams *recvFromStruct)
 {
     assert(recvFromStruct != 0);
@@ -335,27 +340,27 @@ inline JISRecvResult JISBerkley::RecvFrom(JISRecvParams *recvFromStruct)
     if (jst != 0)
     {
         return jst->JackieINetRecvFrom(recvFromStruct->data,
-            &recvFromStruct->senderINetAddress, false);
+                &recvFromStruct->senderINetAddress, false);
     }
 
 #if NET_SUPPORT_IPV6 ==1
     return RecvFromIPV4And6(recvFromStruct);
 #else
-    return  RecvFromIPV4(recvFromStruct);
+    return RecvFromIPV4(recvFromStruct);
 #endif
 }
 
 JISRecvResult JISBerkley::RecvFromIPV4(JISRecvParams *recvFromStruct)
 {
-    static sockaddr_in sa = { AF_INET, 0, 0 };
+    static sockaddr_in sa =
+    {   AF_INET, 0, 0};
     static socklen_t sockLen = sizeof(sa);
     static socklen_t* socketlenPtr = (socklen_t*)&sockLen;
     static sockaddr* sockAddrPtr = (sockaddr*)&sa;
     static const int flag = 0;
 
-TRY_ONE_MORE_TIME:
+    TRY_ONE_MORE_TIME:
     recvFromStruct->bytesRead = recvfrom__(this->rns2Socket, recvFromStruct->data, MAXIMUM_MTU_SIZE, flag, sockAddrPtr, socketlenPtr);
-
 
     /// there are only two resons for UDP recvfrom() return 0 :
     /// 1. Socket has been soft closed by shutdown() or setting up linear attribute
@@ -375,14 +380,14 @@ TRY_ONE_MORE_TIME:
     {
         int val = recvFromStruct->bytesRead;
 #if defined(_WIN32)
-        if ((binding.isNonBlocking  && GetLastError() != WSAEWOULDBLOCK) ||
-            !binding.isNonBlocking)
+        if ((binding.isNonBlocking && GetLastError() != WSAEWOULDBLOCK) ||
+                !binding.isNonBlocking)
         {
             HLOCAL messageBuffer = 0;
             FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, GetLastError(),
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
-                (PTSTR)& messageBuffer, 0, 0);
+                    NULL, GetLastError(),
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                    (PTSTR)& messageBuffer, 0, 0);
             // I see this hit on XP with IPV6 for some reason
             fwprintf(stderr, L"JISBerkley::RecvFromNonBlockingIPV4()::recvfrom__()::failed with errno code (%d, %ls)\n", GetLastError(), (PCTSTR)LocalLock(messageBuffer));
             LocalFree(messageBuffer);
@@ -403,23 +408,22 @@ TRY_ONE_MORE_TIME:
             }
         }
 #elif (defined(__GNUC__) || defined(__GCCXML__) )
-        if (binding.isNonBlocking && errno != EAGAIN && errno != EWOULDBLOCK) ||
-            !binding.isNonBlocking)
+        if((binding.isNonBlocking && errno != EAGAIN && errno != EWOULDBLOCK) || !binding.isNonBlocking)
+        {
+            fprintf(stderr, "JISBerkley::RecvFromNonBlockingIPV4()::recvfrom__()::failed with errno code (%d-%s)\n", errno, strerror(errno));
+            /// here you can choose some specific error and handle these errors as you like
+            /// here i only handle WSAEMSGSIZE error in
+            /// line 1784 void ServerApplication::RunRecvCycleOnce(UInt32 index)
+            // other errors will be ignored and retry recvfrom(0 until it succeeds
+            if (errno == EMSGSIZE)
             {
-                fprintf_s(stderr, "JISBerkley::RecvFromNonBlockingIPV4()::recvfrom__()::failed with errno code (%d-%s)\n", errno, strerror(errno));
-                /// here you can choose some specific error and handle these errors as you like
-                /// here i only handle WSAEMSGSIZE error in
-                /// line 1784 void ServerApplication::RunRecvCycleOnce(UInt32 index)
-                // other errors will be ignored and retry recvfrom(0 until it succeeds
-                if (error == EMSGSIZE)
-                {
-                    recvFromStruct->bytesRead = (int)EMSGSIZE;
-                }
-                else
-                {
-                    goto TRY_ONE_MORE_TIME;
-                }
+                recvFromStruct->bytesRead = (int)EMSGSIZE;
             }
+            else
+            {
+                goto TRY_ONE_MORE_TIME;
+            }
+        }
 #endif
         return val; 	/// read failed
     }
@@ -438,7 +442,8 @@ TRY_ONE_MORE_TIME:
 inline JISRecvResult JISBerkley::RecvFromIPV4And6(JISRecvParams *recvFromStruct)
 {
 #if  NET_SUPPORT_IPV6==1
-    static sockaddr_storage sa = { 0 };
+    static sockaddr_storage sa =
+    {   0};
     static socklen_t sockLen = sizeof(sa);
     static socklen_t* socketlenPtr = (socklen_t*) &sockLen;
     static sockaddr* sockAddrPtr = (sockaddr*) &sa;
@@ -463,9 +468,9 @@ inline JISRecvResult JISBerkley::RecvFromIPV4And6(JISRecvParams *recvFromStruct)
         {
             HLOCAL messageBuffer = 0;
             FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, GetLastError(),
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
-                (PTSTR) & messageBuffer, 0, 0);
+                    NULL, GetLastError(),
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                    (PTSTR) & messageBuffer, 0, 0);
             // I see this hit on XP with IPV6 for some reason
             fwprintf(stderr, L"JISBerkley::RecvFromNonBlockingIPV4()::recvfrom__()::failed with errno code (%d, %ls)\n", GetLastError(), (PCTSTR) LocalLock(messageBuffer));
             LocalFree(messageBuffer);
@@ -498,7 +503,7 @@ inline JISRecvResult JISBerkley::RecvFromIPV4And6(JISRecvParams *recvFromStruct)
 }
 //////////////////////////////////////////////////////////////////////////
 JISSendResult JISBerkley::Send(JISSendParams *sendParameters,
-    const char *file, unsigned int line)
+        const char *file, unsigned int line)
 {
     /// we will nevwer send o len data
     assert(sendParameters->data != 0);
@@ -507,8 +512,8 @@ JISSendResult JISBerkley::Send(JISSendParams *sendParameters,
     if (jst != 0)
     {
         return jst->JackieINetSendTo(sendParameters->data,
-            sendParameters->length,
-            sendParameters->receiverINetAddress);
+                sendParameters->length,
+                sendParameters->receiverINetAddress);
     }
     else
     {
@@ -517,8 +522,8 @@ JISSendResult JISBerkley::Send(JISSendParams *sendParameters,
 }
 
 JISSendResult JISBerkley::SendWithoutVDP(JISSocket rns2Socket,
-    JISSendParams *sendParameters,
-    const char *file, unsigned int line)
+        JISSendParams *sendParameters,
+        const char *file, unsigned int line)
 {
     int len = 0;
     int oldTTL = -1;
@@ -530,14 +535,14 @@ JISSendResult JISBerkley::SendWithoutVDP(JISSocket rns2Socket,
     {
         // Get the current TTL
         if (getsockopt__(rns2Socket,
-            sendParameters->receiverINetAddress.GetIPProtocol(), IP_TTL, (char *)& oldTTL, &opLen) != -1)
+                        sendParameters->receiverINetAddress.GetIPProtocol(), IP_TTL, (char *)& oldTTL, &opLen) != -1)
         {
             newTTL = sendParameters->ttl;
             setsockopt__(rns2Socket, sendParameters->receiverINetAddress.GetIPProtocol(), IP_TTL, (char *)& newTTL, sizeof(newTTL));
         }
     }
 
-TRY_ONE_MORE_TIME:
+    TRY_ONE_MORE_TIME:
     if (sendParameters->receiverINetAddress.address.addr4.sin_family == AF_INET)
     {
         len = sendto__(rns2Socket, sendParameters->data, sendParameters->length, 0, (const sockaddr*)& sendParameters->receiverINetAddress.address.addr4, sizeof(sockaddr_in));
@@ -560,12 +565,12 @@ TRY_ONE_MORE_TIME:
         DWORD err = GetLastError();
         HLOCAL messageBuffer = 0;
         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, GetLastError(),
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
-            (PTSTR)& messageBuffer, 0, 0);
+                NULL, GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
+                (PTSTR)& messageBuffer, 0, 0);
         // I see this hit on XP with IPV6 for some reason
         fwprintf(stderr, L"JISBerkley::RecvFromNonBlockingIPV4()::sendto__()::failed with errno code (%d, %ls)\n",
-            GetLastError(), (PCTSTR)LocalLock(messageBuffer));
+                GetLastError(), (PCTSTR)LocalLock(messageBuffer));
         LocalFree(messageBuffer);
 
         /// try again only in two cases"
@@ -574,18 +579,17 @@ TRY_ONE_MORE_TIME:
         /// bigger dagram than max MSGSIZE by when client connects to server
         ///  by Calling ServerApplication::Connect()
         if ((binding.isNonBlocking && errno == WSAEWOULDBLOCK) ||
-            err != WSAEMSGSIZE)
+                err != WSAEMSGSIZE)
         {
             goto TRY_ONE_MORE_TIME;
         }
         sendParameters->bytesWritten = WSAEMSGSIZE;
 #elif (defined(__GNUC__) || defined(__GCCXML__) )
-        fprintf_s(stderr,
-            "JISBerkley::SendWithoutVDP()::sendto__() failed with errno %i(%s) for char %i and length %i.\n", errno, strerror(errno),
-            sendParameters->data[0], sendParameters->length);
+        fprintf(stderr,
+                "JISBerkley::SendWithoutVDP()::sendto__() failed with errno %i(%s) for char %i and length %i.\n",
+                errno, strerror(errno),sendParameters->data[0], sendParameters->length);
 
-        if ((binding.isNonBlocking && errno == EWOULDBLOCK) ||
-            err != EMSGSIZE)
+        if ((binding.isNonBlocking && errno == EWOULDBLOCK) || errno != EMSGSIZE)
         {
             goto TRY_ONE_MORE_TIME;
         }
@@ -606,17 +610,16 @@ TRY_ONE_MORE_TIME:
     return len;
 }
 
-
-void JISBerkley::GetSystemAddressViaJISSocket(JISSocket rns2Socket, InetAddress *systemAddressOut)
+void JISBerkley::GetSystemAddressViaJISSocket(JISSocket rns2Socket, NetworkAddress *systemAddressOut)
 {
     WSAStartupSingleton::AddRef();
     GetSystemAddressViaJISSocketIPV4And6(rns2Socket, systemAddressOut);
     WSAStartupSingleton::Deref();
 }
 void JISBerkley::GetSystemAddressViaJISSocketIPV4(JISSocket rns2Socket,
-    InetAddress *systemAddressOut)
+        NetworkAddress *systemAddressOut)
 {
-    static  sockaddr_in sa;
+    static sockaddr_in sa;
     static socklen_t len = sizeof(sa);
     //memset(&sa, 0, sizeof(sockaddr_in));
 
@@ -625,7 +628,7 @@ void JISBerkley::GetSystemAddressViaJISSocketIPV4(JISSocket rns2Socket,
 #if defined(_WIN32)
         fprintf_s(stderr, "JISBerkley::GetSystemAddressViaJISSocketIPV4()::getsockname__()::failed with errno code (%s)\n", strerror(WSAGetLastError()));
 #elif (defined(__GNUC__) || defined(__GCCXML__) )
-        fprintf_s(stderr, "JISBerkley::GetSystemAddressViaJISSocketIPV4()::getsockname__()::failed with errno code (%s)\n", strerror(errno));
+        fprintf(stderr, "JISBerkley::GetSystemAddressViaJISSocketIPV4()::getsockname__()::failed with errno code (%s)\n", strerror(errno));
 #endif
         *systemAddressOut = JACKIE_NULL_ADDRESS;
         return;
@@ -640,7 +643,7 @@ void JISBerkley::GetSystemAddressViaJISSocketIPV4(JISSocket rns2Socket,
     }
 }
 void JISBerkley::GetSystemAddressViaJISSocketIPV4And6(JISSocket rns2Socket,
-    InetAddress *systemAddressOut)
+        NetworkAddress *systemAddressOut)
 {
 #if NET_SUPPORT_IPV6 ==1
 
@@ -656,7 +659,7 @@ void JISBerkley::GetSystemAddressViaJISSocketIPV4And6(JISSocket rns2Socket,
         fprintf_s(stderr, "JISBerkley::GetSystemAddressViaJISSocketIPV4And6()::getsockname__()::failed with errno code (%s)\n", strerror(errno));
 #endif
         *systemAddressOut = GECO_NULL_ADDRESS
-            return;
+        return;
     }
 
     if( ss.ss_family == AF_INET )
@@ -666,18 +669,19 @@ void JISBerkley::GetSystemAddressViaJISSocketIPV4And6(JISSocket rns2Socket,
 
         unsigned int zero = 0;
         if( memcmp(&systemAddressOut->address.addr4.sin_addr.s_addr, &zero,
-            sizeof(zero)) == 0 )
-            systemAddressOut->SetToLoopBack(4);
+                        sizeof(zero)) == 0 )
+        systemAddressOut->SetToLoopBack(4);
     }
     else
     {
         memcpy(&systemAddressOut->address.addr6, (sockaddr_in6 *)&ss, sizeof(sockaddr_in6));
         systemAddressOut->debugPort = ntohs(systemAddressOut->address.addr6.sin6_port);
 
-        char zero[16] = { 0 };
+        char zero[16] =
+        {   0};
         if (memcmp(&systemAddressOut->address.addr4.sin_addr.s_addr, &zero,
-            sizeof(zero)) == 0)
-            systemAddressOut->SetToLoopBack(6);
+                        sizeof(zero)) == 0)
+        systemAddressOut->SetToLoopBack(6);
     }
 
 #else
@@ -685,7 +689,7 @@ void JISBerkley::GetSystemAddressViaJISSocketIPV4And6(JISSocket rns2Socket,
 #endif
 }
 
-void JISBerkley::GetMyIPBerkley(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
+void JISBerkley::GetMyIPBerkley(NetworkAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
 {
     WSAStartupSingleton::AddRef();
 #if NET_SUPPORT_IPV6 ==1
@@ -695,7 +699,7 @@ void JISBerkley::GetMyIPBerkley(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
 #endif
     WSAStartupSingleton::Deref();
 }
-void JISBerkley::GetMyIPBerkleyV4(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
+void JISBerkley::GetMyIPBerkleyV4(NetworkAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
 {
     char buf[80]; if (gethostname(buf, 80) == SOCKET_ERROR) return;
     struct hostent *phe = gethostbyname(buf); if (phe == 0) return;
@@ -704,7 +708,7 @@ void JISBerkley::GetMyIPBerkleyV4(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR]
     {
         if (phe->h_addr_list[idx] == 0) break;
         memcpy(&addresses[idx].address.addr4.sin_addr, phe->h_addr_list[idx],
-            sizeof(in_addr));
+                sizeof(in_addr));
     }
 
     while (idx < MAX_COUNT_LOCAL_IP_ADDR)
@@ -713,7 +717,7 @@ void JISBerkley::GetMyIPBerkleyV4(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR]
         idx++;
     }
 }
-void JISBerkley::GetMyIPBerkleyV4V6(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
+void JISBerkley::GetMyIPBerkleyV4V6(NetworkAddress addresses[MAX_COUNT_LOCAL_IP_ADDR])
 {
     int idx = 0;
 
@@ -722,15 +726,15 @@ void JISBerkley::GetMyIPBerkleyV4V6(InetAddress addresses[MAX_COUNT_LOCAL_IP_ADD
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof(addrinfo)); // make sure the struct is empty
-    hints.ai_socktype = SOCK_DGRAM; // UDP sockets
-    hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
+    hints.ai_socktype = SOCK_DGRAM;// UDP sockets
+    hints.ai_flags = AI_PASSIVE;// fill in my IP for me
 
     struct addrinfo *servinfo = 0;
-    struct addrinfo *aip = 0;  // will point to the results
+    struct addrinfo *aip = 0;// will point to the results
     getaddrinfo(buf, "", &hints, &servinfo);
 
     for (idx = 0, aip = servinfo; aip != NULL && idx < MAX_COUNT_LOCAL_IP_ADDR;
-        aip = aip->ai_next, idx++)
+            aip = aip->ai_next, idx++)
     {
         if (aip->ai_family == AF_INET)
         {

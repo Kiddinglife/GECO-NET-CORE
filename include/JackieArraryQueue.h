@@ -4,6 +4,7 @@
 #include <cassert>
 #include "geco-export.h"
 #include "geco-malloc-interface.h"
+using namespace geco::ultils;
 
 GECO_NET_BEGIN_NSPACE
 /// The namespace DataStructures was only added to avoid compiler errors for commonly
@@ -61,13 +62,13 @@ class GECO_EXPORT JackieArraryQueue
     {
         if ((&original_copy) == this) return false;
 
-        Clear(TRACKE_MALLOC);
+        Clear();
 
         // Allocate memory for copy
         if (original_copy.Size() == 0)
         {
             allocation_size = 0; // THIS MAY CAUSE MEMORY LEAK !
-            return;
+            return false;
         }
 
         queueArrary = OP_NEW_ARRAY<queue_type >(original_copy.Size() + 1, TRACKE_MALLOC);

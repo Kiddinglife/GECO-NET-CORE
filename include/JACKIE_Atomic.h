@@ -1,5 +1,5 @@
-﻿#ifndef JACKIE_ATOMIC_H
-#define JACKIE_ATOMIC_H
+﻿#ifndef __JACKIE_ATOMIC_H
+#define __JACKIE_ATOMIC_H
 
 #include "geco-export.h"
 #include "geco-basic-type.h"

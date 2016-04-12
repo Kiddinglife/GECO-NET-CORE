@@ -116,7 +116,7 @@ struct GECO_EXPORT JackieIPlugin
     /// @param[in] systemAddress The system whose connection was closed
     /// @param[in] rakNetGuid The guid of the specified system
     /// @param[in] lostConnectionReason How the connection was closed: manually, connection lost, or notification of disconnection
-    virtual void OnClosedConnection(const InetAddress &systemAddress,
+    virtual void OnClosedConnection(const NetworkAddress &systemAddress,
         JackieGUID& guid, LoseConnectionReason lostConnectionReason)
     {
     }
@@ -125,7 +125,7 @@ struct GECO_EXPORT JackieIPlugin
     /// @param[in] systemAddress Address of the new connection
     /// @param[in] rakNetGuid The guid of the specified system
     /// @param[in] isIncoming If true, this is ID_NEW_INCOMING_CONNECTION, or the equivalent
-    virtual void OnNewConnection(const InetAddress &systemAddress,
+    virtual void OnNewConnection(const NetworkAddress &systemAddress,
         JackieGUID& guid, bool isIncoming)
     {
         std::cout << "NEW CONNECTION FROM " << systemAddress.ToString();
@@ -149,21 +149,21 @@ struct GECO_EXPORT JackieIPlugin
     /// @param[in] time The current time as returned by RakNet::GetTimeMS()
     /// @param[in] isSend Is this callback representing a send event or receive event?
     virtual void OnInternalPacket(InternalPacket *internalPacket, unsigned frameNumber,
-        InetAddress& remoteSystemAddress, TimeMS time, int isSend) { }
+        NetworkAddress& remoteSystemAddress, TimeMS time, int isSend) { }
 
     /// Called when we get an ack for a message we reliably sent
     /// @pre To be called, UsesReliabilityLayer() must return true
     /// @param[in] messageNumber The numerical identifier for which message this is
     /// @param[in] remoteSystemAddress The player we sent or got this packet from
     /// @param[in] time The current time as returned by RakNet::GetTimeMS()
-    virtual void OnAck(unsigned int messageNumber, InetAddress& remoteSystemAddress, TimeMS time) { }
+    virtual void OnAck(unsigned int messageNumber, NetworkAddress& remoteSystemAddress, TimeMS time) { }
 
     /// System called IServerApplication::PushBackPacket()
     /// @param[in] data The data being sent
     /// @param[in] bitsUsed How many bits long @a data is
     /// @param[in] remoteSystemAddress The player we sent or got this packet from
     virtual void OnPushBackPacket(const char *data, const unsigned int bitsUsed,
-        InetAddress& remoteSystemAddress) { }
+        NetworkAddress& remoteSystemAddress) { }
 
     /// Queried when attached to RakPeer
     /// Return true to call OnDirectSocketSend(), OnDirectSocketReceive(), OnReliabilityLayerNotification(), OnInternalPacket(), and OnAck()
@@ -200,7 +200,7 @@ struct GECO_EXPORT JackieIPlugin
     /// @param[in] bitsUsed How many bits long @a data is
     /// @param[in] remoteSystemAddress Which system this message is being sent to
     virtual void OnReliabilityLayerNotification(const char *errorMessage, const unsigned int
-        bitsUsed, InetAddress& remoteSystemAddress, bool isError) { }
+        bitsUsed, NetworkAddress& remoteSystemAddress, bool isError) { }
 
 };
 

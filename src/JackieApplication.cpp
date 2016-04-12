@@ -556,7 +556,7 @@ void JackieApplication::InitIPAddress(void)
         }
         if (startingIdx != lowestIdx)
         {
-            InetAddress temp = localIPAddrs[startingIdx];
+            NetworkAddress temp = localIPAddrs[startingIdx];
             localIPAddrs[startingIdx] = localIPAddrs[lowestIdx];
             localIPAddrs[lowestIdx] = temp;
         }
@@ -1028,7 +1028,7 @@ void JackieApplication::OnConnectionRequest2(JISRecvParams* recvParams,
         }
 #endif // ENABLE_SECURE_HAND_SHAKE
 
-        InetAddress recvivedBoundAddrFromClient;
+        NetworkAddress recvivedBoundAddrFromClient;
         fromClientReader.Read(recvivedBoundAddrFromClient);
         std::cout << "serverReadMini(server_bound_addr) "
             << recvivedBoundAddrFromClient.ToString();
@@ -1558,7 +1558,7 @@ void JackieApplication::OnConnectionReply2(JISRecvParams* recvParams,
         JackieGUID guid;
         UInt16 mtu;
         bool clientSecureRequiredbyServer = false;
-        InetAddress ourOwnBoundAddEchoFromServer;
+        NetworkAddress ourOwnBoundAddEchoFromServer;
 
         GecoBitStream bs((unsigned char*)recvParams->data,
             recvParams->bytesRead);
@@ -1808,7 +1808,7 @@ void JackieApplication::ProcessConnectionRequestCancelQ(void)
 
     //std::cout << "Connection Request CancelQ is NOT EMPTY";
 
-    InetAddress connReqCancelAddr;
+    NetworkAddress connReqCancelAddr;
     ConnectionRequest* connReq = 0;
 
     connReqCancelQLock.Lock();
@@ -2137,7 +2137,7 @@ void JackieApplication::AdjustTimestamp(JackiePacket*& incomePacket) const
 }
 
 const JackieGUID& JackieApplication::GetGuidFromSystemAddress(
-    const InetAddress input) const
+    const NetworkAddress input) const
 {
     if (input == JACKIE_NULL_ADDRESS)
         return myGuid;
@@ -2159,7 +2159,7 @@ const JackieGUID& JackieApplication::GetGuidFromSystemAddress(
     return JACKIE_NULL_GUID;
 }
 
-JackieRemoteSystem* JackieApplication::GetRemoteSystem(const InetAddress& sa,
+JackieRemoteSystem* JackieApplication::GetRemoteSystem(const NetworkAddress& sa,
     bool neededBySendThread, bool onlyWantActiveEndPoint) const
 {
     if (sa == JACKIE_NULL_ADDRESS)
@@ -2228,16 +2228,16 @@ JackieRemoteSystem* JackieApplication::GetRemoteSystem(
     return 0;
 }
 JackieRemoteSystem* JackieApplication::GetRemoteSystem(
-    const InetAddress& sa) const
+    const NetworkAddress& sa) const
 {
     Int32 index = GetRemoteSystemIndex(sa);
     if (index == -1)
         return 0;
     return remoteSystemList + index;
 }
-Int32 JackieApplication::GetRemoteSystemIndex(const InetAddress &sa) const
+Int32 JackieApplication::GetRemoteSystemIndex(const NetworkAddress &sa) const
 {
-    UInt32 hashindex = InetAddress::ToHashCode(sa);
+    UInt32 hashindex = NetworkAddress::ToHashCode(sa);
     hashindex = hashindex
         % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
     JackieRemoteIndex* curr = remoteSystemLookup[hashindex];
@@ -2250,7 +2250,7 @@ Int32 JackieApplication::GetRemoteSystemIndex(const InetAddress &sa) const
     return -1;
 }
 
-void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
+void JackieApplication::RefRemoteEndPoint(const NetworkAddress &sa, UInt32 index)
 {
 #ifdef _DEBUG
     for (int remoteSystemIndex = 0;
@@ -2265,12 +2265,11 @@ void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
 #endif // _DEBUG
 
     JackieRemoteSystem* remote = remoteSystemList + index;
-    InetAddress old = remote->systemAddress;
+    NetworkAddress old = remote->systemAddress;
     if (old != JACKIE_NULL_ADDRESS)
     {
         // The system might be active if rerouting
-        assert(remoteSystemList[index].isActive, false)
-            ;
+        assert(remoteSystemList[index].isActive == false);
         // Remove the reference if the reference is pointing to this inactive system
         if (GetRemoteSystem(old) == remote)
         {
@@ -2281,7 +2280,7 @@ void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
     DeRefRemoteSystem(sa);
     remoteSystemList[index].systemAddress = sa;
 
-    UInt32 hashindex = InetAddress::ToHashCode(sa);
+    UInt32 hashindex = NetworkAddress::ToHashCode(sa);
     hashindex = hashindex
         % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
 
@@ -2310,9 +2309,9 @@ void JackieApplication::RefRemoteEndPoint(const InetAddress &sa, UInt32 index)
     }
 
 }
-void JackieApplication::DeRefRemoteSystem(const InetAddress &sa)
+void JackieApplication::DeRefRemoteSystem(const NetworkAddress &sa)
 {
-    UInt32 hashindex = InetAddress::ToHashCode(sa);
+    UInt32 hashindex = NetworkAddress::ToHashCode(sa);
     hashindex = hashindex
         % (maxConnections * RemoteEndPointLookupHashMutiple - 1);
 
@@ -2787,7 +2786,7 @@ UInt64 JackieApplication::CreateUniqueRandness(void)
     return g;
 }
 
-void JackieApplication::CancelConnectionRequest(const InetAddress& target)
+void JackieApplication::CancelConnectionRequest(const NetworkAddress& target)
 {
     std::cout << "User Thread Cancel Connection Request To "
         << target.ToString();
@@ -2880,7 +2879,7 @@ ConnectionAttemptResult JackieApplication::Connect(const char* host,
         return INVALID_PARAM;
     }
 
-    InetAddress addr;
+    NetworkAddress addr;
     bool ret =
         addr.FromString(host, port,
         bindedSockets[ConnectionSocketIndex]->GetBoundAddress().GetIPVersion());
@@ -3137,7 +3136,7 @@ bool JackieApplication::EnableSecureIncomingConnections(const char *public_key,
 #endif
 }
 
-bool JackieApplication::IsInSecurityExceptionList(InetAddress& jackieAddr)
+bool JackieApplication::IsInSecurityExceptionList(NetworkAddress& jackieAddr)
 {
     /// memcmp recvParams->senderINetAddress.address.addr4.sin_addr
     /// more efficient
@@ -3148,7 +3147,7 @@ bool JackieApplication::IsInSecurityExceptionList(InetAddress& jackieAddr)
 
 void JackieApplication::Add2RemoteSystemList(JISRecvParams* recvParams,
     JackieRemoteSystem*& free_rs, bool& thisIPFloodsConnRequest, UInt32 mtu,
-    InetAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
+    NetworkAddress& recvivedBoundAddrFromClient, JackieGUID& guid,
     bool clientSecureRequiredbyServer)
 {
     TimeMS time = ::GetTimeMS();
@@ -3423,7 +3422,7 @@ bool JackieApplication::SendImmediate(ReliableSendParams& sendParams)
 }
 
 Int32 JackieApplication::GetRemoteSystemIndexGeneral(
-    const InetAddress& systemAddress,
+    const NetworkAddress& systemAddress,
     bool calledFromNetworkThread /*= false*/) const
 {
     if (systemAddress == JACKIE_NULL_ADDRESS)
@@ -3493,7 +3492,8 @@ Int32 JackieApplication::GetRemoteSystemIndexGeneral(const JackieGUID& input,
     return (unsigned int)-1;
 }
 
-bool JackieApplication::IsBanned(InetAddress& senderINetAddress)
+//bool JackieApplication::IsBanned(NetworkAddress& senderINetAddress)
+bool JackieApplication::IsBanned(NetworkAddress& senderINetAddress)
 {
     if (banList.Size() == 0)
         return false;
