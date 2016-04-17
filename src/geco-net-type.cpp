@@ -11,11 +11,11 @@ const char *IPV6_LOOPBACK = "::1";
 const char *IPV4_LOOPBACK = "127.0.0.1";
 
 #ifndef SWIG
-const NetworkAddress JACKIE_NULL_ADDRESS;
-const JackieGUID JACKIE_NULL_GUID;
+const network_address_t JACKIE_NULL_ADDRESS;
+const guid_t JACKIE_NULL_GUID;
 #endif
 
-JackieBindingSocket::JackieBindingSocket()
+socket_binding_params_t::socket_binding_params_t()
 {
 #ifdef __native_client__
     blockingSocket=USE_NON_BLOBKING_SOCKET;
@@ -29,7 +29,7 @@ JackieBindingSocket::JackieBindingSocket()
     socketFamily = AF_INET;
     blockingSocket = USE_BLOBKING_SOCKET;
 }
-JackieBindingSocket::JackieBindingSocket(const char *_hostAddress, UInt16 _port)
+socket_binding_params_t::socket_binding_params_t(const char *_hostAddress, ushort _port)
 {
 #ifdef __native_client__
     blockingSocket = USE_NON_BLOBKING_SOCKET;
@@ -45,15 +45,15 @@ JackieBindingSocket::JackieBindingSocket(const char *_hostAddress, UInt16 _port)
     blockingSocket = USE_BLOBKING_SOCKET;
 }
 
-Int32 NetworkAddress::size(void)
+int network_address_t::size(void)
 {
 #if NET_SUPPORT_IPV6==1
-    return sizeof(sockaddr_in6) + sizeof(Int8);
+    return sizeof(sockaddr_in6) + sizeof(char);
 #else
-    return sizeof(unsigned int) + sizeof(UInt16) + sizeof(Int8);
+    return sizeof(unsigned int) + sizeof(ushort) + sizeof(char);
 #endif
 }
-unsigned int NetworkAddress::ToHashCode(const NetworkAddress &sa)
+unsigned int network_address_t::ToHashCode(const network_address_t &sa)
 {
     unsigned int lastHash = SuperFastHashIncremental((const char*)& sa.address.addr4.sin_port,
         sizeof(sa.address.addr4.sin_port), sizeof(sa.address.addr4.sin_port));
@@ -71,27 +71,27 @@ unsigned int NetworkAddress::ToHashCode(const NetworkAddress &sa)
 #endif
 }
 
-NetworkAddress::NetworkAddress()
+network_address_t::network_address_t()
 {
     address.addr4.sin_family = AF_INET;
-    systemIndex = (SystemIndex)-1;
+    systemIndex = (system_index_t)-1;
     debugPort = 0;
 }
-NetworkAddress::NetworkAddress(const char *str)
+network_address_t::network_address_t(const char *str)
 {
     address.addr4.sin_family = AF_INET;
     SetPortHostOrder(0);
     FromString(str);
-    systemIndex = (SystemIndex)-1;
+    systemIndex = (system_index_t)-1;
 }
-NetworkAddress::NetworkAddress(const char *str, UInt16 port)
+network_address_t::network_address_t(const char *str, ushort port)
 {
     address.addr4.sin_family = AF_INET;
     FromString(str, port);
-    systemIndex = (SystemIndex)-1;
+    systemIndex = (system_index_t)-1;
 }
-NetworkAddress& NetworkAddress::operator = (const
-    NetworkAddress& input)
+network_address_t& network_address_t::operator = (const
+    network_address_t& input)
 {
     memcpy(&address, &input.address, sizeof(address));
     systemIndex = input.systemIndex;
@@ -99,12 +99,12 @@ NetworkAddress& NetworkAddress::operator = (const
     return *this;
 }
 
-bool NetworkAddress::operator==(const NetworkAddress& right) const
+bool network_address_t::operator==(const network_address_t& right) const
 {
     return (address.addr4.sin_port == right.address.addr4.sin_port) && EqualsExcludingPort(right);
 }
 
-bool NetworkAddress::EqualsExcludingPort(const NetworkAddress& right) const
+bool network_address_t::EqualsExcludingPort(const network_address_t& right) const
 {
     return (address.addr4.sin_family == AF_INET && address.addr4.sin_addr.s_addr == right.address.addr4.sin_addr.s_addr)
 #if NET_SUPPORT_IPV6==1
@@ -113,11 +113,11 @@ bool NetworkAddress::EqualsExcludingPort(const NetworkAddress& right) const
         ;
 }
 
-bool NetworkAddress::operator!=(const NetworkAddress& right) const
+bool network_address_t::operator!=(const network_address_t& right) const
 {
     return (*this == right) == false;
 }
-bool NetworkAddress::operator>(const NetworkAddress& right) const
+bool network_address_t::operator>(const network_address_t& right) const
 {
     if (address.addr4.sin_port == right.address.addr4.sin_port)
     {
@@ -131,7 +131,7 @@ bool NetworkAddress::operator>(const NetworkAddress& right) const
     }
     return address.addr4.sin_port > right.address.addr4.sin_port;
 }
-bool NetworkAddress::operator<(const NetworkAddress& right) const
+bool network_address_t::operator<(const network_address_t& right) const
 {
     if (address.addr4.sin_port == right.address.addr4.sin_port)
     {
@@ -146,7 +146,7 @@ bool NetworkAddress::operator<(const NetworkAddress& right) const
     return address.addr4.sin_port < right.address.addr4.sin_port;
 }
 
-unsigned char NetworkAddress::GetIPVersion(void) const
+unsigned char network_address_t::GetIPVersion(void) const
 {
     if (address.addr4.sin_family == AF_INET)
     {
@@ -157,7 +157,7 @@ unsigned char NetworkAddress::GetIPVersion(void) const
         return 6;
     }
 }
-unsigned char NetworkAddress::GetIPProtocol(void) const
+unsigned char network_address_t::GetIPProtocol(void) const
 {
 #if NET_SUPPORT_IPV6==1
     if (address.addr4.sin_family == AF_INET)
@@ -168,34 +168,34 @@ unsigned char NetworkAddress::GetIPProtocol(void) const
 #endif
 }
 
-void NetworkAddress::SetPortHostOrder(UInt16 s)
+void network_address_t::SetPortHostOrder(ushort s)
 {
     address.addr4.sin_port = htons(s);
     debugPort = s;
 }
-void NetworkAddress::SetPortNetworkOrder(UInt16 s)
+void network_address_t::SetPortNetworkOrder(ushort s)
 {
     address.addr4.sin_port = s;
     debugPort = ntohs(s);
 }
-void NetworkAddress::SetPortNetworkOrder(const NetworkAddress& right)
+void network_address_t::SetPortNetworkOrder(const network_address_t& right)
 {
     address.addr4.sin_port = right.address.addr4.sin_port;
     debugPort = right.debugPort;
 }
-UInt16 NetworkAddress::GetPortHostOrder(void) const
+ushort network_address_t::GetPortHostOrder(void) const
 {
     return ntohs(address.addr4.sin_port);
 }
-UInt16 NetworkAddress::GetPortNetworkOrder(void) const
+ushort network_address_t::GetPortNetworkOrder(void) const
 {
     return address.addr4.sin_port;
 }
-void NetworkAddress::SetToLoopBack(void)
+void network_address_t::SetToLoopBack(void)
 {
     SetToLoopBack(4);
 }
-void NetworkAddress::SetToLoopBack(unsigned char ipVersion)
+void network_address_t::SetToLoopBack(unsigned char ipVersion)
 {
     if (ipVersion == 4)
     {
@@ -206,7 +206,7 @@ void NetworkAddress::SetToLoopBack(unsigned char ipVersion)
         FromString(IPV6_LOOPBACK, '\0', ipVersion);
     }
 }
-bool NetworkAddress::IsLoopback(void) const
+bool network_address_t::IsLoopback(void) const
 {
     if (GetIPVersion() == 4)
     {
@@ -225,7 +225,7 @@ bool NetworkAddress::IsLoopback(void) const
 #endif
     return false;
 }
-bool NetworkAddress::IsLANAddress(void)
+bool network_address_t::IsLANAddress(void)
 {
 #if defined(WIN32)
     return address.addr4.sin_addr.S_un.S_un_b.s_b1 == 10 || address.addr4.sin_addr.S_un.S_un_b.s_b1 == 192;
@@ -235,7 +235,7 @@ bool NetworkAddress::IsLANAddress(void)
 #endif
 }
 
-bool NetworkAddress::SetIP4Address(const char *str, char portDelineator)
+bool network_address_t::SetIP4Address(const char *str, char portDelineator)
 {
     if (isDomainIPAddr(str))
     {
@@ -309,7 +309,7 @@ bool NetworkAddress::SetIP4Address(const char *str, char portDelineator)
     }
     return true;
 }
-bool NetworkAddress::FromString(const char *str, char portDelineator,
+bool network_address_t::FromString(const char *str, char portDelineator,
     unsigned char ipVersion)
 {
 #if NET_SUPPORT_IPV6 != 1
@@ -429,7 +429,7 @@ bool NetworkAddress::FromString(const char *str, char portDelineator,
 #endif // #if NET_SUPPORT_IPV6!=1
     return true;
 }
-bool NetworkAddress::FromString(const char *str, UInt16 port, unsigned char ipVersion)
+bool network_address_t::FromString(const char *str, ushort port, unsigned char ipVersion)
 {
     bool b = FromString(str, '\0', ipVersion);
     if (b == false)
@@ -442,7 +442,7 @@ bool NetworkAddress::FromString(const char *str, UInt16 port, unsigned char ipVe
     return true;
 }
 
-const char* NetworkAddress::ToString(bool writePort, char portDelineator) const
+const char* network_address_t::ToString(bool writePort, char portDelineator) const
 {
     unsigned char strIndex = 0;
 
@@ -457,7 +457,7 @@ const char* NetworkAddress::ToString(bool writePort, char portDelineator) const
     ToString(writePort, str[lastStrIndex & 7], portDelineator);
     return (char*)str[lastStrIndex & 7];
 }
-void NetworkAddress::ToString(bool writePort, char *dest, char portDelineator) const
+void network_address_t::ToString(bool writePort, char *dest, char portDelineator) const
 {
 #if NET_SUPPORT_IPV6 !=1
     ToString_IPV4(writePort, dest, portDelineator);
@@ -465,7 +465,7 @@ void NetworkAddress::ToString(bool writePort, char *dest, char portDelineator) c
     ToString_IPV6(writePort, dest, portDelineator);
 #endif // #if RAKNET_SUPPORT_IPV6!=1
 }
-void NetworkAddress::ToString_IPV4(bool writePort, char *dest, char portDelineator)
+void network_address_t::ToString_IPV4(bool writePort, char *dest, char portDelineator)
 const
 {
     if (*this == JACKIE_NULL_ADDRESS)
@@ -488,7 +488,7 @@ const
         Itoa(GetPortHostOrder(), dest + strlen(dest), 10);
     }
 }
-void NetworkAddress::ToString_IPV6(bool writePort, char *dest, char portDelineator)
+void network_address_t::ToString_IPV6(bool writePort, char *dest, char portDelineator)
 const
 {
     int ret;
@@ -525,41 +525,41 @@ const
     }
 }
 
-JackieGUID::JackieGUID(UInt64 _g)
+guid_t::guid_t(ulonglong _g)
 {
     g = _g;
-    systemIndex = (SystemIndex)-1;
+    systemIndex = (system_index_t)-1;
 }
-JackieGUID::JackieGUID()
+guid_t::guid_t()
 {
-    systemIndex = (SystemIndex)-1;
-    g = (UInt64)-1;
+    systemIndex = (system_index_t)-1;
+    g = (ulonglong)-1;
 }
-JackieGUID& JackieGUID::operator = (const JackieGUID& input)
+guid_t& guid_t::operator = (const guid_t& input)
 {
     g = input.g;
     systemIndex = input.systemIndex;
     return *this;
 }
 
-inline bool JackieGUID::operator==(const JackieGUID& right) const
+inline bool guid_t::operator==(const guid_t& right) const
 {
     return g == right.g;
 }
-inline bool JackieGUID::operator!=(const JackieGUID& right) const
+inline bool guid_t::operator!=(const guid_t& right) const
 {
     return g != right.g;
 }
-inline bool JackieGUID::operator > (const JackieGUID& right) const
+inline bool guid_t::operator > (const guid_t& right) const
 {
     return g > right.g;
 }
-inline bool JackieGUID::operator < (const JackieGUID& right) const
+inline bool guid_t::operator < (const guid_t& right) const
 {
     return g < right.g;
 }
 
-const char *JackieGUID::ToString(void) const
+const char *guid_t::ToString(void) const
 {
     static unsigned char strIndex = 0;
     static char str[8][64];
@@ -569,7 +569,7 @@ const char *JackieGUID::ToString(void) const
     ToString(str[lastStrIndex & 7]);
     return (char*)str[lastStrIndex & 7];
 }
-void JackieGUID::ToString(char *dest) const
+void guid_t::ToString(char *dest) const
 {
     if (*this == JACKIE_NULL_GUID)
         strcpy(dest, "JACKIE_INet_GUID_Null");
@@ -578,12 +578,12 @@ void JackieGUID::ToString(char *dest) const
         sprintf(dest, "%" PRINTF_64BITS_MODIFIER "u", (long long unsigned int) g);
     // sprintf(dest, "%u.%u.%u.%u.%u.%u", g[0], g[1], g[2], g[3], g[4], g[5]);
 }
-unsigned long JackieGUID::ToUInt32(const JackieGUID &g)
+unsigned long guid_t::ToUInt32(const guid_t &g)
 {
     return ((unsigned long)(g.g >> 32)) ^ ((unsigned long)(g.g & 0xFFFFFFFF));
 }
-int JackieGUID::size() { return (int) sizeof(UInt64); }
-bool JackieGUID::FromString(const char *source)
+int guid_t::size() { return (int) sizeof(ulonglong); }
+bool guid_t::FromString(const char *source)
 {
     if (source == 0)
         return false;
@@ -598,23 +598,23 @@ bool JackieGUID::FromString(const char *source)
     return true;
 }
 
-JackieAddressGuidWrapper::JackieAddressGuidWrapper(const JackiePacket& packet)
+guid_address_wrapper_t::guid_address_wrapper_t(const network_packet_t& packet)
 {
     guid = packet.guid;
     systemAddress = packet.systemAddress;
 }
-unsigned long JackieAddressGuidWrapper::ToHashCode(const JackieAddressGuidWrapper &aog)
+unsigned long guid_address_wrapper_t::ToHashCode(const guid_address_wrapper_t &aog)
 {
     if (aog.guid != JACKIE_NULL_GUID)
-        return JackieGUID::ToUInt32(aog.guid);
-    return NetworkAddress::ToHashCode(aog.systemAddress);
+        return guid_t::ToUInt32(aog.guid);
+    return network_address_t::ToHashCode(aog.systemAddress);
 }
-const char *JackieAddressGuidWrapper::ToString(bool writePort) const
+const char *guid_address_wrapper_t::ToString(bool writePort) const
 {
     if (guid != JACKIE_NULL_GUID) return guid.ToString();
     return systemAddress.ToString(writePort);
 }
-void JackieAddressGuidWrapper::ToString(bool writePort, char *dest) const
+void guid_address_wrapper_t::ToString(bool writePort, char *dest) const
 {
     if (guid != JACKIE_NULL_GUID) return guid.ToString(dest);
     return systemAddress.ToString(writePort, dest);

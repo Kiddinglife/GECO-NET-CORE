@@ -17,10 +17,10 @@
 ///=======================================================
 GECO_NET_BEGIN_NSPACE
 template <typename Type,
-UInt32 CELLS_SIZE_PER_PAGE = 256,
+uint CELLS_SIZE_PER_PAGE = 256,
 /* if all cells in an usable page are reclaimed,
  * MAX_FREE_PAGES determins whether to free this page or not */
- UInt32 MAX_FREE_PAGES = 4>
+ uint MAX_FREE_PAGES = 4>
 class GECO_EXPORT JackieMemoryPool
 {
     public:
@@ -44,10 +44,10 @@ class GECO_EXPORT JackieMemoryPool
     Page *usablePage;
     /// @Brief contains pages which have no free cell to allocate
     Page *unUsablePage;
-    UInt32 mUsablePagesSize;
-    UInt32 mUnUsablePagesSize;
-    UInt32 mPerPageSizeByte;
-    UInt32 mCellSizePerPage;
+    uint mUsablePagesSize;
+    uint mUnUsablePagesSize;
+    uint mPerPageSizeByte;
+    uint mCellSizePerPage;
 
 
     ///========================================
@@ -63,7 +63,7 @@ class GECO_EXPORT JackieMemoryPool
     ///========================================
     bool InitPage(Page *page, Page *prev)
     {
-        UInt32 i = 0;
+        uint i = 0;
 
         ///  allocate @Cell Array
         if ((page->cell = (Cell*)gMallocEx(mPerPageSizeByte, TRACKE_MALLOC))

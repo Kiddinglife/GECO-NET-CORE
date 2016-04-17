@@ -1,34 +1,35 @@
 #include "gtest/gtest.h"
 #include "geco-bit-stream.h"
 #include "geco-net-type.h"
+#include "geco-basic-type.h"
 
 using namespace geco::net;
 
 struct vec { float x; float y; float z; };
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 {
-    GecoBitStream s8;
+    geco_bit_stream_t s8;
 
-    UInt24 uint24 = 24;
-    UInt8 uint8 = 8;
-    UInt16 uint16 = 16;
-    UInt32 uint32 = 32;
-    UInt64 uint64 = 64;
-    Int8 int8 = -8;
-    Int16 int16 = -16;
-    Int32 int32 = -32;
-    Int64 int64 = -64;
+    uint24_t uint24 = 24;
+    uchar uint8 = 8;
+    ushort uint16 = 16;
+    uint uint32 = 32;
+    ulonglong uint64 = 64;
+    char int8 = -8;
+    short int16 = -16;
+    int int32 = -32;
+    longlong int64 = -64;
 
-    UInt8 particialByte = 0xf0; /// 11110000
-    JackieGUID guid(123);
+    uchar particialByte = 0xf0; /// 11110000
+    guid_t guid(123);
     //NetworkAddress addr("192.168.1.107", 32000);
     vec vector_ = { 0.2f, -0.4f, -0.8f };
     vec vector__ = { 2.234f, -4.78f, -32.2f };
 
-    UInt32 curr = 12;
-    UInt32 min = 8;
-    UInt32 max = 64;
-    s8.WriteIntegerRange(curr, min, max);
+    uint curr = 12;
+    uint min = 8;
+    uint max = 64;
+    s8.write_ranged_integer(curr, min, max);
     curr = 0;
     s8.ReadIntegerRange(curr, min, max);
     EXPECT_TRUE(curr == 12);
@@ -39,15 +40,15 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
     EXPECT_TRUE(uint24.val == 24);
 
     s8.WriteBits(&particialByte, 7, false);
-    UInt8 v = 0;
+    uchar v = 0;
     s8.ReadBits(&v, 7, false);
     EXPECT_TRUE(particialByte == v);
-    EXPECT_TRUE(s8.GetPayLoadBits() == 0);
+    EXPECT_TRUE(s8.get_payloads() == 0);
 
     for (int i = 10; i >= 0; i--)
     {
-        UInt32 looptimes = 100000;
-        for (UInt32 i = 1; i <= looptimes; i++)
+        uint looptimes = 100000;
+        for (uint i = 1; i <= looptimes; i++)
         {
             s8.Write(uint24);
 
@@ -62,25 +63,25 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.Write(uint8);
             s8.Write(int64);
             s8.WriteMini(uint8);
-            s8.WriteMini(int64,false);
+            s8.WriteMini(int64, false);
 
             s8.Write(uint16);
             s8.Write(int32);
             s8.WriteMini(uint16);
-            s8.WriteMini(int32,false);
+            s8.WriteMini(int32, false);
 
             s8.WriteBits(&particialByte, 4, true);
             s8.Write(uint24);
-            s8.WriteNormVector(vector_.x, vector_.y, vector_.z);
+            s8.write_normal_vector(vector_.x, vector_.y, vector_.z);
 
-            s8.WriteIntegerRange(curr, min, max);
+            s8.write_ranged_integer(curr, min, max);
 
-            s8.WriteVector(vector__.x, vector__.y, vector__.z);
+            s8.write_vector(vector__.x, vector__.y, vector__.z);
 
             s8.Write(uint32);
             s8.Write(int16);
             s8.WriteMini(uint32);
-            s8.WriteMini(int16,false);
+            s8.WriteMini(int16, false);
 
             s8.WriteBits(&particialByte, 4, false);
 
@@ -92,30 +93,30 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             s8.WriteBits(&particialByte, 7, false);
         }
 
-        GecoBitStream s9;
+        geco_bit_stream_t s9;
         s9.Write(s8);
         if (i == 0)
         {
-            printf("uncompressed  '%.5f' MB\n", float(BITS_TO_BYTES(s9.GetPayLoadBits()) / 1024 / 1024));
+            printf("uncompressed  '%.5f' MB\n", float(BITS_TO_BYTES(s9.get_payloads()) / 1024 / 1024));
         }
 
-        for (UInt32 i = 1; i <= looptimes; i++)
+        for (uint i = 1; i <= looptimes; i++)
         {
             uint24 = 0;
             s9.Read(uint24);
             EXPECT_TRUE(uint24.val == 24);
 
-            JackieGUID guidd;
+            guid_t guidd;
             s9.ReadMini(guidd);
             EXPECT_TRUE(guid == guidd);
 
-            UInt24 mini_uint24 = 0;
+            uint24_t mini_uint24 = 0;
             s9.ReadMini(mini_uint24);
             EXPECT_TRUE(mini_uint24.val == 24);
 
             //NetworkAddress addrr;
             //s9.ReadMini(addrr);
-           // EXPECT_TRUE(addr == addrr);
+            // EXPECT_TRUE(addr == addrr);
 
             mini_uint24 = 0;
             s9.ReadMini(mini_uint24);
@@ -123,26 +124,26 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 
             s9.Read(uint8);
             s9.Read(int64);
-            UInt8 mini_uint8;
+            uchar mini_uint8;
             s9.ReadMini(mini_uint8);
             EXPECT_TRUE(mini_uint8 == uint8);
 
-            Int64 mini_int64;
-            s9.ReadMini(mini_int64,false);
+            longlong mini_int64;
+            s9.ReadMini(mini_int64, false);
             EXPECT_TRUE(mini_int64 == int64);
 
             s9.Read(uint16);
             s9.Read(int32);
-            UInt16 mini_uint16;
+            ushort mini_uint16;
             s9.ReadMini(mini_uint16);
             EXPECT_TRUE(mini_uint16 == uint16);
 
-            Int32 mini_int32;
-            s9.ReadMini(mini_int32,false);
+            int mini_int32;
+            s9.ReadMini(mini_int32, false);
             EXPECT_TRUE(mini_int32 == int32);
 
 
-            UInt8 v = 0;
+            uchar v = 0;
             s9.ReadBits(&v, 4, true);
             EXPECT_TRUE(v == 0);
 
@@ -156,7 +157,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(fabs(vectorr.y - vector_.y) <= 0.0001f);
             EXPECT_TRUE(fabs(vectorr.y - vector_.y) <= 0.0001f);
 
-            UInt32 v1;
+            uint v1;
             s9.ReadIntegerRange(v1, min, max);
             EXPECT_TRUE(v1 == curr);
 
@@ -168,12 +169,12 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 
             s9.Read(uint32);
             s9.Read(int16);
-            UInt32 mini_uint32;
+            uint mini_uint32;
             s9.ReadMini(mini_uint32);
             EXPECT_TRUE(mini_uint32 == uint32);
 
-            Int16 mini_int16;
-            s9.ReadMini(mini_int16,false);
+            short mini_int16;
+            s9.ReadMini(mini_int16, false);
             EXPECT_TRUE(mini_int16 == int16);
 
             v = 0;
@@ -182,12 +183,12 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
 
             s9.Read(uint64);
             s9.Read(int8);
-            UInt64 mini_uint64;
+            ulonglong mini_uint64;
             s9.ReadMini(mini_uint64);
             EXPECT_TRUE(mini_uint64 == uint64);
 
-            Int8 mini_int8;
-            s9.ReadMini(mini_int8,false);
+            char mini_int8;
+            s9.ReadMini(mini_int8, false);
             EXPECT_TRUE(mini_int8 == int8);
 
             v = 0;
@@ -205,34 +206,34 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes)
             EXPECT_TRUE(int64 == -64);
         }
 
-        s8.Reset();
-        s9.Reset();
+        s8.reset();
+        s9.reset();
     }
 }
 TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 {
-    GecoBitStream s8;
+    geco_bit_stream_t s8;
 
-    UInt24 uint24 = 24;
-    UInt8 uint8 = 8;
-    UInt16 uint16 = 16;
-    UInt32 uint32 = 32;
-    UInt64 uint64 = 64;
-    Int8 int8 = -8;
-    Int16 int16 = -16;
-    Int32 int32 = -32;
-    Int64 int64 = -64;
+    uint24_t uint24 = 24;
+    uchar uint8 = 8;
+    ushort uint16 = 16;
+    uint uint32 = 32;
+    ulonglong uint64 = 64;
+    char int8 = -8;
+    short int16 = -16;
+    int int32 = -32;
+    longlong int64 = -64;
 
-    UInt8 particialByte = 0xf0; /// 11110000
-    JackieGUID guid(123);
+    uchar particialByte = 0xf0; /// 11110000
+    guid_t guid(123);
     //NetworkAddress addr("192.168.1.107", 32000);
     vec vector_ = { 0.2f, -0.4f, -0.8f };
     vec vector__ = { 2.234f, -4.78f, -32.2f };
 
-    UInt32 curr = 12;
-    UInt32 min = 8;
-    UInt32 max = 64;
-    s8.WriteIntegerRange(curr, min, max);
+    uint curr = 12;
+    uint min = 8;
+    uint max = 64;
+    s8.write_ranged_integer(curr, min, max);
     curr = 0;
     s8.ReadIntegerRange(curr, min, max);
     EXPECT_TRUE(curr == 12);
@@ -243,15 +244,15 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
     EXPECT_TRUE(uint24.val == 24);
 
     s8.WriteBits(&particialByte, 7, false);
-    UInt8 v = 0;
+    uchar v = 0;
     s8.ReadBits(&v, 7, false);
     EXPECT_TRUE(particialByte == v);
-    EXPECT_TRUE(s8.GetPayLoadBits() == 0);
+    EXPECT_TRUE(s8.get_payloads() == 0);
 
     for (int i = 10; i >= 0; i--)
     {
-        UInt32 looptimes = 100000;
-        for (UInt32 i = 1; i <= looptimes; i++)
+        uint looptimes = 100000;
+        for (uint i = 1; i <= looptimes; i++)
         {
             s8.Write(uint24);
 
@@ -275,11 +276,11 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 
             s8.WriteBits(&particialByte, 4, true);
             s8.Write(uint24);
-            s8.WriteNormVector(vector_.x, vector_.y, vector_.z);
+            s8.write_normal_vector(vector_.x, vector_.y, vector_.z);
 
-            s8.WriteIntegerRange(curr, min, max);
+            s8.write_ranged_integer(curr, min, max);
 
-            s8.WriteVector(vector__.x, vector__.y, vector__.z);
+            s8.write_vector(vector__.x, vector__.y, vector__.z);
 
             s8.Write(uint32);
             s8.Write(int16);
@@ -296,29 +297,29 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
             s8.WriteBits(&particialByte, 7, false);
         }
 
-        GecoBitStream s9;
+        geco_bit_stream_t s9;
         s9.Write(s8);
 
         if (i == 0)
         {
-            printf("uncompressed  '%.5f' MB\n", float(BITS_TO_BYTES(s9.GetPayLoadBits()) / 1024 / 1024));
+            printf("uncompressed  '%.5f' MB\n", float(BITS_TO_BYTES(s9.get_payloads()) / 1024 / 1024));
         }
 
-        for (UInt32 i = 1; i <= looptimes; i++)
+        for (uint i = 1; i <= looptimes; i++)
         {
             uint24 = 0;
             s9.Read(uint24);
             EXPECT_TRUE(uint24.val == 24);
 
-            JackieGUID guidd;
+            guid_t guidd;
             s9.Read(guidd);
             EXPECT_TRUE(guid == guidd);
 
-            UInt24 mini_uint24 = 0;
+            uint24_t mini_uint24 = 0;
             s9.Read(mini_uint24);
             EXPECT_TRUE(mini_uint24.val == 24);
 
-           //NetworkAddress addrr;
+            //NetworkAddress addrr;
             //s9.Read(addrr);
             //EXPECT_TRUE(addr == addrr);
 
@@ -328,26 +329,26 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 
             s9.Read(uint8);
             s9.Read(int64);
-            UInt8 mini_uint8;
+            uchar mini_uint8;
             s9.Read(mini_uint8);
             EXPECT_TRUE(mini_uint8 == uint8);
 
-            Int64 mini_int64;
+            longlong mini_int64;
             s9.Read(mini_int64);
             EXPECT_TRUE(mini_int64 == int64);
 
             s9.Read(uint16);
             s9.Read(int32);
-            UInt16 mini_uint16;
+            ushort mini_uint16;
             s9.Read(mini_uint16);
             EXPECT_TRUE(mini_uint16 == uint16);
 
-            Int32 mini_int32;
+            int mini_int32;
             s9.Read(mini_int32);
             EXPECT_TRUE(mini_int32 == int32);
 
 
-            UInt8 v = 0;
+            uchar v = 0;
             s9.ReadBits(&v, 4, true);
             EXPECT_TRUE(v == 0);
 
@@ -361,7 +362,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
             EXPECT_TRUE(fabs(vectorr.y - vector_.y) <= 0.0001f);
             EXPECT_TRUE(fabs(vectorr.y - vector_.y) <= 0.0001f);
 
-            UInt32 v1;
+            uint v1;
             s9.ReadIntegerRange(v1, min, max);
             EXPECT_TRUE(v1 == curr);
 
@@ -373,11 +374,11 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 
             s9.Read(uint32);
             s9.Read(int16);
-            UInt32 mini_uint32;
+            uint mini_uint32;
             s9.Read(mini_uint32);
             EXPECT_TRUE(mini_uint32 == uint32);
 
-            Int16 mini_int16;
+            short mini_int16;
             s9.Read(mini_int16);
             EXPECT_TRUE(mini_int16 == int16);
 
@@ -387,11 +388,11 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
 
             s9.Read(uint64);
             s9.Read(int8);
-            UInt64 mini_uint64;
+            ulonglong mini_uint64;
             s9.Read(mini_uint64);
             EXPECT_TRUE(mini_uint64 == uint64);
 
-            Int8 mini_int8;
+            char mini_int8;
             s9.Read(mini_int8);
             EXPECT_TRUE(mini_int8 == int8);
 
@@ -410,7 +411,7 @@ TEST(GecoMemoryStreamTestCase, test_all_reads_and_writes_un_compressed)
             EXPECT_TRUE(int64 == -64);
         }
 
-        s8.Reset();
-        s9.Reset();
+        s8.reset();
+        s9.reset();
     }
 }

@@ -1,6 +1,6 @@
 ﻿#include "JACKIE_Atomic.h"
 
-unsigned int JackieAtomicLong::Increment(void)
+unsigned int atomic_long_t::Increment(void)
 {
 #ifdef _WIN32
     return (unsigned int)InterlockedIncrement(&value);
@@ -15,7 +15,7 @@ unsigned int JackieAtomicLong::Increment(void)
     return __sync_fetch_and_add(&value, (unsigned int) 1);
 #endif
 }
-unsigned int JackieAtomicLong::Decrement(void)
+unsigned int atomic_long_t::Decrement(void)
 {
 #ifdef _WIN32
     return (unsigned int)InterlockedDecrement(&value);
@@ -27,7 +27,7 @@ unsigned int JackieAtomicLong::Decrement(void)
     mutex.Unlock();
     return v;
 #else
-    return __sync_fetch_and_add(&value, (Int32) -1);
+    return __sync_fetch_and_add(&value, (int) -1);
 #endif
 }
 

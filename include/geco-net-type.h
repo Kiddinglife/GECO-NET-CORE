@@ -26,7 +26,7 @@
 #include "geco-sock-includes.h"
 #include "geco-sock-defs.h"
 #include "geco-time.h"
-#include "JackieReliabler.h"
+#include "transport_layer_t.h"
 #include "geco-features.h"
 #include "geco-secure-hand-shake.h"
 
@@ -34,12 +34,12 @@ GECO_NET_BEGIN_NSPACE
 
 /// Forward declarations
 class   INetApplication;
-class   JackieBits;
-struct  JackiePacket;
-struct  NetworkAddress;
-struct  JackieGUID;
-class JackieINetSocket;
-class JackieReliabler;
+class   geco_bit_stream_t;
+struct  network_packet_t;
+struct  network_address_t;
+struct  guid_t;
+class network_socket_t;
+class transport_layer_t;
 
 //////////////////////////////////////////////////////////////////////////
 /// @Internal Defines the default maximum transfer unit.
@@ -92,24 +92,24 @@ do{result = Queue.PushTail(ELEMENT);if( !result ) JACKIE_Sleep(10);} while( !res
 
 
 /// \sa NetworkIDObject.h
-typedef UInt8   UniqueIDType;
-typedef UInt8   RPCIndex;
-typedef UInt16 SystemIndex;
-typedef UInt64 NetworkID;
-typedef UInt32 BitSize;
-typedef UInt32 ByteSize;
-typedef UInt8 MessageID; ///< First byte of a network message
+typedef uchar         unique_id_t;
+typedef uchar         rpc_index_t;
+typedef ushort        system_index_t;
+typedef ulonglong  network_id_t;
+typedef uint             bit_size_t;
+typedef uint             byte_size_t;
+typedef uchar          msg_id_t; ///< First byte of a network message
 
 /// Index of an invalid JACKIE_INET_Address and JACKIE_INet_GUID
 #ifndef SWIG
-GECO_EXPORT extern const  NetworkAddress JACKIE_NULL_ADDRESS;
-GECO_EXPORT extern const  JackieGUID JACKIE_NULL_GUID;
+GECO_EXPORT extern const  network_address_t JACKIE_NULL_ADDRESS;
+GECO_EXPORT extern const  guid_t JACKIE_NULL_GUID;
 #endif
 
-const SystemIndex UNASSIGNED_PLAYER_INDEX = 65535; ///  Index of an unassigned player
-const NetworkID UNASSIGNED_NETWORK_ID = (UInt64)-1; /// Unassigned object ID
-const int MAX_RPC_MAP_SIZE = ((RPCIndex)-1) - 1; // 254
-const int UNDEFINED_RPC_INDEX = ((RPCIndex)-1); // 255
+const system_index_t UNASSIGNED_PLAYER_INDEX = 65535; ///  Index of an unassigned player
+const network_id_t UNASSIGNED_NETWORK_ID = (ulonglong)-1; /// Unassigned object ID
+const int MAX_RPC_MAP_SIZE = ((rpc_index_t)-1) - 1; // 254
+const int UNDEFINED_RPC_INDEX = ((rpc_index_t)-1); // 255
 const int PING_TIMES_ARRAY_SIZE = 5;
 //const extern char *IPV6_LOOPBACK = "::1";
 //const extern char *IPV4_LOOPBACK = "127.0.0.1";
@@ -118,7 +118,7 @@ const extern char *IPV4_LOOPBACK;
 
 enum ThreadType { RecvThreadType, SendThreadType };
 
-enum StartupResult
+enum startup_result_t
 {
     START_SUCCEED,
     ALREADY_STARTED,
@@ -135,7 +135,7 @@ enum StartupResult
     STARTUP_OTHER_FAILURE
 };
 
-enum ConnectionAttemptResult
+enum connection_attempt_result_t
 {
     CONNECTION_ATTEMPT_POSTED,
     INVALID_PARAM,
@@ -146,7 +146,7 @@ enum ConnectionAttemptResult
 };
 
 /// Returned from INetApplication::GetConnectionState()
-enum ConnectionState
+enum connection_state_t
 {
     /// Connect() was called, but the process hasn't started yet
     IS_PENDING,
@@ -166,7 +166,7 @@ enum ConnectionState
 };
 
 /// Used with the PublicKey structure
-enum SecureConnectionMode
+enum secure_connection_mode_t
 {
     /// The connection is insecure. 
     /// You can also just pass 0 for the pointer to PublicKey in ServerApplication::Connect()
@@ -191,30 +191,32 @@ enum SecureConnectionMode
 };
 
 /// Passed to ServerApplication::Connect()
-struct  GECO_EXPORT JackieSHSKey
+struct  GECO_EXPORT key_pair_t
 {
     /// How to interpret the public key, see above
-    SecureConnectionMode publicKeyMode;
+    secure_connection_mode_t publicKeyMode;
 
     /// Pointer to a public key of length cat::EasyHandshake::PUBLIC_KEY_BYTES. 
     /// See the Encryption sample.
-    char *remoteServerPublicKey;
+    //char *remoteServerPublicKey;
 
-    /// (Optional) Pointer to a public key of length cat::EasyHandshake::PUBLIC_KEY_BYTES
-    char *myPublicKey;
+    cat::TunnelPublicKey remoteServerPublicKey;
 
-    /// (Optional) Pointer to a private key of length cat::EasyHandshake::PRIVATE_KEY_BYTES
-    char *myPrivateKey;
+    ///// (Optional) Pointer to a public key of length cat::EasyHandshake::PUBLIC_KEY_BYTES
+    //char *myPublicKey;
+    ///// (Optional) Pointer to a private key of length cat::EasyHandshake::PRIVATE_KEY_BYTES
+    //char *myPrivateKey;
+    cat::TunnelKeyPair localKeyPair;
 };
 
 /// BindSocket is used to bind socket
-struct GECO_EXPORT JackieBindingSocket
+struct GECO_EXPORT socket_binding_params_t
 {
-    JackieBindingSocket();
-    JackieBindingSocket(const char *_hostAddress, UInt16 _port);
+    socket_binding_params_t();
+    socket_binding_params_t(const char *_hostAddress, ushort _port);
 
     /// The local port to bind to.  Pass 0 to have an OS auto-assigned port.
-    UInt16 port;
+    ushort port;
 
     /// The local network card address to bind to, such as "127.0.0.1".  
     /// Pass an empty string to use INADDR_ANY.
@@ -232,10 +234,10 @@ struct GECO_EXPORT JackieBindingSocket
     /// 
     /// ServerApplication::Startup() will fail if this IP version is not supported.
     /// @Notice NET_SUPPORT_IPV6 must be set to 1 in DefaultDefines.h for AF_INET6
-    Int16 socketFamily;
+    short socketFamily;
 
     /// Support PS3
-    UInt16 remotePortWasStartedOn_PS3_PSP2;
+    ushort remotePortWasStartedOn_PS3_PSP2;
 
     /// Required for Google chrome
     _PP_Instance_ chromeInstance;
@@ -256,7 +258,7 @@ struct GECO_EXPORT JackieBindingSocket
 /// in the case where that system is not behind a NAT (such as with a dedciated server)
 /// Use JACKIE_INet_GUID for a unique per-instance of ServerApplication to identify 
 /// systems
-struct GECO_EXPORT NetworkAddress
+struct GECO_EXPORT network_address_t
 {
     /// In6 Or In4 
     /// JACKIE_INET_Address, with RAKNET_SUPPORT_IPV6 defined, 
@@ -273,28 +275,28 @@ struct GECO_EXPORT NetworkAddress
 
     /// @internal Used internally for fast lookup. 
     /// @optional (use -1 to do regular lookup). Don't transmit this.
-    SystemIndex systemIndex;
+    system_index_t systemIndex;
 
     /// This is not used internally, but holds a copy of the port held in the address union,
     /// so for debugging it's easier to check what port is being held
-    UInt16 debugPort;
+    ushort debugPort;
 
     /// Constructors
-    NetworkAddress();
-    NetworkAddress(const char *str);
-    NetworkAddress(const char *str, UInt16 port);
+    network_address_t();
+    network_address_t(const char *str);
+    network_address_t(const char *str, ushort port);
 
-    NetworkAddress& operator = (const NetworkAddress& input);
-    bool operator==(const NetworkAddress& right) const;
-    bool operator!=(const NetworkAddress& right) const;
-    bool operator > (const NetworkAddress& right) const;
-    bool operator < (const NetworkAddress& right) const;
-    bool EqualsExcludingPort(const NetworkAddress& right) const;
+    network_address_t& operator = (const network_address_t& input);
+    bool operator==(const network_address_t& right) const;
+    bool operator!=(const network_address_t& right) const;
+    bool operator > (const network_address_t& right) const;
+    bool operator < (const network_address_t& right) const;
+    bool EqualsExcludingPort(const network_address_t& right) const;
     /// @internal Return the size to write to a bitStream
-    static Int32 size(void);
+    static int size(void);
 
     /// Hash the JACKIE_INET_Address
-    static unsigned int ToHashCode(const NetworkAddress &sa);
+    static unsigned int ToHashCode(const network_address_t &sa);
 
     /// Return the IP version, either IPV4 or IPV6
     unsigned char GetIPVersion(void) const;
@@ -303,23 +305,23 @@ struct GECO_EXPORT NetworkAddress
     unsigned char GetIPProtocol(void) const;
 
     /// Returns the port in host order (this is what you normally use)
-    UInt16 GetPortHostOrder(void) const;
+    ushort GetPortHostOrder(void) const;
 
     /// @internal Returns the port in network order
-    UInt16 GetPortNetworkOrder(void) const;
+    ushort GetPortNetworkOrder(void) const;
 
     /// Sets the port. The port value should be in host order (this is what you normally use)
     /// Renamed from SetPort because of winspool.h http://edn.embarcadero.com/
     /// article/21494
-    void SetPortHostOrder(UInt16 s);
+    void SetPortHostOrder(ushort s);
 
     /// @internal Sets the port. The port value should already be in network order.
-    void SetPortNetworkOrder(UInt16 s);
+    void SetPortNetworkOrder(ushort s);
 
     /// set the port from another JACKIE_INET_Address structure
-    void SetPortNetworkOrder(const NetworkAddress& right);
+    void SetPortNetworkOrder(const network_address_t& right);
 
-    void FixForIPVersion(const NetworkAddress &boundAddressToSocket)
+    void FixForIPVersion(const network_address_t &boundAddressToSocket)
     {
         char str[128];
         ToString(false, str);
@@ -328,7 +330,7 @@ struct GECO_EXPORT NetworkAddress
         {
             if (boundAddressToSocket.GetIPVersion() == 4)
             {
-                FromString(IPV4_LOOPBACK, (char)0, (UInt8)4);
+                FromString(IPV4_LOOPBACK, (char)0, (uchar)4);
             }
         }
         else if (strcmp(str, IPV4_LOOPBACK) == 0)
@@ -336,7 +338,7 @@ struct GECO_EXPORT NetworkAddress
 #if NET_SUPPORT_IPV6==1
             if (boundAddressToSocket.GetIPVersion() == 6)
             {
-                FromString(IPV6_LOOPBACK, (Int8)0,  (UInt8)6);
+                FromString(IPV6_LOOPBACK, (char)0,  (uchar)6);
             }
 #endif
         }
@@ -374,7 +376,7 @@ struct GECO_EXPORT NetworkAddress
     bool FromString(const char *str, char portDelineator = '|', unsigned char ipVersion = 0);
 
     /// Same as FromString(), but you explicitly set a port at the same time
-    bool FromString(const char *str, UInt16 port, unsigned char ipVersion = 0);
+    bool FromString(const char *str, ushort port, unsigned char ipVersion = 0);
 
     // Return the systemAddress as a string in the format <IP>|<Port>
     // Returns a static string
@@ -401,16 +403,16 @@ struct GECO_EXPORT NetworkAddress
 /// Use ServerApplication::GetGuidFromSystemAddress
 /// (JACKIE_INET_Address_Null) to get your own GUID
 //////////////////////////////////////////////////////////////////////////
-struct GECO_EXPORT JackieGUID
+struct GECO_EXPORT guid_t
 {
     /// Used internally for fast lookup. Optional (use -1 to do regular lookup).
     /// Don't transmit this.
-    SystemIndex systemIndex;
-    UInt64 g;
+    system_index_t systemIndex;
+    ulonglong g;
 
-    JackieGUID();
-    explicit JackieGUID(UInt64 _g);
-    JackieGUID& operator = (const JackieGUID& input);
+    guid_t();
+    explicit guid_t(ulonglong _g);
+    guid_t& operator = (const guid_t& input);
 
 
     /// Return the GUID as a static string. 
@@ -424,21 +426,21 @@ struct GECO_EXPORT JackieGUID
 
     bool FromString(const char *source);
 
-    static unsigned long ToUInt32(const JackieGUID &g);
+    static unsigned long ToUInt32(const guid_t &g);
     static int size();
 
-    bool operator==(const JackieGUID& right) const;
-    bool operator!=(const JackieGUID& right) const;
-    bool operator > (const JackieGUID& right) const;
-    bool operator < (const JackieGUID& right) const;
+    bool operator==(const guid_t& right) const;
+    bool operator!=(const guid_t& right) const;
+    bool operator > (const guid_t& right) const;
+    bool operator < (const guid_t& right) const;
 };
 
-struct GECO_EXPORT JackieAddressGuidWrapper
+struct GECO_EXPORT guid_address_wrapper_t
 {
-    JackieGUID guid;
-    NetworkAddress systemAddress;
+    guid_t guid;
+    network_address_t systemAddress;
 
-    SystemIndex GetSystemIndex(void) const
+    system_index_t GetSystemIndex(void) const
     {
         if (guid != JACKIE_NULL_GUID)
             return guid.systemIndex;
@@ -460,49 +462,49 @@ struct GECO_EXPORT JackieAddressGuidWrapper
 
     /// Firstly try to return the hashcode of @guid if guid != null
     /// otherwise it will return hashcode of @systemAddress
-    static unsigned long ToHashCode(const JackieAddressGuidWrapper &aog);
+    static unsigned long ToHashCode(const guid_address_wrapper_t &aog);
 
     /// Firstly try to return the hashcode of @guid if guid != null
     /// otherwise it will return the string of @systemAddress
     const char *ToString(bool writePort = true) const;
     void ToString(bool writePort, char *dest) const;
 
-    JackieAddressGuidWrapper() { }
-    JackieAddressGuidWrapper(const JackieAddressGuidWrapper& input)
+    guid_address_wrapper_t() { }
+    guid_address_wrapper_t(const guid_address_wrapper_t& input)
     {
         guid = input.guid;
         systemAddress = input.systemAddress;
     }
-    JackieAddressGuidWrapper(const NetworkAddress& input)
+    guid_address_wrapper_t(const network_address_t& input)
     {
         guid = JACKIE_NULL_GUID;
         systemAddress = input;
     }
-    JackieAddressGuidWrapper(const JackiePacket& packet);
-    JackieAddressGuidWrapper(const JackieGUID& input)
+    guid_address_wrapper_t(const network_packet_t& packet);
+    guid_address_wrapper_t(const guid_t& input)
     {
         guid = input;
         systemAddress = JACKIE_NULL_ADDRESS;
     }
-    JackieAddressGuidWrapper& operator = (const JackieAddressGuidWrapper& input)
+    guid_address_wrapper_t& operator = (const guid_address_wrapper_t& input)
     {
         guid = input.guid;
         systemAddress = input.systemAddress;
         return *this;
     }
-    JackieAddressGuidWrapper& operator = (const NetworkAddress& input)
+    guid_address_wrapper_t& operator = (const network_address_t& input)
     {
         guid = JACKIE_NULL_GUID;
         systemAddress = input;
         return *this;
     }
-    JackieAddressGuidWrapper& operator = (const JackieGUID& input)
+    guid_address_wrapper_t& operator = (const guid_t& input)
     {
         guid = input;
         systemAddress = JACKIE_NULL_ADDRESS;
         return *this;
     }
-    bool operator==(const JackieAddressGuidWrapper& right) const
+    bool operator==(const guid_address_wrapper_t& right) const
     {
         return (guid != JACKIE_NULL_GUID && guid == right.guid) ||
             (systemAddress != JACKIE_NULL_ADDRESS &&
@@ -510,50 +512,50 @@ struct GECO_EXPORT JackieAddressGuidWrapper
     }
 };
 
-struct GECO_EXPORT UInt24
+struct GECO_EXPORT uint24_t
 {
     unsigned int val;
 
-    UInt24() { }
+    uint24_t() { }
     operator unsigned int() { return val; }
     operator unsigned int() const { return val; }
 
-    UInt24(const UInt24& a) { val = a.val; }
-    UInt24 operator++() { ++val; val &= 0x00FFFFFF; return *this; }
-    UInt24 operator--() { --val; val &= 0x00FFFFFF; return *this; }
-    UInt24 operator++(int) { UInt24 temp(val); ++val; val &= 0x00FFFFFF; return temp; }
-    UInt24 operator--(int) { UInt24 temp(val); --val; val &= 0x00FFFFFF; return temp; }
-    UInt24 operator&(const UInt24& a) { return UInt24(val&a.val); }
-    UInt24& operator=(const UInt24& a) { val = a.val; return *this; }
-    UInt24& operator+=(const UInt24& a) { val += a.val; val &= 0x00FFFFFF; return *this; }
-    UInt24& operator-=(const UInt24& a) { val -= a.val; val &= 0x00FFFFFF; return *this; }
-    bool operator==(const UInt24& right) const { return val == right.val; }
-    bool operator!=(const UInt24& right) const { return val != right.val; }
-    bool operator > (const UInt24& right) const { return val > right.val; }
-    bool operator < (const UInt24& right) const { return val < right.val; }
-    const UInt24 operator+(const UInt24 &other) const { return UInt24(val + other.val); }
-    const UInt24 operator-(const UInt24 &other) const { return UInt24(val - other.val); }
-    const UInt24 operator/(const UInt24 &other) const { return UInt24(val / other.val); }
-    const UInt24 operator*(const UInt24 &other) const { return UInt24(val*other.val); }
+    uint24_t(const uint24_t& a) { val = a.val; }
+    uint24_t operator++() { ++val; val &= 0x00FFFFFF; return *this; }
+    uint24_t operator--() { --val; val &= 0x00FFFFFF; return *this; }
+    uint24_t operator++(int) { uint24_t temp(val); ++val; val &= 0x00FFFFFF; return temp; }
+    uint24_t operator--(int) { uint24_t temp(val); --val; val &= 0x00FFFFFF; return temp; }
+    uint24_t operator&(const uint24_t& a) { return uint24_t(val&a.val); }
+    uint24_t& operator=(const uint24_t& a) { val = a.val; return *this; }
+    uint24_t& operator+=(const uint24_t& a) { val += a.val; val &= 0x00FFFFFF; return *this; }
+    uint24_t& operator-=(const uint24_t& a) { val -= a.val; val &= 0x00FFFFFF; return *this; }
+    bool operator==(const uint24_t& right) const { return val == right.val; }
+    bool operator!=(const uint24_t& right) const { return val != right.val; }
+    bool operator > (const uint24_t& right) const { return val > right.val; }
+    bool operator < (const uint24_t& right) const { return val < right.val; }
+    const uint24_t operator+(const uint24_t &other) const { return uint24_t(val + other.val); }
+    const uint24_t operator-(const uint24_t &other) const { return uint24_t(val - other.val); }
+    const uint24_t operator/(const uint24_t &other) const { return uint24_t(val / other.val); }
+    const uint24_t operator*(const uint24_t &other) const { return uint24_t(val*other.val); }
 
-    UInt24(const unsigned int& a) { val = a; val &= 0x00FFFFFF; }
-    UInt24 operator&(const unsigned int& a) { return UInt24(val&a); }
-    UInt24& operator=(const unsigned int& a) { val = a; val &= 0x00FFFFFF; return *this; }
-    UInt24& operator+=(const unsigned int& a) { val += a; val &= 0x00FFFFFF; return *this; }
-    UInt24& operator-=(const unsigned int& a) { val -= a; val &= 0x00FFFFFF; return *this; }
+    uint24_t(const unsigned int& a) { val = a; val &= 0x00FFFFFF; }
+    uint24_t operator&(const unsigned int& a) { return uint24_t(val&a); }
+    uint24_t& operator=(const unsigned int& a) { val = a; val &= 0x00FFFFFF; return *this; }
+    uint24_t& operator+=(const unsigned int& a) { val += a; val &= 0x00FFFFFF; return *this; }
+    uint24_t& operator-=(const unsigned int& a) { val -= a; val &= 0x00FFFFFF; return *this; }
     bool operator==(const unsigned int& right) const { return val == (right & 0x00FFFFFF); }
     bool operator!=(const unsigned int& right) const { return val != (right & 0x00FFFFFF); }
     bool operator > (const unsigned int& right) const { return val > (right & 0x00FFFFFF); }
     bool operator < (const unsigned int& right) const { return val < (right & 0x00FFFFFF); }
-    const UInt24 operator+(const unsigned int &other) const { return UInt24(val + other); }
-    const UInt24 operator-(const unsigned int &other) const { return UInt24(val - other); }
-    const UInt24 operator/(const unsigned int &other) const { return UInt24(val / other); }
-    const UInt24 operator*(const unsigned int &other) const { return UInt24(val*other); }
+    const uint24_t operator+(const unsigned int &other) const { return uint24_t(val + other); }
+    const uint24_t operator-(const unsigned int &other) const { return uint24_t(val - other); }
+    const uint24_t operator/(const unsigned int &other) const { return uint24_t(val / other); }
+    const uint24_t operator*(const unsigned int &other) const { return uint24_t(val*other); }
 };
 
 
-typedef UInt16 SplitPacketId;
-typedef unsigned int SplitPacketIndex;
+typedef ushort split_packet_id_t;
+typedef unsigned int split_packet_index_t;
 
 //////////////////////////////////////////////////////////////////////////
 /// This is the counter used for holding packet numbers,
@@ -562,7 +564,7 @@ typedef unsigned int SplitPacketIndex;
 /// ReliabilityLayer::WriteToBitStreamFromInternalPacket
 /// typedef uint24_t MessageNumberType;
 //////////////////////////////////////////////////////////////////////////
-typedef UInt24 PacketIndex;
+typedef uint24_t packet_index_t;
 
 //////////////////////////////////////////////////////////////////////////
 /// This is the counter used for holding ordered packet numbers, 
@@ -572,12 +574,12 @@ typedef UInt24 PacketIndex;
 /// Warning: Too large of a value wastes bandwidth!
 /// typedef MessageNumberType OrderingIndexType;
 //////////////////////////////////////////////////////////////////////////
-typedef UInt24 OrderPacketIndex;
+typedef uint24_t ordered_packet_index_t;
 
-typedef TimeUS RemoteEndPointTimeType;
+typedef TimeUS remote_system_time_t;
 
 /// These enumerations are used to describe when packets are delivered.
-enum PacketSendPriority : unsigned char
+enum packet_send_priority_t : unsigned char
 {
     /// The highest possible priority. These message trigger sends immediately, 
     /// and are generally not buffered or aggregated into a single datagram.
@@ -613,7 +615,7 @@ enum PacketSendPriority : unsigned char
 /// there are 5 major types
 /// \note Do not reorder, I check on >= UNRELIABLE_WITH_ACK_RECEIPT which equals 5
 //////////////////////////////////////////////////////////////////////////////////////
-enum PacketReliability :unsigned char
+enum packet_reliability_t :unsigned char
 {
     //////////////////////////////////////////////////////////////////////////
     /// Same as regular UDP, except that it will also discard duplicate datagrams.  
@@ -700,40 +702,40 @@ enum PacketReliability :unsigned char
 
 /// Not endian safe
 /// InternalPacketFixedSizeTransmissionHeader
-struct PacketHeader
+struct packet_fixed_t //packetheader
 {
     /// A unique numerical identifier given to this user message.
     /// Used to identify reliable messages on the network
-    PacketIndex packetIndex;
+    packet_index_t packetIndex;
     /// The ID used as identification for ordering messages. 
     /// Also included in sequenced messages
-    OrderPacketIndex orderingIndex;
+    ordered_packet_index_t orderingIndex;
     /// Used only with sequenced messages
-    OrderPacketIndex sequencingIndex;
+    ordered_packet_index_t sequencingIndex;
     /// What ordering channel this packet is on, 
     /// if the reliability type uses ordering channels
     unsigned char orderingChannel;
     /// The ID of the split packet, if we have split packets.  
     /// This is the maximum number of split messages 
     /// we can send simultaneously per connection.
-    SplitPacketId splitPacketId;
+    split_packet_id_t splitPacketId;
     /// If this is a split packet, the index into the array of subsplit packets
-    SplitPacketIndex splitPacketIndex;
+    split_packet_index_t splitPacketIndex;
     /// The size of the array of subsplit packets
-    SplitPacketIndex splitPacketCount;
+    split_packet_index_t splitPacketCount;
     /// How many bits long the data is
     unsigned int dataBitLength;
     /// What type of reliability algorithm to use with this packet
-    PacketReliability reliability;
+    packet_reliability_t reliability;
 };
 
 
 /// Holds a user message, and related information
 /// Don't use a constructor or destructor, due to the memory pool I am using
-struct InternalPacket : public PacketHeader
+struct internal_packet_t : public packet_fixed_t
 {
     /// Identifies the order in which this number was sent. Used locally
-    PacketIndex messageInternalOrder;
+    packet_index_t messageInternalOrder;
     /// Has this message number been assigned yet?  We don't assign until the message is actually sent.
     /// This fixes a bug where pre-determining message numbers and then sending a message on a different channel creates a huge gap.
     /// This causes performance problems and causes those messages to timeout.
@@ -774,28 +776,28 @@ struct InternalPacket : public PacketHeader
     unsigned char timesTrytoSend;
     /// The priority level of this packe
 
-    PacketSendPriority priority;
+    packet_send_priority_t priority;
     /// If the reliability type requires a receipt, then return this number with it
     unsigned int sendReceiptSerial;
     // Used for the resend queue
     // Linked list implementation so I can remove from the list via a pointer, 
     /// without finding it in the list
-    InternalPacket *resendPrev, *resendNext, *unreliablePrev, *unreliableNext;
+    internal_packet_t *resendPrev, *resendNext, *unreliablePrev, *unreliableNext;
     unsigned char stackData[128];
 };
 
 /// This is the smallest unit that represents a meaningful user-created logic data
-struct GECO_EXPORT JackiePacket
+struct GECO_EXPORT network_packet_t
 {
     /// The system that send this packet.
-    NetworkAddress systemAddress;
+    network_address_t systemAddress;
 
     /// A unique identifier for the system that sent this packet, 
     /// regardless of IP address (internal / external / remote system)
     /// Only valid once a connection has been established 
     /// (ID_CONNECTION_REQUEST_ACCEPTED, or ID_NEW_INCOMING_CONNECTION)
     /// Until that time, will be JACKIE_INet_GUID_Null
-    JackieGUID guid;
+    guid_t guid;
 
     /// The length of the data in bytes
     unsigned int length;
@@ -821,18 +823,18 @@ struct GECO_EXPORT JackiePacket
 
 /// for internally use
 /// All the information representing a connected remote end point
-struct GECO_EXPORT JackieRemoteSystem
+struct GECO_EXPORT remote_system_t
 {
     // Is this structure in use?
     bool isActive;
     /// Their external IP on the internet
-    NetworkAddress systemAddress;
+    network_address_t systemAddress;
     /// Your external IP on the internet, from their perspective
-    NetworkAddress myExternalSystemAddress;
+    network_address_t myExternalSystemAddress;
     /// Their internal IP, behind the LAN
-    NetworkAddress theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
+    network_address_t theirInternalSystemAddress[MAX_COUNT_LOCAL_IP_ADDR];
     /// The reliability layer associated with this player
-    JackieReliabler reliabilityLayer;
+    transport_layer_t reliabilityLayer;
     /// True if we started this connection via Connect.  
     /// False if someone else connected to us.
     bool weInitiateConnection;
@@ -852,11 +854,11 @@ struct GECO_EXPORT JackieRemoteSystem
     Time lastReliableSend;
     /// connection time, if active.
     Time connectionTime;
-    JackieGUID guid;
+    guid_t guid;
     int MTUSize;
     // Reference counted socket to send back on
-    JackieINetSocket* socket2use;
-    SystemIndex remoteSystemIndex;
+    network_socket_t* socket2use;
+    system_index_t remoteSystemIndex;
 
 #if ENABLE_SECURE_HAND_SHAKE==1
     // Cached answer used internally by JackieNet
@@ -900,16 +902,16 @@ struct GECO_EXPORT Command
         BCS_DO_NOTHING,
     } commandID;
 
-    JackieAddressGuidWrapper systemIdentifier;
+    guid_address_wrapper_t systemIdentifier;
     char *data;
     union
     {
         struct
         {
-            NetworkID networkID;
-            PacketReliability priority;
-            PacketReliability reliability;
-            JackieRemoteSystem::ConnectMode repStatus;
+            network_id_t networkID;
+            packet_reliability_t priority;
+            packet_reliability_t reliability;
+            remote_system_t::ConnectMode repStatus;
             bool blockingCommand; // Only used for RPC
             bool haveRakNetCloseSocket;
             bool broadcast;
@@ -918,18 +920,18 @@ struct GECO_EXPORT Command
             unsigned int extraSocketOptions;
             unsigned int receipt;
             unsigned int numberOfBitsToSend;
-            JackieINetSocket* socket;
+            network_socket_t* socket;
             unsigned short port;
             unsigned short remotePortRakNetWasStartedOn_PS3;
         };
         //sizeof(unsigned int) * 4 + sizeof(short) * 2 + sizeof(JackieINetSocket*) + sizeof(char) * 7 + sizeof(NetworkID) = 35 bytes
-        char arrayparams[sizeof(unsigned int) * 4 + sizeof(short) * 2 + sizeof(JackieINetSocket*) + sizeof(char) * 7 + sizeof(NetworkID)];
+        char arrayparams[sizeof(unsigned int) * 4 + sizeof(short) * 2 + sizeof(network_socket_t*) + sizeof(char) * 7 + sizeof(network_id_t)];
     };
 };
 
-struct GECO_EXPORT ConnectionRequest
+struct GECO_EXPORT connection_request_t
 {
-    NetworkAddress receiverAddr;
+    network_address_t receiverAddr;
     Time nextRequestTime;
     unsigned char requestsMade;
     char *data;
@@ -941,8 +943,8 @@ struct GECO_EXPORT ConnectionRequest
     unsigned int connAttemptTimes;
     unsigned int connAttemptIntervalMS;
     TimeMS timeout;
-    SecureConnectionMode publicKeyMode;
-    JackieINetSocket* socket;
+    secure_connection_mode_t publicKeyMode;
+    network_socket_t* socket;
     enum ActionToTake : unsigned char
     {
         CONNECT = 1,

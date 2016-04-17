@@ -119,6 +119,6 @@ typedef int __TCPSOCKET__;
 #endif
 
 #define SAFE_CLOSE_SOCK(rns2Socket) \
-if( rns2Socket != INVALID_SOCKET ) { closesocket__(rns2Socket); rns2Socket = (JISSocket) INVALID_SOCKET; }
+if( rns2Socket != INVALID_SOCKET ) { closesocket__(rns2Socket); rns2Socket = (socket_fd_t) INVALID_SOCKET; }
 
 #endif // end

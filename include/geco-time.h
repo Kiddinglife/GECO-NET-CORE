@@ -34,13 +34,13 @@ static bool initialized = false;
 // You would want to do this if your system is going to run long enough 
 /// to overflow the millisecond counter (over a month)
 #if USE_TIME_MS_64BITS ==1
-typedef UInt64 Time;
-typedef UInt32 TimeMS;
-typedef UInt64 TimeUS;
+typedef ulonglong Time;
+typedef uint TimeMS;
+typedef ulonglong TimeUS;
 #else
-typedef UInt32 Time;
-typedef UInt32 TimeMS;
-typedef UInt64 TimeUS;
+typedef uint Time;
+typedef uint TimeMS;
+typedef ulonglong TimeUS;
 #endif
 
 /// win32 soes not have gettimeofday(), we add it to make it compatiable in plateforms

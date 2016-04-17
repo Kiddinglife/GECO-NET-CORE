@@ -17,8 +17,6 @@
 #ifndef __INCLUDE_SECURITY_HAND_SHAKE_H
 #define __INCLUDE_SECURITY_HAND_SHAKE_H
 
-#include "geco-features.h"
-
 #if ENABLE_SECURE_HAND_SHAKE == 1
 
 // If building a  DLL, be sure to tweak the CAT_EXPORT macro meaning
@@ -27,10 +25,7 @@
 #else
 #define CAT_NEUTER_EXPORT
 #endif
-
-#define CAT_AUDIT
-#include "CAT/AllTunnel.hpp"
+#include <cat/AllTunnel.hpp>
 #endif
-
 #endif  //__SECURITYHANDSHAKE_H__
 
