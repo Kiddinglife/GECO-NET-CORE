@@ -5,11 +5,13 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "staticlib", "geco-net-static-lib\geco-net-static-lib.vcxproj", "{65E4D0B3-20FF-4BBE-B23F-F5244715E5D4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unittest", "geco-net-unittest\geco-net-unittest.vcxproj", "{3482EC65-D355-4446-8C16-B00A37A3444B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unit-test", "geco-net-unittest\geco-net-unittest.vcxproj", "{3482EC65-D355-4446-8C16-B00A37A3444B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dylib", "geco-net-dynamic-library\geco-net-dynamic-library.vcxproj", "{65559532-5B6A-4790-AC91-609304689B59}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "itegrate_test", "geco-net-itegrate_test\geco-net-itegrate_test.vcxproj", "{CE0E4C99-15C0-44AD-B9CB-5BBCB7DD468A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "itegrate-test-server", "geco-net-itegrate_test\geco-net-itegrate_test.vcxproj", "{CE0E4C99-15C0-44AD-B9CB-5BBCB7DD468A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "itegrate-test-client", "geco-net-itegrate_test-client\geco-net-itegrate_test_client.vcxproj", "{88CC1427-49F4-4D30-BA48-B8215230F783}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,18 @@ Global
 		{CE0E4C99-15C0-44AD-B9CB-5BBCB7DD468A}.Release|Win32.Build.0 = Release|Win32
 		{CE0E4C99-15C0-44AD-B9CB-5BBCB7DD468A}.Release|x64.ActiveCfg = Release|x64
 		{CE0E4C99-15C0-44AD-B9CB-5BBCB7DD468A}.Release|x64.Build.0 = Release|x64
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Debug|Win32.ActiveCfg = Debug|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Debug|Win32.Build.0 = Debug|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Debug|x64.ActiveCfg = Debug|x64
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Debug|x64.Build.0 = Debug|x64
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Release|Win32.ActiveCfg = Release|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Release|Win32.Build.0 = Release|Win32
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Release|x64.ActiveCfg = Release|x64
+		{88CC1427-49F4-4D30-BA48-B8215230F783}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

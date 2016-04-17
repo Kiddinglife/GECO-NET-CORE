@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CE0E4C99-15C0-44AD-B9CB-5BBCB7DD468A}</ProjectGuid>
+    <ProjectGuid>{88CC1427-49F4-4D30-BA48-B8215230F783}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>geconetunittest</RootNamespace>
-    <ProjectName>itegrate-test-server</ProjectName>
+    <ProjectName>itegrate-test-client</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -165,7 +165,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\integrite_test\test_server.cc" />
+    <ClCompile Include="..\..\..\integrite_test\test_connection-client.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
