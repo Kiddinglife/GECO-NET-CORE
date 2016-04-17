@@ -127,10 +127,7 @@ PUBLIC	??$Comba1@$07$00@@YAXPEB_K0PEA_KAEA_K22V?$CombaT@$07@@V?$CombaT@$00@@@Z ;
 PUBLIC	??$Comba1@$05$00@@YAXPEB_K0PEA_KAEA_K22V?$CombaT@$05@@V?$CombaT@$00@@@Z ; Comba1<6,1>
 PUBLIC	??$CombaMul@$07@@YAXPEB_K0PEA_K@Z		; CombaMul<8>
 PUBLIC	??$CombaMul@$05@@YAXPEB_K0PEA_K@Z		; CombaMul<6>
-PUBLIC	??$Delete@_K@IAllocator@cat@@QEAAXPEA_K@Z	; cat::IAllocator::Delete<unsigned __int64>
 PUBLIC	??$?6$$BY0CH@$$CBD@Recorder@cat@@QEAAAEAV01@AEAY0CH@$$CBD@Z ; cat::Recorder::operator<<<char const [39]>
-PUBLIC	??$AcquireArray@_K@IAllocator@cat@@QEAAPEA_KI@Z	; cat::IAllocator::AcquireArray<unsigned __int64>
-PUBLIC	?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z		; cat::BigRTL::MulMod
 PUBLIC	?DivideCore@BigRTL@cat@@KAXH_KPEA_KH11@Z	; cat::BigRTL::DivideCore
 PUBLIC	?DivideProduct@BigRTL@cat@@QEAA_NPEB_K0PEA_K1@Z	; cat::BigRTL::DivideProduct
 PUBLIC	?Square@BigRTL@cat@@QEAAXPEB_KPEA_K@Z		; cat::BigRTL::Square
@@ -142,25 +139,26 @@ PUBLIC	?MultiplyX@BigRTL@cat@@KA_KHPEB_K_KPEA_K@Z	; cat::BigRTL::MultiplyX
 PUBLIC	?MultiplyX@BigRTL@cat@@QEAA_KPEB_K_KPEA_K@Z	; cat::BigRTL::MultiplyX
 PUBLIC	?SubtractX@BigRTL@cat@@QEAAEPEA_K_K@Z		; cat::BigRTL::SubtractX
 PUBLIC	?Subtract@BigRTL@cat@@KAEHPEB_K0PEA_K@Z		; cat::BigRTL::Subtract
-PUBLIC	?Subtract@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z	; cat::BigRTL::Subtract
 PUBLIC	?ShiftRight@BigRTL@cat@@KA_KHPEB_KHPEA_K@Z	; cat::BigRTL::ShiftRight
 PUBLIC	?ShiftLeft@BigRTL@cat@@KA_KHPEB_KHPEA_K@Z	; cat::BigRTL::ShiftLeft
 PUBLIC	?DoubleAdd@BigRTL@cat@@KA_KHPEB_K0PEA_K@Z	; cat::BigRTL::DoubleAdd
-PUBLIC	?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z		; cat::BigRTL::Double
-PUBLIC	?IsZero@BigRTL@cat@@QEAA_NPEB_K@Z		; cat::BigRTL::IsZero
 PUBLIC	?EqualX@BigRTL@cat@@QEAA_NPEB_K_K@Z		; cat::BigRTL::EqualX
-PUBLIC	?LessX@BigRTL@cat@@QEAA_NPEB_K_K@Z		; cat::BigRTL::LessX
 PUBLIC	?AddX@BigRTL@cat@@QEAAEPEA_K_K@Z		; cat::BigRTL::AddX
 PUBLIC	?Add@BigRTL@cat@@KAEHPEB_K0PEA_K@Z		; cat::BigRTL::Add
-PUBLIC	?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z		; cat::BigRTL::Add
-PUBLIC	?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z		; cat::BigRTL::Load
 PUBLIC	?LegsUsed@BigRTL@cat@@QEAAHPEB_K@Z		; cat::BigRTL::LegsUsed
-PUBLIC	?CopyX@BigRTL@cat@@QEAAX_KPEA_K@Z		; cat::BigRTL::CopyX
 PUBLIC	?Copy@BigRTL@cat@@QEAAXPEB_KPEA_K@Z		; cat::BigRTL::Copy
-PUBLIC	??1BigRTL@cat@@QEAA@XZ				; cat::BigRTL::~BigRTL
 PUBLIC	??0BigRTL@cat@@QEAA@HH@Z			; cat::BigRTL::BigRTL
-PUBLIC	?Less@BigRTL@cat@@QEAA_NPEB_K0@Z		; cat::BigRTL::Less
 PUBLIC	?GreaterX@BigRTL@cat@@QEAA_NPEB_K_K@Z		; cat::BigRTL::GreaterX
+PUBLIC	?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z		; cat::BigRTL::Double
+PUBLIC	?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z		; cat::BigRTL::Load
+PUBLIC	?LessX@BigRTL@cat@@QEAA_NPEB_K_K@Z		; cat::BigRTL::LessX
+PUBLIC	?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z		; cat::BigRTL::MulMod
+PUBLIC	?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z		; cat::BigRTL::Add
+PUBLIC	?Subtract@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z	; cat::BigRTL::Subtract
+PUBLIC	?Less@BigRTL@cat@@QEAA_NPEB_K0@Z		; cat::BigRTL::Less
+PUBLIC	?IsZero@BigRTL@cat@@QEAA_NPEB_K@Z		; cat::BigRTL::IsZero
+PUBLIC	?CopyX@BigRTL@cat@@QEAAX_KPEA_K@Z		; cat::BigRTL::CopyX
+PUBLIC	??1BigRTL@cat@@QEAA@XZ				; cat::BigRTL::~BigRTL
 PUBLIC	?Get@BigRTL@cat@@QEAAPEA_KH@Z			; cat::BigRTL::Get
 PUBLIC	?Save@BigRTL@cat@@QEAAXPEB_KPEAXH@Z		; cat::BigRTL::Save
 ;	COMDAT pdata
@@ -578,9 +576,6 @@ $pdata$??$?6$$BY0CH@$$CBD@Recorder@cat@@QEAAAEAV01@AEAY0CH@$$CBD@Z DD imagerel $
 	DD	imagerel $unwind$??$?6$$BY0CH@$$CBD@Recorder@cat@@QEAAAEAV01@AEAY0CH@$$CBD@Z
 pdata	ENDS
 pdata	SEGMENT
-$pdata$?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z DD imagerel $LN6
-	DD	imagerel $LN6+81
-	DD	imagerel $unwind$?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z
 $pdata$?DivideProduct@BigRTL@cat@@QEAA_NPEB_K0PEA_K1@Z DD imagerel $LN67
 	DD	imagerel $LN67+99
 	DD	imagerel $unwind$?DivideProduct@BigRTL@cat@@QEAA_NPEB_K0PEA_K1@Z
@@ -652,18 +647,24 @@ $pdata$2$?ShiftLeft@BigRTL@cat@@KA_KHPEB_KHPEA_K@Z DD imagerel $LN14+154
 $pdata$?DoubleAdd@BigRTL@cat@@KA_KHPEB_K0PEA_K@Z DD imagerel $LN12
 	DD	imagerel $LN12+153
 	DD	imagerel $unwind$?DoubleAdd@BigRTL@cat@@KA_KHPEB_K0PEA_K@Z
-$pdata$?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z DD imagerel $LN11
-	DD	imagerel $LN11+93
-	DD	imagerel $unwind$?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z
 $pdata$?Add@BigRTL@cat@@KAEHPEB_K0PEA_K@Z DD imagerel $LN14
 	DD	imagerel $LN14+108
 	DD	imagerel $unwind$?Add@BigRTL@cat@@KAEHPEB_K0PEA_K@Z
-$pdata$?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z DD imagerel $LN16
-	DD	imagerel $LN16+122
-	DD	imagerel $unwind$?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z
+$pdata$??0BigRTL@cat@@QEAA@HH@Z DD imagerel $LN17
+	DD	imagerel $LN17+181
+	DD	imagerel $unwind$??0BigRTL@cat@@QEAA@HH@Z
+$pdata$?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z DD imagerel $LN11
+	DD	imagerel $LN11+93
+	DD	imagerel $unwind$?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z
 $pdata$?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z DD imagerel $LN32
 	DD	imagerel $LN32+187
 	DD	imagerel $unwind$?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z
+$pdata$?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z DD imagerel $LN6
+	DD	imagerel $LN6+81
+	DD	imagerel $unwind$?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z
+$pdata$?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z DD imagerel $LN16
+	DD	imagerel $LN16+122
+	DD	imagerel $unwind$?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z
 $pdata$??1BigRTL@cat@@QEAA@XZ DD imagerel $LN11
 	DD	imagerel $LN11+21
 	DD	imagerel $unwind$??1BigRTL@cat@@QEAA@XZ
@@ -673,9 +674,6 @@ $pdata$0$??1BigRTL@cat@@QEAA@XZ DD imagerel $LN11+21
 $pdata$1$??1BigRTL@cat@@QEAA@XZ DD imagerel $LN11+71
 	DD	imagerel $LN11+77
 	DD	imagerel $chain$1$??1BigRTL@cat@@QEAA@XZ
-$pdata$??0BigRTL@cat@@QEAA@HH@Z DD imagerel $LN17
-	DD	imagerel $LN17+181
-	DD	imagerel $unwind$??0BigRTL@cat@@QEAA@HH@Z
 $pdata$?Save@BigRTL@cat@@QEAAXPEB_KPEAXH@Z DD imagerel $LN31
 	DD	imagerel $LN31+183
 	DD	imagerel $unwind$?Save@BigRTL@cat@@QEAAXPEB_KPEAXH@Z
@@ -689,10 +687,6 @@ $unwind$?SchoolbookMultiply4@@YAXPEB_K0PEA_K@Z DD 0a1801H
 	DD	0e016f018H
 xdata	ENDS
 xdata	SEGMENT
-$unwind$?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z DD 060f01H
-	DD	09640fH
-	DD	08340fH
-	DD	0700b520fH
 $unwind$?DivideProduct@BigRTL@cat@@QEAA_NPEB_K0PEA_K1@Z DD 061001H
 	DD	0d00c7210H
 	DD	07008c00aH
@@ -785,27 +779,8 @@ $unwind$?DoubleAdd@BigRTL@cat@@KA_KHPEB_K0PEA_K@Z DD 060f01H
 	DD	03740fH
 	DD	02640aH
 	DD	013405H
-$unwind$?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z DD 020501H
-	DD	013405H
 $unwind$?Add@BigRTL@cat@@KAEHPEB_K0PEA_K@Z DD 020501H
 	DD	013405H
-$unwind$?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z DD 040a01H
-	DD	02740aH
-	DD	013405H
-$unwind$?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z DD 040a01H
-	DD	06340aH
-	DD	07006320aH
-$unwind$??1BigRTL@cat@@QEAA@XZ DD 020601H
-	DD	070023206H
-$chain$0$??1BigRTL@cat@@QEAA@XZ DD 020521H
-	DD	063405H
-	DD	imagerel $LN11
-	DD	imagerel $LN11+21
-	DD	imagerel $unwind$??1BigRTL@cat@@QEAA@XZ
-$chain$1$??1BigRTL@cat@@QEAA@XZ DD 021H
-	DD	imagerel $LN11
-	DD	imagerel $LN11+21
-	DD	imagerel $unwind$??1BigRTL@cat@@QEAA@XZ
 $unwind$??0BigRTL@cat@@QEAA@HH@Z DD 051a11H
 	DD	026341aH
 	DD	0240109H
@@ -820,6 +795,29 @@ $ip2state$??0BigRTL@cat@@QEAA@HH@Z DD imagerel ??0BigRTL@cat@@QEAA@HH@Z
 	DD	00H
 	DD	imagerel ??0BigRTL@cat@@QEAA@HH@Z+145
 	DD	0ffffffffH
+$unwind$?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z DD 020501H
+	DD	013405H
+$unwind$?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z DD 040a01H
+	DD	06340aH
+	DD	07006320aH
+$unwind$?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z DD 060f01H
+	DD	09640fH
+	DD	08340fH
+	DD	0700b520fH
+$unwind$?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z DD 040a01H
+	DD	02740aH
+	DD	013405H
+$unwind$??1BigRTL@cat@@QEAA@XZ DD 020601H
+	DD	070023206H
+$chain$0$??1BigRTL@cat@@QEAA@XZ DD 020521H
+	DD	063405H
+	DD	imagerel $LN11
+	DD	imagerel $LN11+21
+	DD	imagerel $unwind$??1BigRTL@cat@@QEAA@XZ
+$chain$1$??1BigRTL@cat@@QEAA@XZ DD 021H
+	DD	imagerel $LN11
+	DD	imagerel $LN11+21
+	DD	imagerel $unwind$??1BigRTL@cat@@QEAA@XZ
 $unwind$?Save@BigRTL@cat@@QEAAXPEB_KPEAXH@Z DD 040a01H
 	DD	06340aH
 	DD	07006320aH
@@ -1366,7 +1364,7 @@ $unwind$??$Comba3@$07$00@@YAXPEB_K0PEA_KAEA_K22V?$CombaT@$07@@V?$CombaT@$00@@@Z 
 	DD	035416H
 	DD	023416H
 	DD	0e016H
-	ORG $+3366
+	ORG $+1614
 $cppxdata$??0BigRTL@cat@@QEAA@HH@Z DD 019930522H
 	DD	01H
 	DD	imagerel $stateUnwindMap$??0BigRTL@cat@@QEAA@HH@Z
@@ -1525,257 +1523,6 @@ reg_index$ = 16
 ?Get@BigRTL@cat@@QEAAPEA_KH@Z ENDP			; cat::BigRTL::Get
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
-_TEXT	SEGMENT
-this$ = 8
-in$ = 16
-x$dead$ = 24
-?GreaterX@BigRTL@cat@@QEAA_NPEB_K_K@Z PROC		; cat::BigRTL::GreaterX
-
-; 49   :     for (int ii = library_legs - 1; ii > 0; --ii)
-
-	mov	eax, DWORD PTR [rcx+4]
-	dec	eax
-	cdqe
-	test	rax, rax
-	jle	SHORT $LN2@GreaterX
-	npad	4
-$LL4@GreaterX:
-
-; 50   :         if (in[ii]) return true;
-
-	cmp	QWORD PTR [rdx+rax*8], 0
-	jne	SHORT $LN8@GreaterX
-
-; 49   :     for (int ii = library_legs - 1; ii > 0; --ii)
-
-	dec	rax
-	test	rax, rax
-	jg	SHORT $LL4@GreaterX
-$LN2@GreaterX:
-
-; 51   : 
-; 52   :     return in[0] > x;
-
-	xor	eax, eax
-	cmp	QWORD PTR [rdx], 1
-	seta	al
-
-; 53   : }
-
-	ret	0
-$LN8@GreaterX:
-
-; 50   :         if (in[ii]) return true;
-
-	mov	al, 1
-
-; 53   : }
-
-	ret	0
-?GreaterX@BigRTL@cat@@QEAA_NPEB_K_K@Z ENDP		; cat::BigRTL::GreaterX
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
-_TEXT	SEGMENT
-this$ = 8
-in_a$ = 16
-in_b$ = 24
-?Less@BigRTL@cat@@QEAA_NPEB_K0@Z PROC			; cat::BigRTL::Less
-
-; 57   :     int legs = library_legs;
-
-	movsxd	r9, DWORD PTR [rcx+4]
-	mov	r10, rdx
-
-; 58   : 
-; 59   :     while (legs-- > 0)
-
-	test	r9, r9
-	jle	SHORT $LN10@Less
-	lea	rax, QWORD PTR [r8+r9*8]
-	sub	r10, r8
-	npad	13
-$LL4@Less:
-
-; 60   :     {
-; 61   :         Leg a = in_a[legs];
-
-	mov	rcx, QWORD PTR [r10+rax-8]
-
-; 62   :         Leg b = in_b[legs];
-
-	mov	rdx, QWORD PTR [rax-8]
-	sub	rax, 8
-	dec	r9
-
-; 63   :         if (a > b) return false;
-
-	cmp	rcx, rdx
-	ja	SHORT $LN10@Less
-
-; 64   :         if (a < b) return true;
-
-	jb	SHORT $LN9@Less
-
-; 58   : 
-; 59   :     while (legs-- > 0)
-
-	test	r9, r9
-	jg	SHORT $LL4@Less
-$LN10@Less:
-
-; 65   :     }
-; 66   : 
-; 67   :     return false;
-
-	xor	al, al
-
-; 68   : }
-
-	ret	0
-$LN9@Less:
-
-; 64   :         if (a < b) return true;
-
-	mov	al, 1
-
-; 68   : }
-
-	ret	0
-?Less@BigRTL@cat@@QEAA_NPEB_K0@Z ENDP			; cat::BigRTL::Less
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\mem\iallocator.hpp
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\io\log.cpp
-; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\io\log.hpp
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-_TEXT	SEGMENT
-$T1 = 32
-$T2 = 40
-this$ = 304
-regs$dead$ = 312
-bits$ = 320
-??0BigRTL@cat@@QEAA@HH@Z PROC				; cat::BigRTL::BigRTL
-
-; 36   : {
-
-$LN17:
-	push	rdi
-	sub	rsp, 288				; 00000120H
-	mov	QWORD PTR $T1[rsp], -2
-	mov	QWORD PTR [rsp+304], rbx
-	mov	rdi, rcx
-
-; 37   : 	_valid = false;
-
-	mov	BYTE PTR [rcx+16], 0
-
-; 38   : 
-; 39   : 	library_legs = bits / (8 * sizeof(Leg));
-
-	movsxd	rax, r8d
-	shr	rax, 6
-	mov	DWORD PTR [rcx+4], eax
-
-; 40   :     library_regs = regs + BIG_OVERHEAD;
-
-	mov	DWORD PTR [rcx], 183			; 000000b7H
-
-; 43   : 	library_memory = AlignedAllocator::ref()->AcquireArray<Leg>(library_legs * library_regs);
-
-	imul	ebx, eax, 183				; 000000b7H
-	call	?ref@?$Singleton@VAlignedAllocator@cat@@@cat@@SAPEAVAlignedAllocator@2@XZ ; cat::Singleton<cat::AlignedAllocator>::ref
-; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\mem\iallocator.hpp
-
-; 124  : 		return reinterpret_cast<T*>( Acquire(sizeof(T) * elements) );
-
-	mov	r8, QWORD PTR [rax]
-	lea	edx, DWORD PTR [rbx*8]
-	mov	rcx, rax
-	call	QWORD PTR [r8+16]
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-
-; 43   : 	library_memory = AlignedAllocator::ref()->AcquireArray<Leg>(library_legs * library_regs);
-
-	mov	QWORD PTR [rdi+8], rax
-
-; 44   : 	if (!library_memory)
-
-	test	rax, rax
-	jne	SHORT $LN2@BigRTL
-
-; 46   : 		CAT_FATAL("BigRTL") << "Unable to allocate leg array for maths";
-
-	call	?ref@?$Singleton@VLog@cat@@@cat@@SAPEAVLog@2@XZ ; cat::Singleton<cat::Log>::ref
-	cmp	DWORD PTR [rax+88], 4
-	jg	SHORT $LN16@BigRTL
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\io\log.cpp
-
-; 252  : {
-
-	lea	rcx, QWORD PTR $T2[rsp+16]
-	call	??0?$basic_ostringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAA@H@Z ; std::basic_ostringstream<char,std::char_traits<char>,std::allocator<char> >::basic_ostringstream<char,std::char_traits<char>,std::allocator<char> >
-
-; 253  : 	_source = source;
-
-	lea	rax, OFFSET FLAT:??_C@_06ODJDPAFC@BigRTL?$AA@
-	mov	QWORD PTR $T2[rsp+8], rax
-
-; 254  : 	_severity = severity;
-
-	mov	DWORD PTR $T2[rsp], 4
-; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\io\log.hpp
-
-; 140  : 		_msg << t;
-
-	lea	rdx, OFFSET FLAT:??_C@_0CH@OJHHLGFI@Unable?5to?5allocate?5leg?5array?5for@
-	lea	rcx, QWORD PTR $T2[rsp+16]
-	call	??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@PEBD@Z ; std::operator<<<std::char_traits<char> >
-	npad	1
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-
-; 46   : 		CAT_FATAL("BigRTL") << "Unable to allocate leg array for maths";
-
-	lea	rcx, QWORD PTR $T2[rsp]
-	call	??1Recorder@cat@@QEAA@XZ		; cat::Recorder::~Recorder
-
-; 47   : 		return;
-
-	jmp	SHORT $LN16@BigRTL
-$LN2@BigRTL:
-
-; 48   : 	}
-; 49   : 
-; 50   : 	_valid = true;
-
-	mov	BYTE PTR [rdi+16], 1
-$LN16@BigRTL:
-
-; 51   : }
-
-	mov	rax, rdi
-	mov	rbx, QWORD PTR [rsp+304]
-	add	rsp, 288				; 00000120H
-	pop	rdi
-	ret	0
-??0BigRTL@cat@@QEAA@HH@Z ENDP				; cat::BigRTL::BigRTL
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-text$x	SEGMENT
-$T1 = 32
-$T2 = 40
-this$ = 304
-regs$dead$ = 312
-bits$ = 320
-?dtor$0@?0???0BigRTL@cat@@QEAA@HH@Z@4HA PROC		; `cat::BigRTL::BigRTL'::`1'::dtor$0
-	lea	rcx, QWORD PTR $T2[rdx]
-	jmp	??1Recorder@cat@@QEAA@XZ		; cat::Recorder::~Recorder
-?dtor$0@?0???0BigRTL@cat@@QEAA@HH@Z@4HA ENDP		; `cat::BigRTL::BigRTL'::`1'::dtor$0
-text$x	ENDS
-; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
 ; File c:\program files (x86)\windows kits\8.1\include\um\winnt.h
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
@@ -1860,26 +1607,6 @@ _TEXT	SEGMENT
 this$ = 8
 in_reg$ = 16
 out_reg$ = 24
-?Copy@BigRTL@cat@@QEAAXPEB_KPEA_K@Z PROC		; cat::BigRTL::Copy
-
-; 69   : {
-
-	mov	rax, r8
-
-; 70   :     memcpy(out_reg, in_reg, library_legs * sizeof(Leg));
-
-	movsxd	r8, DWORD PTR [rcx+4]
-	shl	r8, 3
-	mov	rcx, rax
-	jmp	memcpy
-?Copy@BigRTL@cat@@QEAAXPEB_KPEA_K@Z ENDP		; cat::BigRTL::Copy
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-_TEXT	SEGMENT
-this$ = 8
-in_reg$ = 16
-out_reg$ = 24
 ?CopyX@BigRTL@cat@@QEAAX_KPEA_K@Z PROC			; cat::BigRTL::CopyX
 
 ; 75   :     // Set low leg to input, zero the rest
@@ -1900,183 +1627,136 @@ out_reg$ = 24
 ?CopyX@BigRTL@cat@@QEAAX_KPEA_K@Z ENDP			; cat::BigRTL::CopyX
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
 _TEXT	SEGMENT
 this$ = 8
-in_reg$ = 16
-?LegsUsed@BigRTL@cat@@QEAAHPEB_K@Z PROC			; cat::BigRTL::LegsUsed
+in$ = 16
+?IsZero@BigRTL@cat@@QEAA_NPEB_K@Z PROC			; cat::BigRTL::IsZero
 
-; 82   :     for (int legs = library_legs - 1; legs >= 0; --legs)
+; 95   :     for (int ii = 0; ii < library_legs; ++ii)
 
-	mov	r8d, DWORD PTR [rcx+4]
-	dec	r8d
-	movsxd	rax, r8d
-	js	SHORT $LN2@LegsUsed
-	npad	4
-$LL4@LegsUsed:
+	movsxd	r8, DWORD PTR [rcx+4]
+	xor	eax, eax
+	test	r8, r8
+	jle	SHORT $LN2@IsZero
+	npad	5
+$LL4@IsZero:
 
-; 83   :         if (in_reg[legs]) return legs + 1;
+; 96   :         if (in[ii]) return false;
 
 	cmp	QWORD PTR [rdx+rax*8], 0
-	jne	SHORT $LN8@LegsUsed
+	jne	SHORT $LN8@IsZero
 
-; 82   :     for (int legs = library_legs - 1; legs >= 0; --legs)
+; 95   :     for (int ii = 0; ii < library_legs; ++ii)
 
-	dec	r8d
-	dec	rax
-	jns	SHORT $LL4@LegsUsed
-$LN2@LegsUsed:
+	inc	rax
+	cmp	rax, r8
+	jl	SHORT $LL4@IsZero
+$LN2@IsZero:
 
-; 84   : 
-; 85   :     return 0;
+; 97   : 
+; 98   :     return true;
 
-	xor	eax, eax
+	mov	al, 1
 
-; 86   : }
-
-	ret	0
-$LN8@LegsUsed:
-
-; 83   :         if (in_reg[legs]) return legs + 1;
-
-	lea	eax, DWORD PTR [r8+1]
-
-; 86   : }
+; 99   : }
 
 	ret	0
-?LegsUsed@BigRTL@cat@@QEAAHPEB_K@Z ENDP			; cat::BigRTL::LegsUsed
+$LN8@IsZero:
+
+; 96   :         if (in[ii]) return false;
+
+	xor	al, al
+
+; 99   : }
+
+	ret	0
+?IsZero@BigRTL@cat@@QEAA_NPEB_K@Z ENDP			; cat::BigRTL::IsZero
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\io\load.inc
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
 _TEXT	SEGMENT
-this$ = 48
-in$ = 56
-bytes$ = 64
-out_leg$ = 72
-?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z PROC		; cat::BigRTL::Load
+this$ = 8
+in_a$ = 16
+in_b$ = 24
+?Less@BigRTL@cat@@QEAA_NPEB_K0@Z PROC			; cat::BigRTL::Less
 
-; 34   : {
+; 57   :     int legs = library_legs;
 
-$LN32:
-	mov	QWORD PTR [rsp+8], rbx
-	push	rdi
-	sub	rsp, 32					; 00000020H
+	movsxd	r9, DWORD PTR [rcx+4]
+	mov	r10, rdx
 
-; 35   :     // Prepare to copy
-; 36   :     Leg *in_leg = (Leg*)in;
-; 37   :     int ii, legs = bytes / sizeof(Leg);
+; 58   : 
+; 59   :     while (legs-- > 0)
 
-	movsxd	rbx, r8d
-	mov	r11, rdx
-	mov	rdi, rcx
-	shr	rbx, 3
+	test	r9, r9
+	jle	SHORT $LN10@Less
+	lea	rax, QWORD PTR [r8+r9*8]
+	sub	r10, r8
+	npad	13
+$LL4@Less:
 
-; 38   :     if (legs > library_legs) legs = library_legs;
+; 60   :     {
+; 61   :         Leg a = in_a[legs];
 
-	cmp	ebx, DWORD PTR [rcx+4]
-	cmovg	ebx, DWORD PTR [rcx+4]
+	mov	rcx, QWORD PTR [r10+rax-8]
 
-; 39   : 
-; 40   :     // Copy 4 legs at a time
-; 41   :     for (ii = 4; ii <= legs; ii += 4)
+; 62   :         Leg b = in_b[legs];
 
-	movsxd	r10, ebx
-	cmp	r10, 4
-	jl	SHORT $LN6@Load
-	mov	r8, r10
-	sub	rdx, r9
-	mov	rcx, r9
-	shr	r8, 2
-$LL8@Load:
+	mov	rdx, QWORD PTR [rax-8]
+	sub	rax, 8
+	dec	r9
 
-; 42   :     {
-; 43   :         out_leg[ii - 4] = getLE(in_leg[ii - 4]);
+; 63   :         if (a > b) return false;
 
-	mov	rax, QWORD PTR [rdx+rcx]
-	lea	rcx, QWORD PTR [rcx+32]
-	mov	QWORD PTR [rcx-32], rax
+	cmp	rcx, rdx
+	ja	SHORT $LN10@Less
 
-; 44   :         out_leg[ii - 3] = getLE(in_leg[ii - 3]);
+; 64   :         if (a < b) return true;
 
-	mov	rax, QWORD PTR [rdx+rcx-24]
-	mov	QWORD PTR [rcx-24], rax
+	jb	SHORT $LN9@Less
 
-; 45   :         out_leg[ii - 2] = getLE(in_leg[ii - 2]);
+; 58   : 
+; 59   :     while (legs-- > 0)
 
-	mov	rax, QWORD PTR [rdx+rcx-16]
-	mov	QWORD PTR [rcx-16], rax
+	test	r9, r9
+	jg	SHORT $LL4@Less
+$LN10@Less:
 
-; 46   :         out_leg[ii - 1] = getLE(in_leg[ii - 1]);
+; 65   :     }
+; 66   : 
+; 67   :     return false;
 
-	mov	rax, QWORD PTR [rdx+rcx-8]
-	mov	QWORD PTR [rcx-8], rax
-	dec	r8
-	jne	SHORT $LL8@Load
-$LN6@Load:
+	xor	al, al
 
-; 47   :     }
-; 48   : 
-; 49   :     // Copy remaining legs
-; 50   :     switch (legs % 4)
+; 68   : }
 
-	mov	eax, ebx
-	and	eax, -2147483645			; ffffffff80000003H
-	jge	SHORT $LN30@Load
-	dec	eax
-	or	eax, -4
-	inc	eax
-$LN30@Load:
-	dec	eax
-	je	SHORT $LN1@Load
-	dec	eax
-	je	SHORT $LN2@Load
-	dec	eax
-	jne	SHORT $LN4@Load
+	ret	0
+$LN9@Less:
 
-; 51   :     {
-; 52   :     case 3: out_leg[legs - 3] = getLE(in_leg[legs - 3]);
+; 64   :         if (a < b) return true;
 
-	mov	rax, QWORD PTR [r11+r10*8-24]
-	mov	QWORD PTR [r9+r10*8-24], rax
-$LN2@Load:
+	mov	al, 1
 
-; 53   :     case 2: out_leg[legs - 2] = getLE(in_leg[legs - 2]);
+; 68   : }
 
-	mov	rax, QWORD PTR [r11+r10*8-16]
-	mov	QWORD PTR [r9+r10*8-16], rax
-$LN1@Load:
+	ret	0
+?Less@BigRTL@cat@@QEAA_NPEB_K0@Z ENDP			; cat::BigRTL::Less
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\subtract.inc
+_TEXT	SEGMENT
+this$ = 8
+in_a$ = 16
+in_b$ = 24
+out$ = 32
+?Subtract@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z PROC		; cat::BigRTL::Subtract
 
-; 54   :     case 1: out_leg[legs - 1] = getLE(in_leg[legs - 1]);
+; 34   :     return Subtract(library_legs, in_a, in_b, out);
 
-	mov	rax, QWORD PTR [r11+r10*8-8]
-	mov	QWORD PTR [r9+r10*8-8], rax
-$LN4@Load:
-
-; 55   :     }
-; 56   : 
-; 57   :     // Zero remaining buffer bytes
-; 58   :     memset(&out_leg[legs], 0, (library_legs - legs) * sizeof(Leg));
-
-	mov	eax, DWORD PTR [rdi+4]
-	lea	rcx, QWORD PTR [r9+r10*8]
-	xor	edx, edx
-	sub	eax, ebx
-	movsxd	r8, eax
-	shl	r8, 3
-
-; 59   : }
-
-	mov	rbx, QWORD PTR [rsp+48]
-	add	rsp, 32					; 00000020H
-	pop	rdi
-
-; 55   :     }
-; 56   : 
-; 57   :     // Zero remaining buffer bytes
-; 58   :     memset(&out_leg[legs], 0, (library_legs - legs) * sizeof(Leg));
-
-	jmp	memset
-?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z ENDP		; cat::BigRTL::Load
+	mov	ecx, DWORD PTR [rcx+4]
+	jmp	?Subtract@BigRTL@cat@@KAEHPEB_K0PEA_K@Z	; cat::BigRTL::Subtract
+?Subtract@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z ENDP		; cat::BigRTL::Subtract
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\add.inc
@@ -2230,6 +1910,563 @@ $LN14@Add:
 	mov	rbx, QWORD PTR [rsp+8]
 	ret	0
 ?Add@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z ENDP		; cat::BigRTL::Add
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\div\mulmod.inc
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\div\mulmod.inc
+_TEXT	SEGMENT
+this$ = 64
+in_a$ = 72
+in_b$ = 80
+in_m$ = 88
+r$ = 96
+?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z PROC		; cat::BigRTL::MulMod
+
+; 34   : {
+
+$LN6:
+	mov	QWORD PTR [rsp+8], rbx
+	mov	QWORD PTR [rsp+16], rsi
+	push	rdi
+	sub	rsp, 48					; 00000030H
+
+; 35   :     Leg *p = Get(library_regs - 5);
+
+	mov	eax, DWORD PTR [rcx]
+	mov	rsi, r9
+	mov	rdi, rcx
+	sub	eax, 5
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+
+; 65   :     return &library_memory[library_legs * reg_index];
+
+	imul	eax, DWORD PTR [rcx+4]
+	movsxd	r10, eax
+	mov	rax, QWORD PTR [rcx+8]
+	lea	rbx, QWORD PTR [rax+r10*8]
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\div\mulmod.inc
+
+; 37   : 	Multiply(in_a, in_b, p);
+
+	mov	r9, rbx
+	call	?Multiply@BigRTL@cat@@QEAAXPEB_K0PEA_K@Z ; cat::BigRTL::Multiply
+
+; 38   : 	DivideProduct(p, in_m, p, r);
+
+	mov	r9, rbx
+	mov	r8, rsi
+	mov	rdx, rbx
+	mov	rcx, rdi
+
+; 39   : }
+
+	mov	rbx, QWORD PTR [rsp+64]
+	mov	rsi, QWORD PTR [rsp+72]
+	add	rsp, 48					; 00000030H
+	pop	rdi
+
+; 38   : 	DivideProduct(p, in_m, p, r);
+
+	jmp	?DivideProduct@BigRTL@cat@@QEAA_NPEB_K0PEA_K1@Z ; cat::BigRTL::DivideProduct
+?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z ENDP		; cat::BigRTL::MulMod
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
+_TEXT	SEGMENT
+this$ = 8
+in$ = 16
+x$dead$ = 24
+?LessX@BigRTL@cat@@QEAA_NPEB_K_K@Z PROC			; cat::BigRTL::LessX
+
+; 72   :     for (int ii = library_legs - 1; ii > 0; --ii)
+
+	mov	eax, DWORD PTR [rcx+4]
+	dec	eax
+	cdqe
+	test	rax, rax
+	jle	SHORT $LN2@LessX
+	npad	4
+$LL4@LessX:
+
+; 73   :         if (in[ii]) return false;
+
+	cmp	QWORD PTR [rdx+rax*8], 0
+	jne	SHORT $LN8@LessX
+
+; 72   :     for (int ii = library_legs - 1; ii > 0; --ii)
+
+	dec	rax
+	test	rax, rax
+	jg	SHORT $LL4@LessX
+$LN2@LessX:
+
+; 74   : 
+; 75   :     return in[0] < x;
+
+	xor	eax, eax
+	cmp	QWORD PTR [rdx], 1000			; 000003e8H
+	setb	al
+
+; 76   : }
+
+	ret	0
+$LN8@LessX:
+
+; 73   :         if (in[ii]) return false;
+
+	xor	al, al
+
+; 76   : }
+
+	ret	0
+?LessX@BigRTL@cat@@QEAA_NPEB_K_K@Z ENDP			; cat::BigRTL::LessX
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\io\load.inc
+_TEXT	SEGMENT
+this$ = 48
+in$ = 56
+bytes$ = 64
+out_leg$ = 72
+?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z PROC		; cat::BigRTL::Load
+
+; 34   : {
+
+$LN32:
+	mov	QWORD PTR [rsp+8], rbx
+	push	rdi
+	sub	rsp, 32					; 00000020H
+
+; 35   :     // Prepare to copy
+; 36   :     Leg *in_leg = (Leg*)in;
+; 37   :     int ii, legs = bytes / sizeof(Leg);
+
+	movsxd	rbx, r8d
+	mov	r11, rdx
+	mov	rdi, rcx
+	shr	rbx, 3
+
+; 38   :     if (legs > library_legs) legs = library_legs;
+
+	cmp	ebx, DWORD PTR [rcx+4]
+	cmovg	ebx, DWORD PTR [rcx+4]
+
+; 39   : 
+; 40   :     // Copy 4 legs at a time
+; 41   :     for (ii = 4; ii <= legs; ii += 4)
+
+	movsxd	r10, ebx
+	cmp	r10, 4
+	jl	SHORT $LN6@Load
+	mov	r8, r10
+	sub	rdx, r9
+	mov	rcx, r9
+	shr	r8, 2
+$LL8@Load:
+
+; 42   :     {
+; 43   :         out_leg[ii - 4] = getLE(in_leg[ii - 4]);
+
+	mov	rax, QWORD PTR [rdx+rcx]
+	lea	rcx, QWORD PTR [rcx+32]
+	mov	QWORD PTR [rcx-32], rax
+
+; 44   :         out_leg[ii - 3] = getLE(in_leg[ii - 3]);
+
+	mov	rax, QWORD PTR [rdx+rcx-24]
+	mov	QWORD PTR [rcx-24], rax
+
+; 45   :         out_leg[ii - 2] = getLE(in_leg[ii - 2]);
+
+	mov	rax, QWORD PTR [rdx+rcx-16]
+	mov	QWORD PTR [rcx-16], rax
+
+; 46   :         out_leg[ii - 1] = getLE(in_leg[ii - 1]);
+
+	mov	rax, QWORD PTR [rdx+rcx-8]
+	mov	QWORD PTR [rcx-8], rax
+	dec	r8
+	jne	SHORT $LL8@Load
+$LN6@Load:
+
+; 47   :     }
+; 48   : 
+; 49   :     // Copy remaining legs
+; 50   :     switch (legs % 4)
+
+	mov	eax, ebx
+	and	eax, -2147483645			; ffffffff80000003H
+	jge	SHORT $LN30@Load
+	dec	eax
+	or	eax, -4
+	inc	eax
+$LN30@Load:
+	dec	eax
+	je	SHORT $LN1@Load
+	dec	eax
+	je	SHORT $LN2@Load
+	dec	eax
+	jne	SHORT $LN4@Load
+
+; 51   :     {
+; 52   :     case 3: out_leg[legs - 3] = getLE(in_leg[legs - 3]);
+
+	mov	rax, QWORD PTR [r11+r10*8-24]
+	mov	QWORD PTR [r9+r10*8-24], rax
+$LN2@Load:
+
+; 53   :     case 2: out_leg[legs - 2] = getLE(in_leg[legs - 2]);
+
+	mov	rax, QWORD PTR [r11+r10*8-16]
+	mov	QWORD PTR [r9+r10*8-16], rax
+$LN1@Load:
+
+; 54   :     case 1: out_leg[legs - 1] = getLE(in_leg[legs - 1]);
+
+	mov	rax, QWORD PTR [r11+r10*8-8]
+	mov	QWORD PTR [r9+r10*8-8], rax
+$LN4@Load:
+
+; 55   :     }
+; 56   : 
+; 57   :     // Zero remaining buffer bytes
+; 58   :     memset(&out_leg[legs], 0, (library_legs - legs) * sizeof(Leg));
+
+	mov	eax, DWORD PTR [rdi+4]
+	lea	rcx, QWORD PTR [r9+r10*8]
+	xor	edx, edx
+	sub	eax, ebx
+	movsxd	r8, eax
+	shl	r8, 3
+
+; 59   : }
+
+	mov	rbx, QWORD PTR [rsp+48]
+	add	rsp, 32					; 00000020H
+	pop	rdi
+
+; 55   :     }
+; 56   : 
+; 57   :     // Zero remaining buffer bytes
+; 58   :     memset(&out_leg[legs], 0, (library_legs - legs) * sizeof(Leg));
+
+	jmp	memset
+?Load@BigRTL@cat@@QEAAXPEBXHPEA_K@Z ENDP		; cat::BigRTL::Load
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\double.inc
+_TEXT	SEGMENT
+this$ = 8
+in$ = 16
+out$ = 24
+?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z PROC		; cat::BigRTL::Double
+
+; 33   : {
+
+$LN11:
+	mov	QWORD PTR [rsp+8], rbx
+
+; 34   :     // Double low leg first
+; 35   :     Leg last = in[0];
+
+	mov	rax, QWORD PTR [rdx]
+
+; 36   :     out[0] = last << 1;
+; 37   : 
+; 38   :     // Shift up the rest by 1 bit; actually pretty fast this way!
+; 39   :     for (int ii = 1; ii < library_legs; ++ii)
+
+	mov	r10d, 1
+	mov	r11, rdx
+	lea	r9, QWORD PTR [rax+rax]
+	mov	rbx, rcx
+	mov	QWORD PTR [r8], r9
+	cmp	DWORD PTR [rcx+4], r10d
+	jle	SHORT $LN1@Double
+	lea	r9, QWORD PTR [r8+8]
+	sub	r11, r8
+	npad	8
+$LL3@Double:
+
+; 40   :     {
+; 41   :         Leg next = in[ii];
+
+	mov	rdx, QWORD PTR [r11+r9]
+
+; 42   :         out[ii] = (next << 1) | (last >> (CAT_LEG_BITS-1));
+
+	shr	rax, 63					; 0000003fH
+	inc	r10d
+	lea	rcx, QWORD PTR [rdx+rdx]
+	lea	r9, QWORD PTR [r9+8]
+	or	rax, rcx
+	mov	QWORD PTR [r9-8], rax
+
+; 43   :         last = next;
+
+	mov	rax, rdx
+	cmp	r10d, DWORD PTR [rbx+4]
+	jl	SHORT $LL3@Double
+$LN1@Double:
+
+; 44   :     }
+; 45   : 
+; 46   :     return (u8)(last >> (CAT_LEG_BITS-1));
+; 47   : }
+
+	mov	rbx, QWORD PTR [rsp+8]
+	shr	rax, 63					; 0000003fH
+	ret	0
+?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z ENDP		; cat::BigRTL::Double
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
+_TEXT	SEGMENT
+this$ = 8
+in$ = 16
+x$dead$ = 24
+?GreaterX@BigRTL@cat@@QEAA_NPEB_K_K@Z PROC		; cat::BigRTL::GreaterX
+
+; 49   :     for (int ii = library_legs - 1; ii > 0; --ii)
+
+	mov	eax, DWORD PTR [rcx+4]
+	dec	eax
+	cdqe
+	test	rax, rax
+	jle	SHORT $LN2@GreaterX
+	npad	4
+$LL4@GreaterX:
+
+; 50   :         if (in[ii]) return true;
+
+	cmp	QWORD PTR [rdx+rax*8], 0
+	jne	SHORT $LN8@GreaterX
+
+; 49   :     for (int ii = library_legs - 1; ii > 0; --ii)
+
+	dec	rax
+	test	rax, rax
+	jg	SHORT $LL4@GreaterX
+$LN2@GreaterX:
+
+; 51   : 
+; 52   :     return in[0] > x;
+
+	xor	eax, eax
+	cmp	QWORD PTR [rdx], 1
+	seta	al
+
+; 53   : }
+
+	ret	0
+$LN8@GreaterX:
+
+; 50   :         if (in[ii]) return true;
+
+	mov	al, 1
+
+; 53   : }
+
+	ret	0
+?GreaterX@BigRTL@cat@@QEAA_NPEB_K_K@Z ENDP		; cat::BigRTL::GreaterX
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\mem\iallocator.hpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\io\log.cpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\io\log.hpp
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+_TEXT	SEGMENT
+$T1 = 32
+$T2 = 40
+this$ = 304
+regs$dead$ = 312
+bits$ = 320
+??0BigRTL@cat@@QEAA@HH@Z PROC				; cat::BigRTL::BigRTL
+
+; 36   : {
+
+$LN17:
+	push	rdi
+	sub	rsp, 288				; 00000120H
+	mov	QWORD PTR $T1[rsp], -2
+	mov	QWORD PTR [rsp+304], rbx
+	mov	rdi, rcx
+
+; 37   : 	_valid = false;
+
+	mov	BYTE PTR [rcx+16], 0
+
+; 38   : 
+; 39   : 	library_legs = bits / (8 * sizeof(Leg));
+
+	movsxd	rax, r8d
+	shr	rax, 6
+	mov	DWORD PTR [rcx+4], eax
+
+; 40   :     library_regs = regs + BIG_OVERHEAD;
+
+	mov	DWORD PTR [rcx], 183			; 000000b7H
+
+; 43   : 	library_memory = AlignedAllocator::ref()->AcquireArray<Leg>(library_legs * library_regs);
+
+	imul	ebx, eax, 183				; 000000b7H
+	call	?ref@?$Singleton@VAlignedAllocator@cat@@@cat@@SAPEAVAlignedAllocator@2@XZ ; cat::Singleton<cat::AlignedAllocator>::ref
+; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\mem\iallocator.hpp
+
+; 124  : 		return reinterpret_cast<T*>( Acquire(sizeof(T) * elements) );
+
+	mov	r8, QWORD PTR [rax]
+	lea	edx, DWORD PTR [rbx*8]
+	mov	rcx, rax
+	call	QWORD PTR [r8+16]
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+
+; 43   : 	library_memory = AlignedAllocator::ref()->AcquireArray<Leg>(library_legs * library_regs);
+
+	mov	QWORD PTR [rdi+8], rax
+
+; 44   : 	if (!library_memory)
+
+	test	rax, rax
+	jne	SHORT $LN2@BigRTL
+
+; 46   : 		CAT_FATAL("BigRTL") << "Unable to allocate leg array for maths";
+
+	call	?ref@?$Singleton@VLog@cat@@@cat@@SAPEAVLog@2@XZ ; cat::Singleton<cat::Log>::ref
+	cmp	DWORD PTR [rax+88], 4
+	jg	SHORT $LN16@BigRTL
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\io\log.cpp
+
+; 252  : {
+
+	lea	rcx, QWORD PTR $T2[rsp+16]
+	call	??0?$basic_ostringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAA@H@Z ; std::basic_ostringstream<char,std::char_traits<char>,std::allocator<char> >::basic_ostringstream<char,std::char_traits<char>,std::allocator<char> >
+
+; 253  : 	_source = source;
+
+	lea	rax, OFFSET FLAT:??_C@_06ODJDPAFC@BigRTL?$AA@
+	mov	QWORD PTR $T2[rsp+8], rax
+
+; 254  : 	_severity = severity;
+
+	mov	DWORD PTR $T2[rsp], 4
+; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\io\log.hpp
+
+; 140  : 		_msg << t;
+
+	lea	rdx, OFFSET FLAT:??_C@_0CH@OJHHLGFI@Unable?5to?5allocate?5leg?5array?5for@
+	lea	rcx, QWORD PTR $T2[rsp+16]
+	call	??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@PEBD@Z ; std::operator<<<std::char_traits<char> >
+	npad	1
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+
+; 46   : 		CAT_FATAL("BigRTL") << "Unable to allocate leg array for maths";
+
+	lea	rcx, QWORD PTR $T2[rsp]
+	call	??1Recorder@cat@@QEAA@XZ		; cat::Recorder::~Recorder
+
+; 47   : 		return;
+
+	jmp	SHORT $LN16@BigRTL
+$LN2@BigRTL:
+
+; 48   : 	}
+; 49   : 
+; 50   : 	_valid = true;
+
+	mov	BYTE PTR [rdi+16], 1
+$LN16@BigRTL:
+
+; 51   : }
+
+	mov	rax, rdi
+	mov	rbx, QWORD PTR [rsp+304]
+	add	rsp, 288				; 00000120H
+	pop	rdi
+	ret	0
+??0BigRTL@cat@@QEAA@HH@Z ENDP				; cat::BigRTL::BigRTL
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+text$x	SEGMENT
+$T1 = 32
+$T2 = 40
+this$ = 304
+regs$dead$ = 312
+bits$ = 320
+?dtor$0@?0???0BigRTL@cat@@QEAA@HH@Z@4HA PROC		; `cat::BigRTL::BigRTL'::`1'::dtor$0
+	lea	rcx, QWORD PTR $T2[rdx]
+	jmp	??1Recorder@cat@@QEAA@XZ		; cat::Recorder::~Recorder
+?dtor$0@?0???0BigRTL@cat@@QEAA@HH@Z@4HA ENDP		; `cat::BigRTL::BigRTL'::`1'::dtor$0
+text$x	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+_TEXT	SEGMENT
+this$ = 8
+in_reg$ = 16
+out_reg$ = 24
+?Copy@BigRTL@cat@@QEAAXPEB_KPEA_K@Z PROC		; cat::BigRTL::Copy
+
+; 69   : {
+
+	mov	rax, r8
+
+; 70   :     memcpy(out_reg, in_reg, library_legs * sizeof(Leg));
+
+	movsxd	r8, DWORD PTR [rcx+4]
+	shl	r8, 3
+	mov	rcx, rax
+	jmp	memcpy
+?Copy@BigRTL@cat@@QEAAXPEB_KPEA_K@Z ENDP		; cat::BigRTL::Copy
+_TEXT	ENDS
+; Function compile flags: /Ogtpy
+; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
+_TEXT	SEGMENT
+this$ = 8
+in_reg$ = 16
+?LegsUsed@BigRTL@cat@@QEAAHPEB_K@Z PROC			; cat::BigRTL::LegsUsed
+
+; 82   :     for (int legs = library_legs - 1; legs >= 0; --legs)
+
+	mov	r8d, DWORD PTR [rcx+4]
+	dec	r8d
+	movsxd	rax, r8d
+	js	SHORT $LN2@LegsUsed
+	npad	4
+$LL4@LegsUsed:
+
+; 83   :         if (in_reg[legs]) return legs + 1;
+
+	cmp	QWORD PTR [rdx+rax*8], 0
+	jne	SHORT $LN8@LegsUsed
+
+; 82   :     for (int legs = library_legs - 1; legs >= 0; --legs)
+
+	dec	r8d
+	dec	rax
+	jns	SHORT $LL4@LegsUsed
+$LN2@LegsUsed:
+
+; 84   : 
+; 85   :     return 0;
+
+	xor	eax, eax
+
+; 86   : }
+
+	ret	0
+$LN8@LegsUsed:
+
+; 83   :         if (in_reg[legs]) return legs + 1;
+
+	lea	eax, DWORD PTR [r8+1]
+
+; 86   : }
+
+	ret	0
+?LegsUsed@BigRTL@cat@@QEAAHPEB_K@Z ENDP			; cat::BigRTL::LegsUsed
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\add.inc
@@ -2407,57 +2644,6 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 this$ = 8
 in$ = 16
-x$dead$ = 24
-?LessX@BigRTL@cat@@QEAA_NPEB_K_K@Z PROC			; cat::BigRTL::LessX
-
-; 72   :     for (int ii = library_legs - 1; ii > 0; --ii)
-
-	mov	eax, DWORD PTR [rcx+4]
-	dec	eax
-	cdqe
-	test	rax, rax
-	jle	SHORT $LN2@LessX
-	npad	4
-$LL4@LessX:
-
-; 73   :         if (in[ii]) return false;
-
-	cmp	QWORD PTR [rdx+rax*8], 0
-	jne	SHORT $LN8@LessX
-
-; 72   :     for (int ii = library_legs - 1; ii > 0; --ii)
-
-	dec	rax
-	test	rax, rax
-	jg	SHORT $LL4@LessX
-$LN2@LessX:
-
-; 74   : 
-; 75   :     return in[0] < x;
-
-	xor	eax, eax
-	cmp	QWORD PTR [rdx], 1000			; 000003e8H
-	setb	al
-
-; 76   : }
-
-	ret	0
-$LN8@LessX:
-
-; 73   :         if (in[ii]) return false;
-
-	xor	al, al
-
-; 76   : }
-
-	ret	0
-?LessX@BigRTL@cat@@QEAA_NPEB_K_K@Z ENDP			; cat::BigRTL::LessX
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
-_TEXT	SEGMENT
-this$ = 8
-in$ = 16
 x$ = 24
 ?EqualX@BigRTL@cat@@QEAA_NPEB_K_K@Z PROC		; cat::BigRTL::EqualX
 
@@ -2504,119 +2690,6 @@ $LN2@EqualX:
 
 	ret	0
 ?EqualX@BigRTL@cat@@QEAA_NPEB_K_K@Z ENDP		; cat::BigRTL::EqualX
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\compare.inc
-_TEXT	SEGMENT
-this$ = 8
-in$ = 16
-?IsZero@BigRTL@cat@@QEAA_NPEB_K@Z PROC			; cat::BigRTL::IsZero
-
-; 95   :     for (int ii = 0; ii < library_legs; ++ii)
-
-	movsxd	r8, DWORD PTR [rcx+4]
-	xor	eax, eax
-	test	r8, r8
-	jle	SHORT $LN2@IsZero
-	npad	5
-$LL4@IsZero:
-
-; 96   :         if (in[ii]) return false;
-
-	cmp	QWORD PTR [rdx+rax*8], 0
-	jne	SHORT $LN8@IsZero
-
-; 95   :     for (int ii = 0; ii < library_legs; ++ii)
-
-	inc	rax
-	cmp	rax, r8
-	jl	SHORT $LL4@IsZero
-$LN2@IsZero:
-
-; 97   : 
-; 98   :     return true;
-
-	mov	al, 1
-
-; 99   : }
-
-	ret	0
-$LN8@IsZero:
-
-; 96   :         if (in[ii]) return false;
-
-	xor	al, al
-
-; 99   : }
-
-	ret	0
-?IsZero@BigRTL@cat@@QEAA_NPEB_K@Z ENDP			; cat::BigRTL::IsZero
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\double.inc
-_TEXT	SEGMENT
-this$ = 8
-in$ = 16
-out$ = 24
-?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z PROC		; cat::BigRTL::Double
-
-; 33   : {
-
-$LN11:
-	mov	QWORD PTR [rsp+8], rbx
-
-; 34   :     // Double low leg first
-; 35   :     Leg last = in[0];
-
-	mov	rax, QWORD PTR [rdx]
-
-; 36   :     out[0] = last << 1;
-; 37   : 
-; 38   :     // Shift up the rest by 1 bit; actually pretty fast this way!
-; 39   :     for (int ii = 1; ii < library_legs; ++ii)
-
-	mov	r10d, 1
-	mov	r11, rdx
-	lea	r9, QWORD PTR [rax+rax]
-	mov	rbx, rcx
-	mov	QWORD PTR [r8], r9
-	cmp	DWORD PTR [rcx+4], r10d
-	jle	SHORT $LN1@Double
-	lea	r9, QWORD PTR [r8+8]
-	sub	r11, r8
-	npad	8
-$LL3@Double:
-
-; 40   :     {
-; 41   :         Leg next = in[ii];
-
-	mov	rdx, QWORD PTR [r11+r9]
-
-; 42   :         out[ii] = (next << 1) | (last >> (CAT_LEG_BITS-1));
-
-	shr	rax, 63					; 0000003fH
-	inc	r10d
-	lea	rcx, QWORD PTR [rdx+rdx]
-	lea	r9, QWORD PTR [r9+8]
-	or	rax, rcx
-	mov	QWORD PTR [r9-8], rax
-
-; 43   :         last = next;
-
-	mov	rax, rdx
-	cmp	r10d, DWORD PTR [rbx+4]
-	jl	SHORT $LL3@Double
-$LN1@Double:
-
-; 44   :     }
-; 45   : 
-; 46   :     return (u8)(last >> (CAT_LEG_BITS-1));
-; 47   : }
-
-	mov	rbx, QWORD PTR [rsp+8]
-	shr	rax, 63					; 0000003fH
-	ret	0
-?Double@BigRTL@cat@@QEAAEPEB_KPEA_K@Z ENDP		; cat::BigRTL::Double
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\doubleadd.inc
@@ -2936,21 +3009,6 @@ $LN1@ShiftRight:
 	pop	rsi
 	ret	0
 ?ShiftRight@BigRTL@cat@@KA_KHPEB_KHPEA_K@Z ENDP		; cat::BigRTL::ShiftRight
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\subtract.inc
-_TEXT	SEGMENT
-this$ = 8
-in_a$ = 16
-in_b$ = 24
-out$ = 32
-?Subtract@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z PROC		; cat::BigRTL::Subtract
-
-; 34   :     return Subtract(library_legs, in_a, in_b, out);
-
-	mov	ecx, DWORD PTR [rcx+4]
-	jmp	?Subtract@BigRTL@cat@@KAEHPEB_K0PEA_K@Z	; cat::BigRTL::Subtract
-?Subtract@BigRTL@cat@@QEAAEPEB_K0PEA_K@Z ENDP		; cat::BigRTL::Subtract
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\addsub\subtract.inc
@@ -4804,81 +4862,6 @@ Q$ = 48
 ?DivideCore@BigRTL@cat@@KAXH_KPEA_KH11@Z ENDP		; cat::BigRTL::DivideCore
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\div\mulmod.inc
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\div\mulmod.inc
-_TEXT	SEGMENT
-this$ = 64
-in_a$ = 72
-in_b$ = 80
-in_m$ = 88
-r$ = 96
-?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z PROC		; cat::BigRTL::MulMod
-
-; 34   : {
-
-$LN6:
-	mov	QWORD PTR [rsp+8], rbx
-	mov	QWORD PTR [rsp+16], rsi
-	push	rdi
-	sub	rsp, 48					; 00000030H
-
-; 35   :     Leg *p = Get(library_regs - 5);
-
-	mov	eax, DWORD PTR [rcx]
-	mov	rsi, r9
-	mov	rdi, rcx
-	sub	eax, 5
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\bigrtl.cpp
-
-; 65   :     return &library_memory[library_legs * reg_index];
-
-	imul	eax, DWORD PTR [rcx+4]
-	movsxd	r10, eax
-	mov	rax, QWORD PTR [rcx+8]
-	lea	rbx, QWORD PTR [rax+r10*8]
-; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\div\mulmod.inc
-
-; 37   : 	Multiply(in_a, in_b, p);
-
-	mov	r9, rbx
-	call	?Multiply@BigRTL@cat@@QEAAXPEB_K0PEA_K@Z ; cat::BigRTL::Multiply
-
-; 38   : 	DivideProduct(p, in_m, p, r);
-
-	mov	r9, rbx
-	mov	r8, rsi
-	mov	rdx, rbx
-	mov	rcx, rdi
-
-; 39   : }
-
-	mov	rbx, QWORD PTR [rsp+64]
-	mov	rsi, QWORD PTR [rsp+72]
-	add	rsp, 48					; 00000030H
-	pop	rdi
-
-; 38   : 	DivideProduct(p, in_m, p, r);
-
-	jmp	?DivideProduct@BigRTL@cat@@QEAA_NPEB_K0PEA_K1@Z ; cat::BigRTL::DivideProduct
-?MulMod@BigRTL@cat@@QEAAXPEB_K00PEA_K@Z ENDP		; cat::BigRTL::MulMod
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\mem\iallocator.hpp
-;	COMDAT ??$AcquireArray@_K@IAllocator@cat@@QEAAPEA_KI@Z
-_TEXT	SEGMENT
-this$ = 8
-elements$ = 16
-??$AcquireArray@_K@IAllocator@cat@@QEAAPEA_KI@Z PROC	; cat::IAllocator::AcquireArray<unsigned __int64>, COMDAT
-
-; 124  : 		return reinterpret_cast<T*>( Acquire(sizeof(T) * elements) );
-
-	mov	rax, QWORD PTR [rcx]
-	lea	edx, DWORD PTR [rdx*8]
-	rex_jmp	QWORD PTR [rax+16]
-??$AcquireArray@_K@IAllocator@cat@@QEAAPEA_KI@Z ENDP	; cat::IAllocator::AcquireArray<unsigned __int64>
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\io\log.hpp
 ;	COMDAT ??$?6$$BY0CH@$$CBD@Recorder@cat@@QEAAAEAV01@AEAY0CH@$$CBD@Z
 _TEXT	SEGMENT
@@ -4909,33 +4892,6 @@ $LN4:
 	pop	rbx
 	ret	0
 ??$?6$$BY0CH@$$CBD@Recorder@cat@@QEAAAEAV01@AEAY0CH@$$CBD@Z ENDP ; cat::Recorder::operator<<<char const [39]>
-_TEXT	ENDS
-; Function compile flags: /Ogtpy
-; File c:\users\jakez\desktop\libcatid\libcatid-master\include\cat\mem\iallocator.hpp
-;	COMDAT ??$Delete@_K@IAllocator@cat@@QEAAXPEA_K@Z
-_TEXT	SEGMENT
-this$ = 8
-ptr$ = 16
-??$Delete@_K@IAllocator@cat@@QEAAXPEA_K@Z PROC		; cat::IAllocator::Delete<unsigned __int64>, COMDAT
-
-; 165  : 		if (ptr)
-
-	test	rdx, rdx
-	je	SHORT $LN1@Delete
-
-; 166  : 		{
-; 167  : 			ptr->~T();
-; 168  : 			Release(ptr);
-
-	mov	rax, QWORD PTR [rcx]
-	rex_jmp	QWORD PTR [rax+32]
-$LN1@Delete:
-
-; 169  : 		}
-; 170  :     }
-
-	ret	0
-??$Delete@_K@IAllocator@cat@@QEAAXPEA_K@Z ENDP		; cat::IAllocator::Delete<unsigned __int64>
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ; File c:\users\jakez\desktop\libcatid\libcatid-master\src\math\rtl\mul\combamul.inc

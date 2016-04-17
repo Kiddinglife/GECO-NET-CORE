@@ -57,8 +57,6 @@ sendBitStream(MAXIMUM_MTU_SIZE
     std::cout
         << "Initializing Jackie Application security flags: using_security = false, server_handshake = null, cookie_jar = null";
     secureIncomingConnectionEnabled = false;
-    serverHandShaker = 0;
-    serverCookie = 0;
 #endif
 
     // Dummy call to PacketLogger to ensure it's included in exported symbols.
@@ -129,7 +127,7 @@ network_application_t::~network_application_t()
     OP_DELETE_ARRAY(JISRecvParamsPool, TRACKE_MALLOC);
 }
 
-startup_result_t network_application_t::Start(socket_binding_params_t *bindLocalSockets,
+startup_result_t network_application_t::startup(socket_binding_params_t *bindLocalSockets,
     uint maxConn, uint bindLocalSocketsCount,
     int threadPriority /*= -99999*/)
 {
@@ -169,7 +167,7 @@ startup_result_t network_application_t::Start(socket_binding_params_t *bindLocal
     if (maxConn <= 0)
         return INVALID_MAX_CONNECTIONS;
 
-    /// Start to bind given sockets
+    /// startup to bind given sockets
     uint index;
     network_socket_t* sock;
     berkley_socket_binding_params_t berkleyBindParams;
@@ -407,7 +405,7 @@ startup_result_t network_application_t::Start(socket_binding_params_t *bindLocal
             if (CreateNetworkUpdateThread(threadPriority) != 0)
             {
                 End(0);
-                std::cout << "ServerApplication::Start() Failed (FAILED_TO_CREATE_SEND_THREAD) ! ";
+                std::cout << "ServerApplication::startup() Failed (FAILED_TO_CREATE_SEND_THREAD) ! ";
                 return FAILED_TO_CREATE_NETWORK_UPDATE_THREAD;
             }
             /// Wait for the threads to activate. When they are active they will set these variables to true
@@ -425,7 +423,7 @@ startup_result_t network_application_t::Start(socket_binding_params_t *bindLocal
 
     std::cout << "Startup Application Succeeds....";
     return START_SUCCEED;
-}
+    }
 
 void network_application_t::End(uint blockDuration, unsigned char orderingChannel,
     packet_send_priority_t disconnectionNotificationPriority)
@@ -436,7 +434,8 @@ inline void network_application_t::ReclaimOneJISRecvParams(recv_params_t *s,
     uint index)
 {
     //std::cout << "Network Thread Reclaims One JISRecvParams";
-    assert(deAllocRecvParamQ[index].PushTail(s) == true);
+    bool ret = deAllocRecvParamQ[index].PushTail(s);
+    assert(ret == true);
 }
 inline void network_application_t::ReclaimAllJISRecvParams(uint Index)
 {
@@ -445,7 +444,8 @@ inline void network_application_t::ReclaimAllJISRecvParams(uint Index)
     recv_params_t* recvParams = 0;
     for (uint index = 0; index < deAllocRecvParamQ[Index].Size(); index++)
     {
-        assert(deAllocRecvParamQ[Index].PopHead(recvParams) == true);
+        bool ret = deAllocRecvParamQ[Index].PopHead(recvParams);
+        assert(ret == true);
         JISRecvParamsPool[Index].Reclaim(recvParams);
     }
 }
@@ -467,14 +467,16 @@ void network_application_t::ClearAllRecvParamsQs()
         recv_params_t *recvParams = 0;
         for (uint i = 0; i < allocRecvParamQ[index].Size(); i++)
         {
-            assert(allocRecvParamQ[index].PopHead(recvParams) == true);
+            bool ret = allocRecvParamQ[index].PopHead(recvParams);
+            assert(ret == true);
             if (recvParams->data != 0)
                 gFreeEx(recvParams->data, TRACKE_MALLOC);
             JISRecvParamsPool[index].Reclaim(recvParams);
         }
         for (uint i = 0; i < deAllocRecvParamQ[index].Size(); i++)
         {
-            assert(deAllocRecvParamQ[index].PopHead(recvParams) == true);
+            bool ret = deAllocRecvParamQ[index].PopHead(recvParams);
+            assert(ret == true);
             if (recvParams->data != 0)
                 gFreeEx(recvParams->data, TRACKE_MALLOC);
             JISRecvParamsPool[index].Reclaim(recvParams);
@@ -489,18 +491,18 @@ inline void network_application_t::ReclaimAllCommands()
 {
     //std::cout << "User Thread Reclaims All Commands";
 
-    Command* bufferedCommand = 0;
+    cmd_t* bufferedCommand = 0;
     for (uint index = 0; index < deAllocCommandQ.Size(); index++)
     {
-        assert(deAllocCommandQ.PopHead(bufferedCommand) == true);
-        assert(bufferedCommand);
+        deAllocCommandQ.PopHead(bufferedCommand);
+        assert(bufferedCommand != NULL);
         commandPool.Reclaim(bufferedCommand);
     }
 }
-inline Command* network_application_t::AllocCommand()
+inline cmd_t* network_application_t::alloc_cmd()
 {
-    //std::cout << "User Thread Alloc An Command";
-    Command* ptr = 0;
+    //std::cout << "User Thread Alloc An cmd_t";
+    cmd_t* ptr = 0;
     do
     {
         ptr = commandPool.Allocate();
@@ -509,21 +511,21 @@ inline Command* network_application_t::AllocCommand()
 }
 void network_application_t::ClearAllCommandQs(void)
 {
-    Command *bcs = 0;
+    cmd_t *bcs = 0;
 
     /// first reclaim the elem in
     for (uint i = 0; i < allocCommandQ.Size(); i++)
     {
-        assert(allocCommandQ.PopHead(bcs) == true);
-        assert(bcs);
+        allocCommandQ.PopHead(bcs);
+        assert(bcs !=NULL);
         if (bcs->data != 0)
             gFreeEx(bcs->data, TRACKE_MALLOC);
         commandPool.Reclaim(bcs);
     }
     for (uint i = 0; i < deAllocCommandQ.Size(); i++)
     {
-        assert(deAllocCommandQ.PopHead(bcs) == true);
-        assert(bcs);
+        deAllocCommandQ.PopHead(bcs);
+        assert(bcs!=NULL);
         if (bcs->data != 0)
             gFreeEx(bcs->data, TRACKE_MALLOC);
         commandPool.Reclaim(bcs);
@@ -625,7 +627,8 @@ void network_application_t::ReclaimAllPackets()
     network_packet_t* packet;
     for (uint index = 0; index < deAllocPacketQ.Size(); index++)
     {
-        assert(deAllocPacketQ.PopHead(packet) == true);
+        deAllocPacketQ.PopHead(packet);
+        assert(packet != NULL);
         if (packet->freeInternalData)
         {
             //packet->~Packet(); no custom dtor so no need to call default dtor
@@ -634,10 +637,11 @@ void network_application_t::ReclaimAllPackets()
         packetPool.Reclaim(packet);
     }
 }
-inline void network_application_t::ReclaimPacket(network_packet_t *packet)
+inline void network_application_t::reclaim_packet(network_packet_t *packet)
 {
     std::cout << "User Thread Reclaims One Packet";
-    assert(deAllocPacketQ.PushTail(packet) == true);
+    bool ret = deAllocPacketQ.PushTail(packet);
+    assert(ret == true);
 }
 
 int network_application_t::CreateRecvPollingThread(int threadPriority, uint index)
@@ -654,7 +658,7 @@ int network_application_t::CreateNetworkUpdateThread(int threadPriority)
     return JACKIE_Thread::Create(RunNetworkUpdateCycleLoop, this,
         threadPriority);
 }
-void network_application_t::StopRecvThread()
+void network_application_t::stop_recv_thread()
 {
     endThreads = true;
 #if USE_SINGLE_THREAD == 0
@@ -670,11 +674,11 @@ void network_application_t::StopRecvThread()
                 char zero[] = "This is used to Stop Recv Thread";
                 send_params_t sendParams =
                 {   zero, sizeof(zero), 0, sock->GetBoundAddress(), 0};
-                SEND_10040_ERR(sock, sendParams);
+                sock->Send(&sendParams, TRACKE_MALLOC);
                 TimeMS timeout = Get32BitsTimeMS() + 1000;
                 while (isRecvPollingThreadActive.GetValue() > 0 && Get32BitsTimeMS() < timeout)
                 {
-                    SEND_10040_ERR(sock, sendParams);
+                    sock->Send(&sendParams, TRACKE_MALLOC);
                     GecoSleep(100);
                 }
             }
@@ -682,7 +686,7 @@ void network_application_t::StopRecvThread()
     }
 #endif
 }
-void network_application_t::StopNetworkUpdateThread()
+void network_application_t::stop_network_update_thread()
 {
     endThreads = true;
     isNetworkUpdateThreadActive = false;
@@ -954,7 +958,8 @@ void network_application_t::OnConnectionFailed(recv_params_t* recvParams,
                 (unsigned char*)recvParams->data);
             packet->systemAddress = recvParams->senderINetAddress;
             packet->guid = guid;
-            assert(allocPacketQ.PushTail(packet) == true);
+            bool ret = allocPacketQ.PushTail(packet);
+            assert(ret == true);
 
         }
         //return true;
@@ -999,7 +1004,7 @@ void network_application_t::OnConnectionRequest2(recv_params_t* recvParams,
 
             uint cookie;
             fromClientReader.Read(cookie);
-            if (this->serverCookie->Verify(
+            if (this->serverCookie.Verify(
                 &recvParams->senderINetAddress.address,
                 sizeof(recvParams->senderINetAddress.address), cookie)
                 == false)
@@ -1217,7 +1222,7 @@ void network_application_t::OnConnectionRequest2(recv_params_t* recvParams,
 #if ENABLE_SECURE_HAND_SHAKE==1
                 if (clientSecureRequiredbyServer)
                 {
-                    if (this->serverHandShaker->ProcessChallenge(
+                    if (this->serverHandShaker.ProcessChallenge(
                         receivedChallengeFromClient, free_rs->answer,
                         free_rs->reliabilityLayer.GetAuthenticatedEncryption()))
                     {
@@ -1313,9 +1318,7 @@ void network_application_t::OnConnectionRequest1(recv_params_t* recvParams,
                 writer.WriteMini(true);  // HasCookie on
                 std::cout
                     << "AUDIT: server WriteMini(HasCookie On true) to client";
-                uint cookie = serverCookie->Generate(
-                    &recvParams->senderINetAddress.address,
-                    sizeof(recvParams->senderINetAddress.address));
+                uint cookie = serverCookie.Generate(&recvParams->senderINetAddress.address, sizeof(recvParams->senderINetAddress.address));
                 writer.Write(cookie); // Write cookie
                 std::cout << "AUDIT: server WriteMini(cookie " << cookie
                     << ") to client";
@@ -1326,8 +1329,8 @@ void network_application_t::OnConnectionRequest1(recv_params_t* recvParams,
                 // steps. actually official server can tell if client has same public key based on the returned value
                 // of server_handshake->ProcessChallenge(), because it uses its private key to decrypt challenge
                 // Write my public key. so it is commented to remember myself.
-                // writer.write_aligned_bytes((const unsigned char *)my_public_key, sizeof(my_public_key));
-                // std::cout << "AUDIT: server write_aligned_bytes(my_public_key) to client";
+                // writer.write_aligned_bytes((const unsigned char *)server_public_key_, sizeof(server_public_key_));
+                // std::cout << "AUDIT: server write_aligned_bytes(server_public_key_) to client";
             }
 #else // ENABLE_SECURE_HAND_SHAKE
             writer.WriteMini(false);  // HasCookie off
@@ -1494,7 +1497,8 @@ void network_application_t::OnConnectionReply1(recv_params_t* recvParams,
                         packet = AllocPacket(sizeof(msg_id_t), &msgid);
                         packet->systemAddress = connectionRequest->receiverAddr;
                         packet->guid = serverGuid;
-                        assert(allocPacketQ.PushTail(packet) == true);
+                        bool ret = allocPacketQ.PushTail(packet);
+                        assert(ret  == true);
                         return;
                     }
 #endif
@@ -1609,7 +1613,8 @@ void network_application_t::OnConnectionReply2(recv_params_t* recvParams,
                         //packet->data[0] = ID_WECLINOTUSE_SRVPUBKEY_2CONNECT;
                         //packet->data[1] = 0; // Indicate server public key is missing
                         //packet->bitSize = (sizeof(char) * 8);
-                        assert(allocPacketQ.PushTail(packet) == true);
+                        bool ret = allocPacketQ.PushTail(packet);
+                        assert(ret  == true);
                         return;
                     }
                 }
@@ -1679,9 +1684,8 @@ void network_application_t::OnConnectionReply2(recv_params_t* recvParams,
                                     packet->systemAddress =
                                         recvParams->senderINetAddress;
                                     packet->guid = myGuid;
-                                    assert(
-                                        allocPacketQ.PushTail(packet)
-                                        == true);
+                                    bool ret = allocPacketQ.PushTail(packet);
+                                    assert(ret  == true);
                                     return;
                                 }
                             }
@@ -1755,7 +1759,8 @@ void network_application_t::OnConnectionReply2(recv_params_t* recvParams,
                         // Attempted a connection and couldn't
                         packet->systemAddress = connReq->receiverAddr;
                         packet->guid = guid;
-                        assert(allocPacketQ.PushTail(packet) == true);
+                        bool ret = allocPacketQ.PushTail(packet);
+                        assert(ret == true);
                     }
                 }
 
@@ -1874,7 +1879,8 @@ void network_application_t::ProcessConnectionRequestQ(TimeUS& timeUS,
                 msg_id_t msgid = ID_CONNECTION_ATTEMPT_FAILED;
                 network_packet_t* packet = AllocPacket(sizeof(msg_id_t), &msgid);
                 packet->systemAddress = connReq->receiverAddr;
-                assert(allocPacketQ.PushTail(packet) == true);
+                bool ret = allocPacketQ.PushTail(packet);
+                assert(ret == true);
 
 #if ENABLE_SECURE_HAND_SHAKE==1
                 std::cout
@@ -1976,7 +1982,7 @@ void network_application_t::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
 {
     //std::cout << "Network Thread Process Alloc CommandQ";
 
-    Command* cmd = 0;
+    cmd_t* cmd = 0;
     remote_system_t* remoteEndPoint = 0;
 
     /// process command queue
@@ -1984,12 +1990,15 @@ void network_application_t::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
     {
 
         /// no need to check if bufferedCommand == 0, because we never push 0 pointer
-        assert(allocCommandQ.PopHead(cmd) == true);
-        assert(cmd);
+
+        // this is very stupid way to ad your code in the assert, when in release mode, this code will never run !!!!
+        //assert(allocCommandQ.PopHead(cmd) == true);
+        allocCommandQ.PopHead(cmd);
+        assert(cmd != NULL);
 
         switch (cmd->commandID)
         {
-            case Command::BCS_SEND:
+            case cmd_t::BCS_SEND:
                 std::cout << "BCS_SEND";
                 /// GetTime is a very slow call so do it once and as late as possible
                 if (timeUS == 0)
@@ -2010,11 +2019,11 @@ void network_application_t::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
                         remoteEndPoint->connectMode = cmd->repStatus;
                 }
                 break;
-            case Command::BCS_CLOSE_CONNECTION:
+            case cmd_t::BCS_CLOSE_CONNECTION:
                 std::cout << "BCS_CLOSE_CONNECTION";
                 CloseConnectionInternally(false, true, cmd);
                 break;
-            case Command::BCS_CHANGE_SYSTEM_ADDRESS: //re-rout
+            case cmd_t::BCS_CHANGE_SYSTEM_ADDRESS: //re-rout
                 remoteEndPoint = GetRemoteSystem(cmd->systemIdentifier, true, true);
                 if (remoteEndPoint != 0)
                 {
@@ -2024,15 +2033,15 @@ void network_application_t::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
                         existingSystemIndex);
                 }
                 break;
-            case Command::BCS_GET_SOCKET:
+            case cmd_t::BCS_GET_SOCKET:
                 std::cout << "BCS_GET_SOCKET";
                 break;
-            case Command::BCS_ADD_2_BANNED_LIST:
+            case cmd_t::BCS_ADD_2_BANNED_LIST:
                 AddToBanList(cmd->arrayparams,
                     *((TimeMS*)(cmd->arrayparams + strlen(cmd->arrayparams) + 1)));
                 std::cout << "BCS_ADD_2_BANNED_LIST";
                 break;
-            case Command::BCS_CONEECT:
+            case cmd_t::BCS_CONEECT:
             {
                 char* passwd = cmd->data;
                 cmd->data += strlen(passwd) + 1;
@@ -2061,8 +2070,9 @@ void network_application_t::ProcessAllocCommandQ(TimeUS& timeUS, TimeMS& timeMS)
                 break;
         }
 
-        std::cout << "Network Thread Reclaims One Command";
-        assert(deAllocCommandQ.PushTail(cmd) == true);
+        std::cout << "Network Thread Reclaims One cmd_t";
+        bool ret = deAllocCommandQ.PushTail(cmd);
+        assert(ret == true);
     }
 
 }
@@ -2097,7 +2107,8 @@ void network_application_t::ProcessAllocJISRecvParamsQ(void)
         for (uint inner = 0; inner < allocRecvParamQ[outter].Size(); inner++)
         {
             /// no need to check if recvParams == 0, because we never push 0 pointer
-            assert(allocRecvParamQ[outter].PopHead(recvParams) == true);
+            bool ret = allocRecvParamQ[outter].PopHead(recvParams);
+            assert(ret == true);
             ProcessOneRecvParam(recvParams);
             ReclaimOneJISRecvParams(recvParams, inner);
         }
@@ -2335,7 +2346,7 @@ void network_application_t::DeRefRemoteSystem(const network_address_t &sa)
 
 //@TO-DO
 bool network_application_t::SendRightNow(TimeUS currentTime, bool useCallerAlloc,
-    Command* bufferedCommand)
+    cmd_t* bufferedCommand)
 {
     std::cout << "@TO-DO::SendRightNow()";
     return true;
@@ -2343,14 +2354,14 @@ bool network_application_t::SendRightNow(TimeUS currentTime, bool useCallerAlloc
 //@TO-DO
 void network_application_t::CloseConnectionInternally(
     bool sendDisconnectionNotification, bool performImmediate,
-    Command* bufferedCommand)
+    cmd_t* bufferedCommand)
 {
     std::cout << "@TO-DO::CloseConnectionInternally()";
 }
 
 // Attatches a Plugin interface to run code automatically
 // on message receipt in the Receive call
-void network_application_t::SetPlugin(network_plugin_t *plugin)
+void network_application_t::set_plugin(network_plugin_t *plugin)
 {
     bool isNotThreadsafe = plugin->UsesReliabilityLayer();
     if (isNotThreadsafe)
@@ -2517,7 +2528,7 @@ void network_application_t::PacketGoThroughPlugins(network_packet_t*& incomePack
         pluginResult = pluginListTS[i]->OnRecvPacket(incomePacket);
         if (pluginResult == PROCESSED_BY_ME_THEN_DEALLOC)
         {
-            ReclaimPacket(incomePacket);
+            reclaim_packet(incomePacket);
             // Will do the loop again and get another incomePacket
             incomePacket = 0;
             break; // break out of the enclosing forloop
@@ -2534,7 +2545,7 @@ void network_application_t::PacketGoThroughPlugins(network_packet_t*& incomePack
         pluginResult = pluginListNTS[i]->OnRecvPacket(incomePacket);
         if (pluginResult == PROCESSED_BY_ME_THEN_DEALLOC)
         {
-            ReclaimPacket(incomePacket);
+            reclaim_packet(incomePacket);
             // Will do the loop again and get another incomePacket
             incomePacket = 0;
             break; // break out of the enclosing forloop
@@ -2560,7 +2571,7 @@ void network_application_t::UpdatePlugins(void)
     }
 }
 
-network_packet_t* network_application_t::GetPacketOnce(void)
+network_packet_t* network_application_t::fetch_packet(void)
 {
     //	TIMED_FUNC();
     // sleep a while to make user thread more responsible
@@ -2591,8 +2602,9 @@ network_packet_t* network_application_t::RunGetPacketCycleOnce(void)
         network_packet_t *incomePacket = 0;
 
         /// Get one income packet from bufferedPacketsQueue
-        assert(allocPacketQ.PopHead(incomePacket) == true);
-        assert(incomePacket->data);
+        bool ret = allocPacketQ.PopHead(incomePacket);
+        assert(ret == true);
+        assert(incomePacket->data != NULL);
 
         AdjustTimestamp(incomePacket);
 
@@ -2666,7 +2678,8 @@ void network_application_t::RunRecvCycleOnce(uint index)
     int result = ((berkley_socket_t*)bindedSockets[index])->RecvFrom(recvParams);
     if (result > 0)
     {
-        assert(allocRecvParamQ[index].PushTail(recvParams) == true);
+        bool ret = allocRecvParamQ[index].PushTail(recvParams);
+        assert(ret == true);
         if (incomeDatagramEventHandler != 0)
         {
             if (!incomeDatagramEventHandler(recvParams))
@@ -2674,7 +2687,7 @@ void network_application_t::RunRecvCycleOnce(uint index)
         }
 #if USE_SINGLE_THREAD == 0
         if (allocRecvParamQ[index].Size() >=
-            allocRecvParamQ->AllocationSize() / 2) quitAndDataEvents.TriggerEvent();
+            allocRecvParamQ->Size() / 2) quitAndDataEvents.TriggerEvent();
 #endif
     }
     else
@@ -2739,16 +2752,8 @@ JACKIE_THREAD_DECLARATION(geco::net::UDTConnect)
 {
     return 0;
 }
-//STATIC_FACTORY_DEFINITIONS(IServerApplication, ServerApplication);
-network_application_t* network_application_t::GetInstance(void)
-{
-    return OP_NEW<network_application_t>(TRACKE_MALLOC);
-}
 
-void network_application_t::DestroyInstance(network_application_t* i)
-{
-    OP_DELETE(i, TRACKE_MALLOC);
-}
+GECO_STATIC_FACTORY_DEFIS(network_application_t, network_application_t);
 
 void network_application_t::ResetSendReceipt(void)
 {
@@ -2786,7 +2791,8 @@ void network_application_t::CancelConnectionRequest(const network_address_t& tar
     std::cout << "User Thread Cancel Connection Request To "
         << target.ToString();
     connReqCancelQLock.Lock();
-    assert(connReqCancelQ.PushTail(target) == true);
+    bool ret = connReqCancelQ.PushTail(target);
+    assert(ret == true);
     connReqCancelQLock.Unlock();
 }
 
@@ -2796,8 +2802,8 @@ void network_application_t::Connect_(const char* host, ushort port,
     uchar attemptTimes /*= 6*/, ushort attemptIntervalMS /*= 100000*/,
     TimeMS timeout /*= 0*/, uint extraData /*= 0*/)
 {
-    Command* conn_cmd = AllocCommand();
-    conn_cmd->commandID = Command::BCS_CONEECT;
+    cmd_t* conn_cmd = alloc_cmd();
+    conn_cmd->commandID = cmd_t::BCS_CONEECT;
     conn_cmd->systemIdentifier.systemAddress.FromString(host, port);
     conn_cmd->data = (char*)gMallocEx(
         strlen(passwd) + 1 + sizeof(passwdLength) + sizeof(key_pair_t *)
@@ -2827,7 +2833,7 @@ void network_application_t::Connect_(const char* host, ushort port,
     conn_cmd->data += sizeof(timeout);
 
     memcpy(conn_cmd->data, &extraData, sizeof(extraData));
-    PostComand(conn_cmd);
+    run_cmd(conn_cmd);
 }
 
 connection_attempt_result_t network_application_t::Connect(const char* host,
@@ -2851,7 +2857,7 @@ connection_attempt_result_t network_application_t::Connect(const char* host,
     }
     if (endThreads)
     {
-        std::cout << "not call Start() !\n";
+        std::cout << "not call startup() !\n";
         return INVALID_PARAM;
     }
 
@@ -2922,7 +2928,8 @@ connection_attempt_result_t network_application_t::Connect(const char* host,
             return CONNECTION_ATTEMPT_ALREADY_IN_PROGRESS;
         }
     }
-    assert(connReqQ.PushTail(connReq) == true);
+     ret = connReqQ.PushTail(connReq);
+    assert(ret == true);
     connReqQLock.Unlock();
 
     return CONNECTION_ATTEMPT_POSTED;
@@ -3075,49 +3082,32 @@ bool network_application_t::IsLoopbackAddress(
         firstExternalID));
 }
 
-bool network_application_t::EnableSecureIncomingConnections(cat::TunnelKeyPair& keys, bool requireClientPublicKey)
+bool network_application_t::enable_secure_inbound_connections(cat::TunnelKeyPair& keys, bool requireClientPublicKey)
 {
 #if ENABLE_SECURE_HAND_SHAKE==1
     if (endThreads == false)
         return false;
 
+    //// you must call this first to generte jeys otherwise will fail to gernerate keys
+    if (!cat::EasyHandshake::ref()->GetTLS()->Valid())
+        cat::EasyHandshake::ref()->GetTLS()->OnInitialize();
+
     // Copy client public key requirement flag
     _require_client_public_key = requireClientPublicKey;
 
-    if (serverHandShaker != 0)
-    {
-        std::cout << "AUDIT: Deleting old server_handshake" << serverHandShaker;
-        OP_DELETE(serverHandShaker, TRACKE_MALLOC);
-    }
-    if (serverCookie != 0)
-    {
-        std::cout << "AUDIT: Deleting old cookie jar" << serverCookie;
-        OP_DELETE(serverCookie, TRACKE_MALLOC);
-    }
-
-    serverHandShaker = OP_NEW<cat::ServerEasyHandshake>(TRACKE_MALLOC);
-    serverCookie = OP_NEW<cat::CookieJar>(TRACKE_MALLOC);
-    std::cout << "AUDIT: Created new server_handshake" << serverHandShaker;
-    std::cout << "AUDIT: Created new cookie" << serverCookie;
-    assert(serverHandShaker->GetTLS() != NULL);
-    if (serverHandShaker->Initialize(keys))
+    if (serverHandShaker.Initialize(keys))
     {
         std::cout
             << "AUDIT: Successfully initialized, filling cookie jar with goodies, storing public key and setting using security flag to true";
 
-        serverHandShaker->FillCookieJar(serverCookie);
-        my_public_key.LoadMemory(keys.GetPublicKey(), keys.GetPublicKeyBytes());
+        serverHandShaker.FillCookieJar(&serverCookie);
+        server_public_key_.LoadMemory(keys.GetPublicKey(), keys.GetPublicKeyBytes());
         secureIncomingConnectionEnabled = true;
         return true;
     }
 
     std::cout
         << "AUDIT: Failure to initialize so deleting server handshake and cookie jar; also setting secureIncomingConnectionEnabled flag = false";
-
-    OP_DELETE(serverHandShaker, TRACKE_MALLOC);
-    OP_DELETE(serverCookie, TRACKE_MALLOC);
-    serverHandShaker = 0;
-    serverCookie = 0;
     secureIncomingConnectionEnabled = false;
     return false;
 #else
@@ -3361,8 +3351,8 @@ bool network_application_t::SendImmediate(reliable_send_params_t& sendParams)
                 && remoteSystemList[idx].systemAddress
                 != JACKIE_NULL_ADDRESS)
                 sendList[sendListSize++] = idx;
-        }
     }
+}
 
     if (sendListSize == 0)
     {
@@ -3411,7 +3401,7 @@ bool network_application_t::SendImmediate(reliable_send_params_t& sendParams)
 
     // Return value only meaningful if true was passed for useCallerDataAllocation.  Means the reliability layer used that data copy, so the caller should not deallocate it
     return callerDataAllocationUsed;
-}
+    }
 
 int network_application_t::GetRemoteSystemIndexGeneral(
     const network_address_t& systemAddress,
@@ -3586,16 +3576,16 @@ void network_application_t::AddToBanList(const char IP[32],
     banList.InsertAtLast(banStruct);
 }
 
-void network_application_t::SetBannedRemoteSystem(const char IP[32],
+void network_application_t::ban_remote_system(const char IP[32],
     TimeMS milliseconds /*= 0*/)
 {
-    Command* c = AllocCommand();
-    c->commandID = Command::BCS_ADD_2_BANNED_LIST;
+    cmd_t* c = alloc_cmd();
+    c->commandID = cmd_t::BCS_ADD_2_BANNED_LIST;
     c->data = 0;
     memcpy(c->arrayparams, IP, strlen(IP) + 1);
     memcpy(c->arrayparams + strlen(IP) + 1, &milliseconds, sizeof(TimeMS));
     //c->data = (char*)jackieMalloc_Ex(strlen(IP) + sizeof(TimeMS) + 1, TRACE_FILE_AND_LINE_);
     //memcpy(c->data, IP, strlen(IP) + 1);
     //memcpy(c->data + strlen(IP) + 1, &milliseconds, sizeof(TimeMS));
-    PostComand(c);
+    run_cmd(c);
 }

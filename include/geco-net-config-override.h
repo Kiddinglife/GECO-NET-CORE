@@ -17,7 +17,7 @@
 #ifndef OVERRIDE_DEFINES_H_
 #define OVERRIDE_DEFINES_H_
 
-#define USE_SINGLE_THREAD 1
+#define USE_SINGLE_THREAD 0
 // uncommnet to support the famous dlalloc 
 //#define SUPPORT_DL_MALLOC
 

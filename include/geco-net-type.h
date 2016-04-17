@@ -888,7 +888,7 @@ struct GECO_EXPORT JackieRemoteIndex
     JackieRemoteIndex *next;
 };
 
-struct GECO_EXPORT Command
+struct GECO_EXPORT cmd_t
 {
     enum : unsigned char
     {

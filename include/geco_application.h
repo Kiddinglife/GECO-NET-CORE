@@ -95,10 +95,10 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
 #if ENABLE_SECURE_HAND_SHAKE == 1
     // Encryption and security
     bool secureIncomingConnectionEnabled, _require_client_public_key;
-    //char my_public_key[cat::EasyHandshake::PUBLIC_KEY_BYTES];
-    cat::TunnelPublicKey my_public_key;
-    cat::ServerEasyHandshake *serverHandShaker;
-    cat::CookieJar *serverCookie;
+    //char server_public_key_[cat::EasyHandshake::PUBLIC_KEY_BYTES];
+    cat::TunnelPublicKey server_public_key_;
+    cat::ServerEasyHandshake serverHandShaker;
+    cat::CookieJar serverCookie;
     bool InitializeClientSecurity(connection_request_t *rcs, const char *public_key);
 #endif
 
@@ -207,7 +207,7 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// via anpothe
     JackieMemoryPool<recv_params_t>* JISRecvParamsPool;
     //MemoryPool<JISRecvParams, 512, 8> JISRecvParamsPool;
-    JackieMemoryPool<Command> commandPool;
+    JackieMemoryPool<cmd_t> commandPool;
 
 
     struct PacketFollowedByData { network_packet_t p; unsigned char data[1]; };
@@ -230,8 +230,8 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// shared by recv and send thread to store JISRecvParams PTR that is being dellacated
     JackieSPSCQueue<recv_params_t*>* deAllocRecvParamQ;
 
-    JackieSPSCQueue<Command*> allocCommandQ;
-    JackieSPSCQueue<Command*> deAllocCommandQ;
+    JackieSPSCQueue<cmd_t*> allocCommandQ;
+    JackieSPSCQueue<cmd_t*> deAllocCommandQ;
 
     /// shared by recv thread and send thread
     JackieSPSCQueue<network_packet_t*> allocPacketQ;
@@ -244,8 +244,8 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// shared by recv and send thread to  store JISRecvParams PTR that is being dellacated
     JackieArraryQueue<recv_params_t*>* deAllocRecvParamQ;
 
-    JackieArraryQueue<Command*> allocCommandQ;
-    JackieArraryQueue<Command*> deAllocCommandQ;
+    JackieArraryQueue<cmd_t*> allocCommandQ;
+    JackieArraryQueue<cmd_t*> deAllocCommandQ;
 
     /// shared by recv thread and send thread
     JackieArraryQueue<network_packet_t*> allocPacketQ;
@@ -323,7 +323,7 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// Param [in] [int threadPriority]
     /// Returns int
     /// Remarks this function is not used because because , a thread 
-    /// that calls the Start() func plays recv thread
+    /// that calls the startup() func plays recv thread
     /// author mengdi[Jackie]
     int CreateRecvPollingThread(int threadPriority, uint index);
     int CreateNetworkUpdateThread(int threadPriority);
@@ -334,17 +334,17 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
 
     public:
     //STATIC_FACTORY_DECLARATIONS(JackieApplication);
-    static network_application_t* GetInstance(void);
-    static void DestroyInstance(network_application_t *i);
+    static network_application_t* get_instance(void);
+    static void reclaim_instance(network_application_t *i);
     network_application_t();
     virtual ~network_application_t();
 
     void InitIPAddress(void);
     void DeallocBindedSockets(void);
     void ResetSendReceipt(void);
-    network_packet_t* GetPacketOnce(void);
+    network_packet_t* fetch_packet(void);
 
-    virtual startup_result_t Start(socket_binding_params_t *socketDescriptors,
+    virtual startup_result_t startup(socket_binding_params_t *socketDescriptors,
         uint maxConnections = 8, uint socketDescriptorCount = 1,
         int threadPriority = -99999);
     void End(uint blockDuration, unsigned char orderingChannel = 0,
@@ -365,8 +365,8 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     {
         return GetIncomingConnectionsCount() < maxConnections;
     }
-    uint SetSleepTime() const { return userThreadSleepTime; }
-    void SetSleepTime(uint val) { userThreadSleepTime = val; }
+    uint set_sleep_time() const { return userThreadSleepTime; }
+    void set_sleep_time(uint val) { userThreadSleepTime = val; }
     /// to check if this is loop back address of local host
     bool IsLoopbackAddress(const guid_address_wrapper_t &systemIdentifier,
         bool matchPort) const;
@@ -416,7 +416,7 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// This can be just a password, or can be a stream of data.
     /// Specify 0 for no password data
     /// passwdLength: The length in bytes of passwordData
-    void SetIncomingConnectionsPasswd(const char passwd[255], int passwdLength)
+    void set_inbound_connection_pwd(const char passwd[255], int passwdLength)
     {
         //if (passwordDataLength > MAX_OFFLINE_DATA_LENGTH)
         //	passwordDataLength=MAX_OFFLINE_DATA_LENGTH;
@@ -446,13 +446,13 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// If the private keys are 0, then a new key will be generated when this function is called
     /// bRequireClientKey: Should be set to false for most servers.  Allows the server to accept
     /// a public key from connecting clients as a proof of identity but eats twice as much CPU time as a normal connection
-    bool EnableSecureIncomingConnections(cat::TunnelKeyPair& key_pair, bool requireClientPublicKey);
+    bool enable_secure_inbound_connections(cat::TunnelKeyPair& key_pair, bool requireClientPublicKey);
 
     /// recv thread will push tail this packet to buffered dealloc queue in multi-threads env
-    void ReclaimPacket(network_packet_t *packet);
+    void reclaim_packet(network_packet_t *packet);
     /// only recv thread will take charge of alloc packet in multi-threads env
-    Command* AllocCommand();
-    void PostComand(Command* cmd) { allocCommandQ.PushTail(cmd); };
+    cmd_t* alloc_cmd();
+    void run_cmd(cmd_t* cmd) { allocCommandQ.PushTail(cmd); };
 
 
     /// @Function Connect  Connect_
@@ -499,8 +499,8 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// Remarks: because we use app main thread as recv thread, it 
     /// will never block so no need to use this
     /// author mengdi[Jackie]
-    void StopRecvThread(void);
-    void StopNetworkUpdateThread(void);
+    void stop_recv_thread(void);
+    void stop_network_update_thread(void);
     bool active(void) const { return endThreads == false; }
 
 
@@ -529,16 +529,16 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
         bool calledFromNetworkThread = false) const;
 
     bool SendRightNow(TimeUS currentTime, bool useCallerAlloc,
-        Command* bufferedCommand);
+        cmd_t* bufferedCommand);
 
 
     void CloseConnectionInternally(bool sendDisconnectionNotification,
-        bool performImmediate, Command* bufferedCommand);
+        bool performImmediate, cmd_t* bufferedCommand);
 
-    /// \brief Attaches a Plugin interface to an instance of the base class (RakPeer or PacketizedTCP) to run code automatically on message receipt in the Receive call.
+    /// \brief Attaches a Plugin interface to an get_instance of the base class (RakPeer or PacketizedTCP) to run code automatically on message receipt in the Receive call.
     /// If the plugin returns false from PluginInterface::UsesReliabilityLayer(), which is the case for all plugins except PacketLogger, you can call AttachPlugin() and DetachPlugin() for this plugin while RakPeer is active.
     /// \param[in] messageHandler Pointer to the plugin to attach.
-    void SetPlugin(network_plugin_t *plugin);
+    void set_plugin(network_plugin_t *plugin);
     bool SendImmediate(reliable_send_params_t& sendParams);
 
     void AddToActiveSystemList(uint index2use);
@@ -562,7 +562,7 @@ class GECO_EXPORT network_application_t  //: public IServerApplication
     /// network to process in the future. so it is a asynchronous invokation to avoid 
     /// adding locks on @banlist 
     /// @!you can only call this from user thread after Startup() that clear cmd q
-    void SetBannedRemoteSystem(const char IP[32], TimeMS milliseconds = 0);
+    void ban_remote_system(const char IP[32], TimeMS milliseconds = 0);
     bool IsBanned(network_address_t& senderINetAddress);
     private:
     void AddToBanList(const char IP[32], TimeMS milliseconds = 0);

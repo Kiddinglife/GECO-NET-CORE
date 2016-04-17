@@ -189,7 +189,7 @@
 
 /// Controls how many allocations occur at once for the memory pool of incoming 
 /// datagrams waiting to be transferred between the recvfrom thread and the main 
-/// update thread. Has large effect on memory usage, per instance of RakPeer. 
+/// update thread. Has large effect on memory usage, per get_instance of RakPeer. 
 /// Approximately MAXIMUM_MTU_SIZE*BUFFERED_PACKETS_PAGE_SIZE bytes, once 
 /// after calling RakPeer::Startup()
 #ifndef BUFFERED_PACKETS_PAGE_SIZE
@@ -231,12 +231,12 @@
 #endif
 
 #define GECO_STATIC_FACTORY_DELC(TYPE)\
-static TYPE* GetInstance(void);\
-static void DestroyInstance(TYPE *i);
+static TYPE* get_instance(void);\
+static void reclaim_instance(TYPE *i);
 
 // CAUTION: OP_DELETE is in namespace geco::ultils
 #define GECO_STATIC_FACTORY_DEFIS(FATHER_TYPE, CHILD_TYPE)\
-FATHER_TYPE* FATHER_TYPE::GetInstance(void){ return OP_NEW<CHILD_TYPE>(TRACKE_MALLOC);}\
-void FATHER_TYPE::DestroyInstance(FATHER_TYPE* i){OP_DELETE(i, TRACKE_MALLOC);}
+FATHER_TYPE* FATHER_TYPE::get_instance(void){ return geco::ultils::OP_NEW<CHILD_TYPE>(TRACKE_MALLOC);}\
+void FATHER_TYPE::reclaim_instance(FATHER_TYPE* i){ geco::ultils::OP_DELETE(i, TRACKE_MALLOC);}
 
 #endif
