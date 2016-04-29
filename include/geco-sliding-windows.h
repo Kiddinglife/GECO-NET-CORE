@@ -29,7 +29,7 @@ else use congestion avoidance
 #include "geco-net-type.h"
 #include "JackieArraryQueue.h"
 
-const  UInt16 UDP_HEADER_SIZE = 28; ///IP HEADER 20 + UDP HEADER 8 = 28 BYTES
+const  ushort UDP_HEADER_SIZE = 28; ///IP HEADER 20 + UDP HEADER 8 = 28 BYTES
 
 GECO_NET_BEGIN_NSPACE
 class JackieSlidingWindows

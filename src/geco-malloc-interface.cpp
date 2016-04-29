@@ -24,13 +24,12 @@
 #endif
 #endif
 
-
-GECO_ULTILS_BEGIN_NSPACE
+using namespace geco::ultils;
 
 void DefaultOutOfMemoryHandler(const char *file, const long line)
 {
-    (void)file;
-    (void)line;
+    (void) file;
+    (void) line;
     assert(0);
 }
 
@@ -38,57 +37,58 @@ JackieMalloc jackieMalloc = _DefaultMalloc;
 JackieRealloc jackieRealloc = _DefaultRealloc;
 JackieFree jackieFree = _DefaultFree;
 
-void SetMalloc(void* (*userFunction)(size_t size))
+inline void SetMalloc(void* (*userFunction)(size_t size))
 {
     jackieMalloc = userFunction;
 }
-void SetRealloc(void* (*userFunction)(void *p, size_t size))
+inline void SetRealloc(void* (*userFunction)(void *p, size_t size))
 {
     jackieRealloc = userFunction;
 }
-void SetFree(void(*userFunction)(void *p))
+inline void SetFree(void (*userFunction)(void *p))
 {
     jackieFree = userFunction;
 }
-JackieMalloc GetMalloc()
+inline JackieMalloc GetMalloc()
 {
     return jackieMalloc;
 }
-JackieRealloc GetRealloc()
+inline JackieRealloc GetRealloc()
 {
     return jackieRealloc;
 }
-JackieFree GetFree()
+inline JackieFree GetFree()
 {
     return jackieFree;
 }
 
-JackieMalloc_Ex jackieMalloc_Ex = _DefaultMalloc_Ex;
-JackieRealloc_Ex  jackieRealloc_Ex = _DefaultRealloc_Ex;
-JackieFree_Ex jackieFree_Ex = _DefaultFree_Ex;
-void SetMalloc_Ex(JackieMalloc_Ex userFunction)
+JackieMalloc_Ex gMallocEx = _DefaultMalloc_Ex;
+JackieRealloc_Ex gReallocEx = _DefaultRealloc_Ex;
+JackieFree_Ex gFreeEx = _DefaultFree_Ex;
+
+inline void SetMalloc_Ex(JackieMalloc_Ex userFunction)
 {
-    jackieMalloc_Ex = userFunction;
+    gMallocEx = userFunction;
 }
-void  SetRealloc_Ex(JackieRealloc_Ex userFunction)
+inline void SetRealloc_Ex(JackieRealloc_Ex userFunction)
 {
-    jackieRealloc_Ex = userFunction;
+    gReallocEx = userFunction;
 }
-void  SetFree_Ex(JackieFree_Ex userFunction)
+inline void SetFree_Ex(JackieFree_Ex userFunction)
 {
-    jackieFree_Ex = userFunction;
+    gFreeEx = userFunction;
 }
-JackieMalloc_Ex GetMalloc_Ex()
+inline JackieMalloc_Ex GetMalloc_Ex()
 {
-    return jackieMalloc_Ex;
+    return gMallocEx;
 }
-JackieRealloc_Ex GetRealloc_Ex()
+inline JackieRealloc_Ex GetRealloc_Ex()
 {
-    return jackieRealloc_Ex;
+    return gReallocEx;
 }
-JackieFree_Ex GetFree_Ex()
+inline JackieFree_Ex GetFree_Ex()
 {
-    return jackieFree_Ex;
+    return gFreeEx;
 }
 
 NotifyOutOfMemory notifyOutOfMemory = DefaultOutOfMemoryHandler;
@@ -141,22 +141,19 @@ void _DefaultFree(void *p)
 
 void* _DefaultMalloc_Ex(size_t size, const char *file, unsigned int line)
 {
-    (void)file;
-    (void)line;
     return malloc(size);
 }
-
-void* _DefaultRealloc_Ex(void *p, size_t size, const char *file, unsigned int line)
+void* _DefaultRealloc_Ex(void *p, size_t size, const char *file,
+        unsigned int line)
 {
-    (void)file;
-    (void)line;
+    (void) file;
+    (void) line;
     return realloc(p, size);
 }
-
 void _DefaultFree_Ex(void *p, const char *file, unsigned int line)
 {
-    (void)file;
-    (void)line;
+    (void) file;
+    (void) line;
     free(p);
 }
 
@@ -189,7 +186,7 @@ void* _DLRealloc(void *p, size_t size)
 void _DLFree(void *p)
 {
     if( p )
-        rak_mspace_free(rakNetFixedHeapMSpace, p);
+    rak_mspace_free(rakNetFixedHeapMSpace, p);
 }
 void* _DLMalloc_Ex(size_t size, const char *file, unsigned int line)
 {
@@ -213,13 +210,13 @@ void _DLFree_Ex(void *p, const char *file, unsigned int line)
     (void) line;
 
     if( p )
-        rak_mspace_free(rakNetFixedHeapMSpace, p);
+    rak_mspace_free(rakNetFixedHeapMSpace, p);
 }
 
 void UseRaknetFixedHeap(size_t initialCapacity,
-    void * ( *yourMMapFunction ) ( size_t size ),
-    void * ( *yourDirectMMapFunction ) ( size_t size ),
-    int(*yourMUnmapFunction) ( void *p, size_t size ))
+        void * ( *yourMMapFunction ) ( size_t size ),
+        void * ( *yourDirectMMapFunction ) ( size_t size ),
+        int(*yourMUnmapFunction) ( void *p, size_t size ))
 {
     SetDLMallocMMap(yourMMapFunction);
     SetDLMallocDirectMMap(yourDirectMMapFunction);
@@ -249,27 +246,72 @@ void FreeRakNetFixedHeap(void)
     SetFree_Ex(_DefaultFree_Ex);
 }
 #else
-void * _DLMallocMMap(size_t size) { (void)size; return 0; }
-void * _DLMallocDirectMMap(size_t size) { (void)size; return 0; }
-int _DLMallocMUnmap(void *p, size_t size) { (void)size; (void)p; return 0; }
-void* _DLMalloc(size_t size) { (void)size; return 0; }
-void* _DLRealloc(void *p, size_t size) { (void)p; (void)size; return 0; }
-void _DLFree(void *p) { (void)p; }
-void* _DLMalloc_Ex(size_t size, const char *file, unsigned int line) { (void)size; (void)file; (void)line; return 0; }
-void* _DLRealloc_Ex(void *p, size_t size, const char *file, unsigned int line) { (void)p; (void)size; (void)file; (void)line; return 0; }
-void _DLFree_Ex(void *p, const char *file, unsigned int line) { (void)p; (void)file; (void)line; }
+void * _DLMallocMMap(size_t size)
+{
+    (void) size;
+    return 0;
+}
+void * _DLMallocDirectMMap(size_t size)
+{
+    (void) size;
+    return 0;
+}
+int _DLMallocMUnmap(void *p, size_t size)
+{
+    (void) size;
+    (void) p;
+    return 0;
+}
+void* _DLMalloc(size_t size)
+{
+    (void) size;
+    return 0;
+}
+void* _DLRealloc(void *p, size_t size)
+{
+    (void) p;
+    (void) size;
+    return 0;
+}
+void _DLFree(void *p)
+{
+    (void) p;
+}
+void* _DLMalloc_Ex(size_t size, const char *file, unsigned int line)
+{
+    (void) size;
+    (void) file;
+    (void) line;
+    return 0;
+}
+void* _DLRealloc_Ex(void *p, size_t size, const char *file, unsigned int line)
+{
+    (void) p;
+    (void) size;
+    (void) file;
+    (void) line;
+    return 0;
+}
+void _DLFree_Ex(void *p, const char *file, unsigned int line)
+{
+    (void) p;
+    (void) file;
+    (void) line;
+}
 
 void UseRaknetFixedHeap(size_t initialCapacity,
-    void * (*yourMMapFunction) (size_t size),
-    void * (*yourDirectMMapFunction) (size_t size),
-    int(*yourMUnmapFunction) (void *p, size_t size))
+        void * (*yourMMapFunction)(size_t size),
+        void * (*yourDirectMMapFunction)(size_t size),
+        int (*yourMUnmapFunction)(void *p, size_t size))
 {
-    (void)initialCapacity;
-    (void)yourMMapFunction;
-    (void)yourDirectMMapFunction;
-    (void)yourMUnmapFunction;
+    (void) initialCapacity;
+    (void) yourMMapFunction;
+    (void) yourDirectMMapFunction;
+    (void) yourMUnmapFunction;
 }
-void FreeRakNetFixedHeap(void) { }
+void FreeRakNetFixedHeap(void)
+{
+}
 #endif
 
 #if USE_MEM_OVERRIDE==1
@@ -288,6 +330,3 @@ void FreeRakNetFixedHeap(void) { }
 #undef RMO_FREE_UNDEF
 #endif
 #endif
-
-
-GECO_ULTILS_END_NSPACE

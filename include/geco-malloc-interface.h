@@ -34,6 +34,7 @@
 #include "geco-net-config.h"
 #include "geco-namesapces.h"
 
+
 // These pointers are statically and globally defined in RakMemoryOverride.cpp
 // Change them to point to your own allocators if you want.
 // Use the functions for a DLL, or just reassign the variable if using source
@@ -43,9 +44,9 @@ typedef void(*JackieFree) (void *p);
 extern GECO_EXPORT JackieMalloc jackieMalloc;
 extern GECO_EXPORT JackieRealloc jackieRealloc;
 extern GECO_EXPORT JackieFree jackieFree;
-void GECO_EXPORT SetMalloc(JackieMalloc userFunction);
-void GECO_EXPORT SetRealloc(JackieRealloc userFunction);
-void GECO_EXPORT SetFree(JackieFree userFunction);
+extern GECO_EXPORT void SetMalloc(JackieMalloc userFunction);
+extern GECO_EXPORT void SetRealloc(JackieRealloc userFunction);
+extern GECO_EXPORT void SetFree(JackieFree userFunction);
 extern GECO_EXPORT JackieMalloc GetMalloc();
 extern GECO_EXPORT JackieRealloc GetRealloc();
 extern GECO_EXPORT JackieFree GetFree();
@@ -53,14 +54,12 @@ extern GECO_EXPORT JackieFree GetFree();
 typedef  void * (*JackieMalloc_Ex) (size_t size, const char *file, unsigned int line);
 typedef  void * (*JackieRealloc_Ex) (void *p, size_t size, const char *file, unsigned int line);
 typedef  void(*JackieFree_Ex) (void *p, const char *file, unsigned int line);
-GECO_ULTILS_BEGIN_NSPACE
-extern GECO_EXPORT JackieMalloc_Ex jackieMalloc_Ex;
-extern GECO_EXPORT JackieRealloc_Ex jackieRealloc_Ex;
-extern GECO_EXPORT JackieFree_Ex jackieFree_Ex;
-GECO_ULTILS_END_NSPACE
-void GECO_EXPORT SetMalloc_Ex(JackieMalloc_Ex userFunction);
-void GECO_EXPORT SetRealloc_Ex(JackieRealloc_Ex userFunction);
-void GECO_EXPORT SetFree_Ex(JackieFree_Ex userFunction);
+extern GECO_EXPORT JackieMalloc_Ex gMallocEx;
+extern GECO_EXPORT JackieRealloc_Ex gReallocEx;
+extern GECO_EXPORT JackieFree_Ex gFreeEx;
+extern GECO_EXPORT void SetMalloc_Ex(JackieMalloc_Ex userFunction);
+extern GECO_EXPORT void SetRealloc_Ex(JackieRealloc_Ex userFunction);
+extern GECO_EXPORT void SetFree_Ex(JackieFree_Ex userFunction);
 extern GECO_EXPORT JackieMalloc_Ex GetMalloc_Ex();
 extern GECO_EXPORT JackieRealloc_Ex GetRealloc_Ex();
 extern GECO_EXPORT JackieFree_Ex GetFree_Ex();
@@ -73,10 +72,10 @@ extern GECO_EXPORT NotifyOutOfMemory notifyOutOfMemory;
 extern GECO_EXPORT DlMallocMMap dlMallocMMap;
 extern GECO_EXPORT DlMallocDirectMMap dlMallocDirectMMap;
 extern GECO_EXPORT DlMallocMUnmap dlMallocMUnmap;
-void GECO_EXPORT SetNotifyOutOfMemory(NotifyOutOfMemory userFunction);
-void GECO_EXPORT SetDLMallocMMap(DlMallocMMap userFunction);
-void GECO_EXPORT SetDLMallocDirectMMap(DlMallocDirectMMap userFunction);
-void GECO_EXPORT SetDLMallocMUnmap(DlMallocMUnmap userFunction);
+extern GECO_EXPORT void SetNotifyOutOfMemory(NotifyOutOfMemory userFunction);
+extern GECO_EXPORT void SetDLMallocMMap(DlMallocMMap userFunction);
+extern GECO_EXPORT void SetDLMallocDirectMMap(DlMallocDirectMMap userFunction);
+extern GECO_EXPORT void SetDLMallocMUnmap(DlMallocMUnmap userFunction);
 extern GECO_EXPORT DlMallocMMap GetDLMallocMMap();
 extern GECO_EXPORT DlMallocDirectMMap GetDLMallocDirectMMap();
 extern GECO_EXPORT DlMallocMUnmap GetDLMallocMUnmap();

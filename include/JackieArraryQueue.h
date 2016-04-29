@@ -4,6 +4,7 @@
 #include <cassert>
 #include "geco-export.h"
 #include "geco-malloc-interface.h"
+using namespace geco::ultils;
 
 GECO_NET_BEGIN_NSPACE
 /// The namespace DataStructures was only added to avoid compiler errors for commonly
@@ -29,7 +30,7 @@ class GECO_EXPORT JackieArraryQueue
     ~JackieArraryQueue()
     {
         if (allocation_size > 0)
-            OP_DELETE_ARRAY(queueArrary, TRACE_FILE_AND_LINE_);
+            OP_DELETE_ARRAY(queueArrary, TRACKE_MALLOC);
 
         queueArrary = 0;
         allocation_size = head = tail = 0;
@@ -46,7 +47,7 @@ class GECO_EXPORT JackieArraryQueue
         //{
         //if( allocation_size > 0 )
         //	OP_DELETE_ARRAY(array, TRACE_FILE_AND_LINE_);
-        queueArrary = OP_NEW_ARRAY<queue_type >(original_copy.Size() + 1, TRACE_FILE_AND_LINE_);
+        queueArrary = OP_NEW_ARRAY<queue_type >(original_copy.Size() + 1, TRACKE_MALLOC);
         //allocation_size = original_copy.Size() + 1;
         //}
         for (unsigned int counter = 0; counter < original_copy.Size(); ++counter)
@@ -61,16 +62,16 @@ class GECO_EXPORT JackieArraryQueue
     {
         if ((&original_copy) == this) return false;
 
-        Clear(TRACE_FILE_AND_LINE_);
+        Clear();
 
         // Allocate memory for copy
         if (original_copy.Size() == 0)
         {
             allocation_size = 0; // THIS MAY CAUSE MEMORY LEAK !
-            return;
+            return false;
         }
 
-        queueArrary = OP_NEW_ARRAY<queue_type >(original_copy.Size() + 1, TRACE_FILE_AND_LINE_);
+        queueArrary = OP_NEW_ARRAY<queue_type >(original_copy.Size() + 1, TRACKE_MALLOC);
 
         for (unsigned int counter = 0; counter < original_copy.Size(); ++counter)
             queueArrary[counter] = original_copy.queueArrary[(original_copy.head + counter) % (original_copy.allocation_size)];
@@ -87,12 +88,12 @@ class GECO_EXPORT JackieArraryQueue
         if (allocation_size == 0)
         {
             queueArrary = OP_NEW_ARRAY<queue_type>(
-                QUEUE_INIT_SIZE, TRACE_FILE_AND_LINE_);
+                QUEUE_INIT_SIZE, TRACKE_MALLOC);
 
             assert(queueArrary != 0);
             if (queueArrary == 0)
             {
-                notifyOutOfMemory(TRACE_FILE_AND_LINE_);
+                notifyOutOfMemory(TRACKE_MALLOC);
                 return false;
             }
 
@@ -114,7 +115,7 @@ class GECO_EXPORT JackieArraryQueue
             /// queue gets full and need to allocate more memory.
             queue_type * new_array =
                 OP_NEW_ARRAY<queue_type>(allocation_size << 1,
-                TRACE_FILE_AND_LINE_);
+                TRACKE_MALLOC);
 
             assert(new_array != 0);
             if (new_array == 0) return false;
@@ -129,7 +130,7 @@ class GECO_EXPORT JackieArraryQueue
             allocation_size <<= 1;
 
             // Delete the old array and move the pointer to the new array
-            OP_DELETE_ARRAY(queueArrary, TRACE_FILE_AND_LINE_);
+            OP_DELETE_ARRAY(queueArrary, TRACKE_MALLOC);
             queueArrary = new_array;
         }
         return true;
@@ -306,7 +307,7 @@ class GECO_EXPORT JackieArraryQueue
         if (allocation_size == 0) return;
         if (allocation_size > QUEUE_INIT_SIZE)
         {
-            OP_DELETE_ARRAY(queueArrary, TRACE_FILE_AND_LINE_);
+            OP_DELETE_ARRAY(queueArrary, TRACKE_MALLOC);
             allocation_size = 0;
             queueArrary = 0;
         }
@@ -326,7 +327,7 @@ class GECO_EXPORT JackieArraryQueue
         while (newAllocationSize <= Size())
             newAllocationSize <<= 1;
 
-        queue_type* new_array = OP_NEW_ARRAY<queue_type >(newAllocationSize, TRACE_FILE_AND_LINE_);
+        queue_type* new_array = OP_NEW_ARRAY<queue_type >(newAllocationSize, TRACKE_MALLOC);
 
         for (unsigned int counter = 0; counter < Size(); ++counter)
             new_array[counter] = queueArrary[(head + counter) % (allocation_size)];
@@ -336,7 +337,7 @@ class GECO_EXPORT JackieArraryQueue
         head = 0;
 
         // Delete the old array and move the pointer to the new array
-        OP_DELETE_ARRAY(queueArrary, TRACE_FILE_AND_LINE_);
+        OP_DELETE_ARRAY(queueArrary, TRACKE_MALLOC);
         queueArrary = new_array;
     }
 
@@ -356,10 +357,10 @@ class GECO_EXPORT JackieArraryQueue
     /// Force a memory allocation to a certain larger size
     void Resize(int size)
     {
-        OP_DELETE_ARRAY(queueArrary, TRACE_FILE_AND_LINE_);
+        OP_DELETE_ARRAY(queueArrary, TRACKE_MALLOC);
 
         if (size > 0)
-            queueArrary = OP_NEW_ARRAY<queue_type>(size, TRACE_FILE_AND_LINE_);
+            queueArrary = OP_NEW_ARRAY<queue_type>(size, TRACKE_MALLOC);
         else
             queueArrary = 0;
 

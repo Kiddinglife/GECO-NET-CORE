@@ -1,4 +1,5 @@
 #include "JackieWaitEvent.h"
+#include "geco-time.h"
 
 GECO_NET_BEGIN_NSPACE
 JackieWaitEvent::JackieWaitEvent()
@@ -70,8 +71,8 @@ void JackieWaitEvent::WaitEvent(int timeoutMs)
     struct timespec   ts;
 
     int rc;
-    struct timeval    tp;
-    rc = gettimeofday(&tp, NULL);
+    timeval tp;
+    rc = gettimeofday(&tp, 0);
     ts.tv_sec = tp.tv_sec;
     ts.tv_nsec = tp.tv_usec * 1000;
     // #endif

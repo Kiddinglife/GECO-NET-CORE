@@ -15,29 +15,23 @@
 #ifndef  __INCLUDE_GECO_BASIC_TYPE_DEFS_H
 #define __INCLUDE_GECO_BASIC_TYPE_DEFS_H
 
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+
 #if defined(__GNUC__) || defined(__GCCXML__) || defined(__SNC__) || defined(__S3E__)
 #include <stdint.h>
-typedef int8_t Int8;
-typedef uint8_t UInt8;
-typedef int16_t Int16;
-typedef uint16_t UInt16;
-typedef int32_t Int32;
-typedef uint32_t UInt32;
-typedef int64_t Int64;
-typedef uint64_t UInt64;
+typedef uint64_t ulonglong;
+typedef int64_t longlong;
 #else
-typedef char Int8;
-typedef unsigned char UInt8;
-typedef short Int16;
-typedef unsigned short UInt16;
-typedef __int32 Int32;
-typedef unsigned __int32 UInt32;
 #   if defined(_MSC_VER) && _MSC_VER < 1300
-typedef unsigned __int64 UInt64;
-typedef signed __int64 Int64;
+typedef unsigned __int64 ulonglong;
+typedef  __int64 longlong;
+typedef unsigned __int64 ulonglong;
+typedef __int64 longlong;
 #  else
-typedef long long Int64;
-typedef unsigned long long int UInt64;
+typedef long long longlong;
+typedef unsigned long long ulonglong;
 #  endif
 #endif
 

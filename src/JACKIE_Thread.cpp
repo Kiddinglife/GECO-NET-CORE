@@ -27,8 +27,7 @@ int JACKIE_Thread::Create(ThreadFunc start_address, void *arglist, int priority)
 #elif defined _WIN32_WCE
 	threadHandle = CreateThread(NULL,MAX_ALLOC_STACK_COUNT*2,start_address,arglist,0,(DWORD*)&threadID);
 #else
-	threadHandle = (HANDLE)_beginthreadex(NULL, MAX_ALLOC_STACK_COUNT * 2,
-		start_address, arglist, 0, &threadID);
+	threadHandle = (HANDLE)_beginthreadex(NULL, MAX_ALLOC_STACK_COUNT * 2,start_address, arglist, 0, &threadID);
 #endif
 
 	SetThreadPriority(threadHandle, priority);
@@ -58,8 +57,8 @@ int JACKIE_Thread::Create(ThreadFunc start_address, void *arglist, int priority)
 	pthread_attr_setstacksize(&attr, MAX_ALLOC_STACK_COUNT*2);
 	pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_DETACHED );
 	int res = pthread_create( &threadHandle, &attr, start_address, arglist );
-	JACKIE_ASSERT(res==0 && "pthread_create in RakThread.cpp failed.")
-		return res;
+	assert(res==0 && "pthread_create in RakThread.cpp failed.");
+	return res;
 #endif
 }
 
@@ -70,4 +69,5 @@ unsigned int  JACKIE_Thread::JackieGetCurrentThreadId(void)
 #elif defined GCC
 	return 0;
 #endif
+	return 0;
 }

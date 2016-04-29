@@ -36,7 +36,7 @@ class GECO_EXPORT JackieArrayList
     {
         if (allocation_size > 0)
         {
-            OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+            OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
             list_size = allocation_size = 0;
         }
     }
@@ -49,7 +49,7 @@ class GECO_EXPORT JackieArrayList
             return;
         }
 
-        listArray = OP_NEW_ARRAY < ElementType>(original_copy.list_size, TRACE_FILE_AND_LINE_);
+        listArray = OP_NEW_ARRAY < ElementType>(original_copy.list_size, TRACKE_MALLOC);
 
         for (int Index = 0; Index < original_copy.list_size; Index++)
         {
@@ -58,21 +58,21 @@ class GECO_EXPORT JackieArrayList
 
         list_size = allocation_size = original_copy.list_size;
     }
-    JackieArrayList& operator= (const JackieArrayList& originalCopy)
+    JackieArrayList& operator= (const JackieArrayList& original_copy)
     {
-        if (this == &originalCopy) return *this;
+        if (this == &original_copy) return *this;
 
         /// allocate memory for copying the elements from @param original_copy
-        if (originalCopy.list_size == 0)
+        if (original_copy.list_size == 0)
         {
             Clear();
             return *this;
         }
 
-        if (originalCopy.list_size > allocation_size)
+        if (original_copy.list_size > allocation_size)
         {
             Clear();
-            listArray = OP_NEW_ARRAY < ElementType>(original_copy.list_size, TRACE_FILE_AND_LINE_);
+            listArray = OP_NEW_ARRAY < ElementType>(original_copy.list_size, TRACKE_MALLOC);
             allocation_size = original_copy.list_size;
         }
 
@@ -95,7 +95,7 @@ class GECO_EXPORT JackieArrayList
 
         if (allocation_size > MAX_COUNT_ELEMENTS_CLEAR || doNotDeallocateSmallBlocks == false)
         {
-            OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+            OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
             allocation_size = 0;
             listArray = 0;
         }
@@ -114,13 +114,13 @@ class GECO_EXPORT JackieArrayList
             // allocate twice the currently allocated memory
             ElementType* new_array;
             allocation_size = amount2Alloc;
-            new_array = OP_NEW_ARRAY<ElementType>(allocation_size, TRACE_FILE_AND_LINE_);
+            new_array = OP_NEW_ARRAY<ElementType>(allocation_size, TRACKE_MALLOC);
             if (listArray != 0)
             {
                 // copy old array over
                 for (unsigned int counter = 0; counter < list_size; ++counter)
                     new_array[counter] = listArray[counter];
-                OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+                OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
             }
             listArray = new_array;
         }
@@ -131,12 +131,12 @@ class GECO_EXPORT JackieArrayList
         unsigned int mini_size = 1;
         while (mini_size < list_size) mini_size <<= 1;
 
-        ElementType * new_array = OP_NEW_ARRAY<ElementType >(mini_size, TRACE_FILE_AND_LINE_);
+        ElementType * new_array = OP_NEW_ARRAY<ElementType >(mini_size, TRACKE_MALLOC);
         // copy old array over
         for (unsigned int counter = 0; counter < list_size; ++counter)
             new_array[counter] = listArray[counter];
         // set old array to point to the newly allocated array
-        OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+        OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
         listArray = new_array;
         allocation_size = mini_size;
     }
@@ -172,7 +172,7 @@ class GECO_EXPORT JackieArrayList
             else
                 allocation_size <<= 1;
 
-            ElementType * new_array = OP_NEW_ARRAY<ElementType >(allocation_size, TRACE_FILE_AND_LINE_);
+            ElementType * new_array = OP_NEW_ARRAY<ElementType >(allocation_size, TRACKE_MALLOC);
 
             if (listArray != 0)
             {
@@ -180,7 +180,7 @@ class GECO_EXPORT JackieArrayList
                 for (unsigned int counter = 0; counter < list_size; ++counter)
                     new_array[counter] = listArray[counter];
                 // set old array to point to the newly allocated and twice as large array
-                OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+                OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
             }
             listArray = new_array;
         }
@@ -211,7 +211,7 @@ class GECO_EXPORT JackieArrayList
             else
                 allocation_size <<= 1;
 
-            ElementType * new_array = OP_NEW_ARRAY<ElementType >(allocation_size, TRACE_FILE_AND_LINE_);
+            ElementType * new_array = OP_NEW_ARRAY<ElementType >(allocation_size, TRACKE_MALLOC);
 
             if (listArray != 0)
             {
@@ -219,7 +219,7 @@ class GECO_EXPORT JackieArrayList
                 for (unsigned int counter = 0; counter < list_size; ++counter)
                     new_array[counter] = listArray[counter];
                 // set old array to point to the newly allocated and twice as large array
-                OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+                OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
             }
             listArray = new_array;
         }
@@ -254,14 +254,14 @@ class GECO_EXPORT JackieArrayList
                 allocation_size = position + 1;
 
                 ElementType * new_array = OP_NEW_ARRAY<ElementType >
-                    (allocation_size, TRACE_FILE_AND_LINE_);
+                    (allocation_size, TRACKE_MALLOC);
 
                 // copy old array over
                 for (unsigned int counter = 0; counter < list_size; ++counter)
                     new_array[counter] = listArray[counter];
 
                 // set old array to point to the newly allocated array
-                OP_DELETE_ARRAY(listArray, TRACE_FILE_AND_LINE_);
+                OP_DELETE_ARRAY(listArray, TRACKE_MALLOC);
                 listArray = new_array;
             }
 

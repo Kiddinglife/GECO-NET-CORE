@@ -27,7 +27,7 @@
 
 GECO_NET_BEGIN_NSPACE
 
-class WSAStartupSingleton
+class GECO_EXPORT  WSAStartupSingleton
 {
     public:
     WSAStartupSingleton();
@@ -39,49 +39,49 @@ class WSAStartupSingleton
     static int refCount;
 };
 
-int WSAStartupSingleton::refCount = 0;
-
-void WSAStartupSingleton::AddRef(void)
-{
-#if defined(_WIN32) && !defined(WINDOWS_STORE_RT)
-
-    refCount++;
-
-    if (refCount != 1)
-        return;
-
-    WSADATA winsockInfo;
-    if (WSAStartup(MAKEWORD(2, 2), &winsockInfo) != 0)
-    {
-#if  defined(_DEBUG) && !defined(WINDOWS_PHONE_8)
-        DWORD dwIOError = GetLastError();
-        LPVOID messageBuffer;
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, dwIOError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
-            (LPTSTR)& messageBuffer, 0, NULL);
-        // something has gone wrong here...
-        printf_s("WSAStartup failed:Error code - %d,%s\n", dwIOError, messageBuffer);
-        //Free the buffer.
-        LocalFree(messageBuffer);
-#endif
-    }
-
-#endif
-}
-void WSAStartupSingleton::Deref(void)
-{
-#if defined(_WIN32) && !defined(WINDOWS_STORE_RT)
-    if (refCount == 0)
-        return;
-
-    if (refCount > 1)
-    {
-        refCount--;
-        return;
-    }
-    WSACleanup();
-    refCount = 0;
-#endif
-}
+//int WSAStartupSingleton::refCount = 0;
+//
+//void WSAStartupSingleton::AddRef(void)
+//{
+//#if defined(_WIN32) && !defined(WINDOWS_STORE_RT)
+//
+//    refCount++;
+//
+//    if (refCount != 1)
+//        return;
+//
+//    WSADATA winsockInfo;
+//    if (WSAStartup(MAKEWORD(2, 2), &winsockInfo) != 0)
+//    {
+//#if  defined(_DEBUG) && !defined(WINDOWS_PHONE_8)
+//        DWORD dwIOError = GetLastError();
+//        LPVOID messageBuffer;
+//        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+//            NULL, dwIOError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // Default language
+//            (LPTSTR)& messageBuffer, 0, NULL);
+//        // something has gone wrong here...
+//        printf_s("WSAStartup failed:Error code - %d,%s\n", dwIOError, messageBuffer);
+//        //Free the buffer.
+//        LocalFree(messageBuffer);
+//#endif
+//    }
+//
+//#endif
+//}
+//void WSAStartupSingleton::Deref(void)
+//{
+//#if defined(_WIN32) && !defined(WINDOWS_STORE_RT)
+//    if (refCount == 0)
+//        return;
+//
+//    if (refCount > 1)
+//    {
+//        refCount--;
+//        return;
+//    }
+//    WSACleanup();
+//    refCount = 0;
+//#endif
+//}
 GECO_NET_END_NSPACE
 #endif

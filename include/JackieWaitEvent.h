@@ -8,7 +8,7 @@
 #else
 #include <pthread.h>
 #include <sys/types.h>
-#include "JACKIE_Simple_Mutex.h"
+#include "JackieSimpleMutex.h"
 #endif
 GECO_NET_BEGIN_NSPACE
 class GECO_EXPORT JackieWaitEvent
